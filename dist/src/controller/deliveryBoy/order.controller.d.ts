@@ -1,0 +1,12 @@
+import { Response } from 'express';
+import { RequestParams } from '../../utils/types/expressTypes';
+export declare const getAssignedOrders: (req: RequestParams, res: Response) => Promise<void>;
+export declare const acceptOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const arriveOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const cancelOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const departOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const pickUpOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const sendEmailOrMobileOtp: (req: RequestParams, res: Response) => Promise<void>;
+export declare const deliverOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const OrderAssigneeSchemaData: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getOrderById: (req: RequestParams, res: Response) => Promise<void>;

@@ -1,0 +1,13 @@
+import { Response } from 'express';
+import { RequestParams } from '../../utils/types/expressTypes';
+export declare const manageSubscriptions: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getSubscriptions: (req: RequestParams, res: Response) => Promise<void>;
+export declare const deleteSubscription: (req: RequestParams, res: Response) => Promise<void>;
+export declare const deletePurchaseSubscription: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getApproveSubscription: (req: RequestParams, res: Response) => Promise<void>;
+export declare const acceptSubscription: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getPendingSubscription: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getUsers: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getAllUsers: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getAllUsersFromAdmin: (req: RequestParams, res: Response) => Promise<void>;
+export declare const addUser: (req: RequestParams, res: Response) => Promise<void>;

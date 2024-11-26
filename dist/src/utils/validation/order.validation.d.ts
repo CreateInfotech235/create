@@ -1,0 +1,12 @@
+import Joi from 'joi';
+export declare const orderCreateValidation: Joi.ObjectSchema<any>;
+export declare const newOrderCreation: Joi.ObjectSchema<any>;
+export declare const orderAssignValidation: Joi.ObjectSchema<any>;
+export declare const orderAcceptValidation: Joi.ObjectSchema<any>;
+export declare const orderArriveValidation: Joi.ObjectSchema<any>;
+export declare const orderListByDeliveryManValidation: Joi.ObjectSchema<any>;
+export declare const orderPickUpValidation: Joi.ObjectSchema<any>;
+export declare const orderDeliverValidation: Joi.ObjectSchema<any>;
+export declare const orderIdValidation: Joi.ObjectSchema<any>;
+export declare const orderCancelValidation: Joi.ObjectSchema<any>;
+export declare const orderAdminListValidation: Joi.ObjectSchema<any>;

@@ -1,0 +1,18 @@
+import Joi from 'joi';
+export declare const createParcelValidation: Joi.ObjectSchema<any>;
+export declare const updateParcelValidation: Joi.ObjectSchema<any>;
+export declare const deleteParcelValidation: Joi.ObjectSchema<any>;
+export declare const adminSignInValidation: Joi.ObjectSchema<any>;
+export declare const deliveryManListValidation: Joi.ObjectSchema<any>;
+export declare const paginationValidation: Joi.ObjectSchema<any>;
+export declare const manageSubscriptionValidation: Joi.ObjectSchema<any>;
+export declare const subscription: Joi.ObjectSchema<any>;
+export declare const subcriptionStatusValidation: Joi.ObjectSchema<any>;
+export declare const subcriptionStatusListValidation: Joi.ObjectSchema<any>;
+export declare const orderLocationValidation: Joi.ObjectSchema<any>;
+export declare const deliveryManIdValidation: Joi.ObjectSchema<any>;
+export declare const orderWiseDeliveryManValidation: Joi.ObjectSchema<any>;
+export declare const deliveryManWalletListValidation: Joi.ObjectSchema<any>;
+export declare const userWalletListValidation: Joi.ObjectSchema<any>;
+export declare const deliveryManOrderListValidation: Joi.ObjectSchema<any>;
+export declare const verificationStatusValidation: Joi.ObjectSchema<any>;

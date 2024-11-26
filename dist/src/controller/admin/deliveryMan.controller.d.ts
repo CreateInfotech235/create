@@ -1,0 +1,18 @@
+import { Response } from 'express';
+import { RequestParams } from '../../utils/types/expressTypes';
+export declare const updateVerificationStatus: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManDocuments: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManLocations: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getOrderLocations: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManProfileById: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryMans: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getAllDeliveryMans: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getAllDeliveryMansFromAdmin: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManOrders: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManInfo: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManNames: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getUserNames: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManWalletHistory: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getUserWithdrawHistory: (req: RequestParams, res: Response) => Promise<void>;
+export declare const addDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
+export declare const deleteDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;

@@ -1,0 +1,14 @@
+import { Response } from 'express';
+import { RequestParams } from '../../utils/types/expressTypes';
+export declare const signUp: (req: RequestParams, res: Response) => Promise<void>;
+export declare const signIn: (req: RequestParams, res: Response) => Promise<void>;
+export declare const activateFreeSubcription: (req: RequestParams, res: Response) => Promise<void>;
+export declare const sendEmailOrMobileOtp: (req: RequestParams, res: Response) => Promise<void>;
+export declare const renewToken: (req: RequestParams, res: Response) => Promise<void>;
+export declare const logout: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getLocationOfMerchant: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getProfileOfMerchant: (req: RequestParams, res: Response) => Promise<void>;
+export declare const updateProfileOfMerchant: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getAllDeliveryManOfMerchant: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getOrderCounts: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getorderHistory: (req: RequestParams, res: Response) => Promise<void>;
