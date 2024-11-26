@@ -1,0 +1,761 @@
+import { Response } from 'express';
+import mongoose from 'mongoose';
+import { JwtPayload, verify } from 'jsonwebtoken';
+import { PERSON_TYPE } from '../../enum';
+import { getLanguage } from '../../language/languageHelper';
+import authTokenSchema from '../../models/authToken.schema';
+import CurrencySchema from '../../models/currency.schema';
+import deliveryManSchema from '../../models/deliveryMan.schema';
+import otpSchema from '../../models/otp.schema';
+import subcriptionSchema from '../../models/subcription.schema';
+import subcriptionPurchaseSchema from '../../models/subcriptionPurchase.schema';
+import merchantSchema from '../../models/user.schema';
+import OrderHistorySchema from '../../models/orderHistory.schema';
+import {
+  createAuthTokens,
+  emailOrMobileOtp,
+  encryptPassword,
+  generateIntRandomNo,
+  passwordValidation,
+  uploadFile,
+  removeUploadedFile,
+} from '../../utils/common';
+import { RequestParams } from '../../utils/types/expressTypes';
+import validateParamsWithJoi from '../../utils/validateRequest';
+import {
+  activateFreeSubcriptionValidation,
+  otpVerifyValidation,
+  renewTokenValidation,
+  userSignInValidation,
+  userSignUpValidation,
+} from '../../utils/validation/auth.validation';
+import path from 'path';
+import orderHistorySchema from '../../models/orderHistory.schema';
+import orderSchema from '../../models/order.schema';
+import orderAssignSchema from '../../models/orderAssignee.schema';
+import subscribedSchema from '../../models/subcription.schema';
+
+export const signUp = async (req: RequestParams, res: Response) => {
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      name: string;
+      email: string;
+      password: string;
+      contactNumber: number;
+      countryCode: string;
+      otp: number;
+      image: string;
+      medicalCertificateNumber: number;
+      medicalCertificate: string;
+      address: {
+        street: string;
+        city: string;
+        // state: string;
+        postalCode: string;
+        country: string;
+      };
+    }>(req.body, userSignUpValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    // const assetsFile = req.file;
+
+    const { value } = validateRequest;
+
+    const userExist = await merchantSchema.findOne({ email: value.email });
+
+    if (userExist) {
+      return res.badRequest({
+        message: getLanguage('en').emailRegisteredAlready,
+      });
+    }
+
+    if (!value.image) {
+      value.image = process.env.DEFAULT_PROFILE_IMAGE;
+    } else {
+      const Image = value.image.split(',');
+      value.image = await uploadFile(
+        Image[0],
+        Image[1],
+        'MERCHANT(USER)-PROFILE',
+      );
+    }
+
+    const otpData = await otpSchema.findOne({
+      value: value.otp,
+      customerEmail: value.email,
+      expiry: { $gte: Date.now() },
+    });
+
+    if (!otpData) {
+      return res.badRequest({ message: getLanguage('en').otpExpired });
+    }
+
+    const certificate = await merchantSchema.findOne({
+      medicalCertificateNumber: value.medicalCertificateNumber,
+    });
+
+    if (certificate) {
+      return res.badRequest({
+        message: getLanguage('en').certificateRegisteredAlready,
+      });
+    }
+
+    // value.medicalCertificate = path.join('uploads/', assetsFile.filename);
+    // if (value?.medicalCertificate) {
+    //   const Image = value.medicalCertificate.split(',');
+    //   value.medicalCertificate = await uploadFile(Image[0], Image[1], 'MERCHANT-MEDICALCER');
+    // }
+
+    value.password = await encryptPassword({ password: value.password });
+
+    await merchantSchema.create(value);
+
+    return res.ok({ message: getLanguage('en').userRegistered });
+  } catch (error) {
+    console.log('error', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const signIn = async (req: RequestParams, res: Response) => {
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      email: string;
+      password: string;
+      personType: PERSON_TYPE;
+    }>(req.body, userSignInValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+    const { value } = validateRequest;
+
+    let userExist;
+
+    const isCustomer = value.personType === PERSON_TYPE.CUSTOMER;
+
+    if (isCustomer) {
+      userExist = await merchantSchema.findOne({ email: value.email }).lean();
+    } else {
+      userExist = await deliveryManSchema
+        .findOne({ email: value.email })
+        .lean();
+    }
+
+    if (!userExist) {
+      return res.badRequest({
+        message: getLanguage('en').invalidLoginCredentials,
+      });
+    }
+
+    const isVerifyPassword = await passwordValidation(
+      value.password,
+      userExist.password as string,
+    );
+
+    console.log('🚀 ~ signIn ~ isVerifyPassword:', isVerifyPassword);
+    if (!isVerifyPassword) {
+      return res.badRequest({
+        message: getLanguage('en').invalidLoginCredentials,
+      });
+    }
+
+    const { accessToken, refreshToken } = createAuthTokens(userExist._id);
+
+    const { bankData, providerId, ...userData } = userExist;
+
+    const currency = await CurrencySchema.findOne(
+      {},
+      { _id: 0, name: 1, symbol: 1, position: 1 },
+    );
+
+    return res.ok({
+      message: getLanguage('en').loginSuccessfully,
+      data: {
+        userData,
+        userAuthData: { accessToken, refreshToken },
+        currency,
+      },
+    });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const activateFreeSubcription = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      userId: string;
+      medicalCertificateNumber: number;
+      medicalCertificate: string;
+    }>(req.body, activateFreeSubcriptionValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+    const { value } = validateRequest;
+
+    const userExist = await merchantSchema.findOne({
+      _id: value.userId,
+      medicalCertificateNumber: value.medicalCertificateNumber,
+    });
+
+    if (!userExist) {
+      return res.badRequest({
+        message: getLanguage('en').userNotRegistered,
+      });
+    }
+
+    if (
+      !(await merchantSchema.findOne({
+        medicalCertificateNumber: value.medicalCertificateNumber,
+      }))
+    ) {
+      return res.badRequest({
+        message: getLanguage('en').certificateNumberRegistered,
+      });
+    }
+
+    const checkSubcriptionAlreadyExist =
+      await subcriptionPurchaseSchema.findOne({
+        // customer: req.id,
+        merchant: req.id,
+        expiry: { $gte: new Date() },
+      });
+
+    if (checkSubcriptionAlreadyExist) {
+      return res.badRequest({
+        message: getLanguage('en').errorSubcriptionAlreadyExist,
+      });
+    }
+
+    const document = value.medicalCertificate.split(',');
+
+    value.medicalCertificate = await uploadFile(
+      document[0],
+      document[1],
+      'USER-CERTIFICATE',
+    );
+
+    const data = await subcriptionSchema.findOne({ amount: 0, isActive: true });
+
+    if (!data) {
+      return res.badRequest({ message: getLanguage('en').errorDataNotFound });
+    }
+
+    await Promise.all([
+      subcriptionPurchaseSchema.create({
+        subcriptionId: data._id,
+        // customer: userExist._id,
+        merchant: userExist._id,
+        expiry: Date.now() + data.seconds * 1000, // 2592000
+        status: 'APPROVED',
+      }),
+      merchantSchema.updateOne(
+        {
+          _id: req.id,
+        },
+        { $set: { medicalCertificate: value.medicalCertificate } },
+      ),
+    ]);
+
+    return res.ok({
+      message: getLanguage('en').accountActiveSuccessfully,
+    });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const sendEmailOrMobileOtp = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      email: string;
+      contactNumber: number;
+      countryCode: string;
+      personType: PERSON_TYPE;
+    }>(req.body, otpVerifyValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+    const { value } = validateRequest;
+
+    let userExist;
+
+    const isCustomer = value.personType === PERSON_TYPE.CUSTOMER;
+
+    if (isCustomer) {
+      userExist = await merchantSchema.findOne({
+        email: value.email,
+        contactNumber: value.contactNumber,
+        countryCode: value.countryCode,
+      });
+    } else {
+      userExist = await deliveryManSchema.findOne({
+        email: value.email,
+        contactNumber: value.contactNumber,
+        countryCode: value.countryCode,
+      });
+    }
+
+    if (userExist) {
+      return res.badRequest({
+        message: getLanguage('en').emailRegisteredAlready,
+      });
+    }
+
+    const otp =
+      process.env.ENV === 'DEV' ? 999999 : generateIntRandomNo(111111, 999999);
+
+    if (process.env.ENV !== 'DEV') {
+      await emailOrMobileOtp(
+        value.email,
+        `This is your otp for registration ${otp}`,
+      );
+    }
+
+    const data = await otpSchema.updateOne(
+      {
+        value: otp,
+        customerEmail: value.email,
+        customerMobile: value.contactNumber,
+        action: value.personType,
+      },
+      {
+        value: otp,
+        customerEmail: value.email,
+        customerMobile: value.contactNumber,
+        expiry: Date.now() + 600000,
+        action: value.personType,
+      },
+      { upsert: true },
+    );
+
+    if (!data.upsertedCount && !data.modifiedCount) {
+      return res.badRequest({ message: getLanguage('en').invalidData });
+    }
+
+    return res.ok({
+      message: getLanguage('en').otpSentSuccess,
+      data: process.env.ENV !== 'DEV' ? {} : { otp },
+    });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const renewToken = async (req: RequestParams, res: Response) => {
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      refreshToken: string;
+      personType: PERSON_TYPE;
+    }>(req.body, renewTokenValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    const data = verify(
+      value.refreshToken,
+      process.env.REFRESH_SECRET_KEY,
+    ) as JwtPayload;
+
+    if (!data?.accessToken) {
+      return res.badRequest({ message: getLanguage('en').invalidToken });
+    }
+
+    const isCustomer = value.personType === PERSON_TYPE.CUSTOMER;
+
+    let userVerify;
+
+    if (isCustomer) {
+      userVerify = await merchantSchema.findById(data.id);
+    } else {
+      userVerify = await deliveryManSchema.findById(data.id);
+    }
+
+    if (!userVerify) {
+      return res.badRequest({ message: getLanguage('en').invalidToken });
+    }
+
+    await authTokenSchema.create({
+      accessToken: data.accessToken,
+      refreshToken: value.refreshToken,
+    });
+
+    const { accessToken, refreshToken } = createAuthTokens(userVerify._id);
+
+    return res.ok({
+      message: getLanguage('en').renewTokenSuccessfully,
+      data: { accessToken, refreshToken },
+    });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const logout = async (req: RequestParams, res: Response) => {
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      refreshToken: string;
+      personType: PERSON_TYPE;
+    }>(req.body, renewTokenValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    const data = verify(
+      value.refreshToken,
+      process.env.REFRESH_SECRET_KEY,
+    ) as JwtPayload;
+
+    if (!data?.accessToken) {
+      return res.badRequest({ message: getLanguage('en').invalidToken });
+    }
+
+    const isCustomer = value.personType === PERSON_TYPE.CUSTOMER;
+
+    let userVerify;
+
+    if (isCustomer) {
+      userVerify = await merchantSchema.findById(data.id);
+    } else {
+      userVerify = await deliveryManSchema.findById(data.id);
+    }
+
+    if (!userVerify) {
+      return res.badRequest({ message: getLanguage('en').invalidToken });
+    }
+
+    const checkTokenExist = await authTokenSchema.findOne({
+      accessToken: data.accessToken,
+      refreshToken: value.refreshToken,
+      isActive: false,
+    });
+
+    if (checkTokenExist) {
+      return res.badRequest({ message: getLanguage('en').invalidToken });
+    }
+
+    await authTokenSchema.create({
+      accessToken: data.accessToken,
+      refreshToken: value.refreshToken,
+    });
+
+    return res.ok({
+      message: getLanguage('en').logoutSuccessfully,
+    });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const getLocationOfMerchant = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const pickupLocation = await merchantSchema.find(
+      {},
+      'name contactNumber countryCode address',
+    );
+
+    const formattedData = pickupLocation
+      .map((location) => {
+        const { name, contactNumber, countryCode, address } = location;
+
+        if (address && address.street && address.city && address.country) {
+          const fullAddress =
+            `${address.street} ${address.city} ${address.country}`.trim(); // Combine address fields
+          return {
+            name,
+            contactNumber,
+            countryCode,
+            address: fullAddress,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    return res.ok({ data: formattedData });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const getProfileOfMerchant = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    console.log('user', req.params.id);
+    const data = await merchantSchema.find({ _id: req.params.id });
+    console.log('data', data);
+    // const data = await merchantSchema.aggregate([
+    //   {
+    //     $match: {
+    //       _id: new mongoose.Types.ObjectId(req.params.id),
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       address: '$address',
+    //       name: '$name',
+    //       email: '$email',
+    //       contactNumber: '$contactNumber',
+    //       image: '$image',
+    //       postCode: '$postCode',
+    //       medicalCertificate: '$medicalCertificate',
+    //       medicalCertificateNumber: '$medicalCertificateNumber',
+    //       createdDate: '$createdAt',
+    //     },
+    //   },
+    // ]);
+    return res.ok({ data: data });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const updateProfileOfMerchant = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    // if (updateData?.image) {
+    //   const Image = updateData.image.split(',');
+    //   const customerData = await merchantSchema.findOne(
+    //     { _id: id },
+    //     { image: 1 },
+    //   );
+
+    //   if (customerData?.image) {
+    //     removeUploadedFile(customerData.image);
+    //   }
+    //   updateData.image = await uploadFile(
+    //     Image[0],
+    //     Image[1],
+    //     'MERCHANT(USER)-PROFILE',
+    //   );
+    // }
+    const updatedUser = await merchantSchema.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedUser) {
+      return res.badRequest({ message: getLanguage('en').userNotFound });
+    }
+
+    return res.ok({
+      message: getLanguage('en').dataUpdatedSuccessfully,
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error updating merchant(user) profile:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const getAllDeliveryManOfMerchant = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    console.log('user', req.params.id);
+    // const data = await deliveryManSchema.find({ merchantId: req.params.id });
+    const data = await deliveryManSchema.aggregate([
+      {
+        $match: { merchantId: new mongoose.Types.ObjectId(req.params.id) },
+      },
+      {
+        $lookup: {
+          from: 'country',
+          localField: 'countryId',
+          foreignField: '_id',
+          as: 'countryData',
+        },
+      },
+      {
+        $unwind: {
+          path: '$countryData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'city',
+          localField: 'cityId',
+          foreignField: '_id',
+          as: 'cityData',
+        },
+      },
+      {
+        $unwind: {
+          path: '$cityData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $project: {
+          name: 1,
+          firstName: 1,
+          lastName: 1,
+          countryCode: 1,
+          contactNumber: 1,
+          email: 1,
+          status: 1,
+          image: {
+            $ifNull: [
+              '$image',
+              'data:image/jpeg;base64,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',
+            ],
+          },
+          country: '$countryData.countryName',
+          city: '$cityData.cityName',
+          merchantId: 1,
+          createdByMerchant: 1,
+          createdByAdmin: 1,
+          registerDate: '$createdAt',
+          isVerified: 1,
+          location: {
+            latitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            longitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+        },
+      },
+    ]);
+    console.log('data', data);
+    return res.ok({ data: data });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const getOrderCounts = async (req: RequestParams, res: Response) => {
+  try {
+    let merchantID = req.params.id;
+    const totalOrders = await orderSchema.countDocuments({
+      merchant: merchantID,
+    });
+
+    const createdOrders = await orderHistorySchema.countDocuments({
+      status: 'CREATED',
+      merchantID: merchantID,
+    });
+    const assignedOrders = await orderHistorySchema.countDocuments({
+      status: 'ASSIGNED',
+      merchantID: merchantID,
+    });
+    const acceptedOrders = await orderAssignSchema.countDocuments({
+      status: 'ACCEPTED',
+      merchant: merchantID,
+    });
+    const arrivedOrders = await orderHistorySchema.countDocuments({
+      status: 'ARRIVED',
+      merchantID: merchantID,
+    });
+    const pickedOrders = await orderHistorySchema.countDocuments({
+      status: 'PICKED_UP',
+      merchantID: merchantID,
+    });
+    const departedOrders = await orderHistorySchema.countDocuments({
+      status: 'DEPARTED',
+      merchantID: merchantID,
+    });
+    const deliveredOrders = await orderHistorySchema.countDocuments({
+      status: 'DELIVERED',
+      merchantID: merchantID,
+    });
+    const cancelledOrders = await orderHistorySchema.countDocuments({
+      status: 'CANCELLED',
+      merchantID: merchantID,
+    });
+    const deliveryMan = await deliveryManSchema.countDocuments({
+      merchantId: merchantID,
+    });
+
+    let totalCounts = {
+      totalOrders,
+      createdOrders,
+      assignedOrders,
+      acceptedOrders,
+      arrivedOrders,
+      pickedOrders,
+      departedOrders,
+      deliveredOrders,
+      cancelledOrders,
+      deliveryMan,
+    };
+    // return res.status(200).json({
+    //   success: true,
+    //   data: totalCounts
+    // });
+    return res.ok({
+      message: getLanguage('en').countedData,
+      data: totalCounts,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const getorderHistory = async (req: RequestParams, res: Response) => {
+  try {
+    const data = await OrderHistorySchema.find();
+
+    res.status(200).json({
+      status: 'Sucess',
+      data: data,
+    });
+  } catch (error) {
+    res.status(401).json({
+      status: 'Failed',
+      error: error,
+    });
+  }
+};
