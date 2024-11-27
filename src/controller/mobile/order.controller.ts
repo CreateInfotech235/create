@@ -162,11 +162,24 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
     }
 
     // If deliveryManId is updated, update the assignee table too
+
     if (value.deliveryManId) {
-      await OrderAssigneeSchema.updateOne(
-        { _id: orderId },
-        { deliveryBoy: value.deliveryManId },
-      );
+      if (existingOrder.status === 'UNASSIGNED') {
+        const updatedOrder = await orderSchema.findOneAndUpdate(
+          { _id: orderId },
+          { status: 'CREATED' },
+          // { new: true }, // Return the updated order object
+        );
+        await OrderAssigneeSchema.updateOne(
+          { _id: orderId },
+          { deliveryBoy: value.deliveryManId },
+        );
+      } else {
+        await OrderAssigneeSchema.updateOne(
+          { _id: orderId },
+          { deliveryBoy: value.deliveryManId },
+        );
+      }
     }
 
     // Log the order history for this update

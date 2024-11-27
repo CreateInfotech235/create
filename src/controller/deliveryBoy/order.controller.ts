@@ -23,6 +23,7 @@ import {
   emailOrMobileOtp,
   generateIntRandomNo,
   getMongoCommonPagination,
+  sendMailService,
   updateWallet,
   uploadFile,
 } from '../../utils/common';
@@ -266,11 +267,16 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
 
     value.deliveryManId = req.id.toString();
 
+    console.log('hekmmdifbd');
+
     // Check if the order exists and is not yet completed
     const existingOrder = await orderSchema.findOne({
       orderId: value.orderId,
-      status: { $in: [ORDER_HISTORY.CREATED, ORDER_HISTORY.ASSIGNED] },
+      status: {
+        $in: [ORDER_HISTORY.CREATED, ORDER_HISTORY.ASSIGNED],
+      },
     });
+    console.log(existingOrder);
 
     if (!existingOrder) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
@@ -291,7 +297,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
     // Update the order status to canceled
     await orderSchema.findOneAndUpdate(
       { orderId: value.orderId },
-      { $set: { status: ORDER_HISTORY.CANCELLED } },
+      { $set: { status: ORDER_HISTORY.UNASSIGNED } },
     );
 
     // Update the assignee status (if needed)
@@ -303,9 +309,15 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
     await OrderHistorySchema.create({
       message: `Order ${value.orderId} has been canceled by the delivery man.`,
       order: value.orderId,
-      status: ORDER_HISTORY.CANCELLED,
+      status: ORDER_HISTORY.UNASSIGNED,
       merchantID: existingOrder.merchant,
     });
+
+    await sendMailService(
+      existingOrder.pickupDetails.email,
+      'Cancel Order ',
+      'Your order is cancelled by deliveryman plz assign order other deliveryman',
+    );
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,

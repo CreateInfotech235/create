@@ -49,6 +49,7 @@ export const userSignUpValidation = Joi.object().keys({
       country: Joi.string().required(),
     })
     .required(),
+  freeSubscription: Joi.boolean().default(false),
   createdByAdmin: Joi.boolean().optional(),
 });
 

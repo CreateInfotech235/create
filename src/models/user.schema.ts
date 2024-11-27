@@ -70,6 +70,10 @@ const merchantSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    freeSubscription: {
+      type: Boolean,
+      default: false,
+    },
     address: {
       street: String,
       city: String,

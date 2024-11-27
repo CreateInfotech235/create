@@ -47,6 +47,7 @@ export const signUp = async (req: RequestParams, res: Response) => {
       image: string;
       medicalCertificateNumber: number;
       medicalCertificate: string;
+      freeSubscription: boolean;
       address: {
         street: string;
         city: string;
@@ -265,7 +266,12 @@ export const activateFreeSubcription = async (
         {
           _id: req.id,
         },
-        { $set: { medicalCertificate: value.medicalCertificate } },
+        {
+          $set: {
+            medicalCertificate: value.medicalCertificate,
+            freeSubscription: true,
+          },
+        },
       ),
     ]);
 
@@ -520,6 +526,7 @@ export const getProfileOfMerchant = async (
   try {
     console.log('user', req.params.id);
     const data = await merchantSchema.find({ _id: req.params.id });
+
     console.log('data', data);
     // const data = await merchantSchema.aggregate([
     //   {
