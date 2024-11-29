@@ -267,8 +267,6 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
 
     value.deliveryManId = req.id.toString();
 
-    console.log('hekmmdifbd');
-
     // Check if the order exists and is not yet completed
     const existingOrder = await orderSchema.findOne({
       orderId: value.orderId,

@@ -129,6 +129,11 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
   try {
     const data = await customerSchema.aggregate([
       {
+        $sort: {
+          createdAt: -1, // Sort by createdAt in descending order
+        },
+      },
+      {
         $lookup: {
           from: 'country',
           localField: 'country',
