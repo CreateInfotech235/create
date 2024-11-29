@@ -86,6 +86,9 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
 
     const data = await OrderAssigneeSchema.aggregate([
       {
+        $sort: { createdAt: -1 },
+      },
+      {
         $match: query,
       },
       {

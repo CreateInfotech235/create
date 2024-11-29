@@ -102,7 +102,7 @@ const OrderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      default: ORDER_HISTORY.CREATED,
+      default: ORDER_HISTORY.ASSIGNED,
       enum: ORDER_HISTORY,
     },
     // customer: {
