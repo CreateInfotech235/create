@@ -84,6 +84,12 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
 
     console.log('Constructed Query: ', query);
 
+    const pageLimit = value.pageLimit || 10; // default to 10 if not provided
+    const pageCount = value.pageCount || 1; // default to 1 if not provided
+
+    const skip = (pageCount - 1) * pageLimit; // Calculate the number of documents to skip
+
+    // Aggregation pipeline with pagination
     const data = await OrderAssigneeSchema.aggregate([
       {
         $sort: { createdAt: -1 },
@@ -114,9 +120,23 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
           createdAt: 1,
         },
       },
+      {
+        $skip: skip, // Skip the calculated number of documents
+      },
+      {
+        $limit: pageLimit, // Limit the number of documents per page
+      },
     ]);
 
-    return res.ok({ data });
+    // Calculate total count for pagination
+    const totalCount = await OrderAssigneeSchema.countDocuments(query);
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalCount / pageLimit);
+
+    return res.ok({
+      data,
+    });
   } catch (error) {
     // Handle errors and send failure response
     console.error('Error occurred: ', error);
