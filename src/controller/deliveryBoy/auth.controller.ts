@@ -149,23 +149,9 @@ export const updateDeliveryManProfileAndPassword = async (
     const { id } = req.params;
     const updateData = req.body;
 
-    // Update Profile Image Logic
-    if (updateData?.image) {
-      const Image = updateData.image.split(',');
-      const deliveryManData = await deliveryManSchema.findOne(
-        { _id: id },
-        { image: 1 },
-      );
+    console.log(updateData);
 
-      if (deliveryManData?.image) {
-        removeUploadedFile(deliveryManData.image);
-      }
-      updateData.image = await uploadFile(
-        Image[0],
-        Image[1],
-        'DELIVERYMAN-PROFILE',
-      );
-    }
+    // Update Profile Image Logic
 
     // Update Password Logic
     if (

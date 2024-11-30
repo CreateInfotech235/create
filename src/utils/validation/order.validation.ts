@@ -79,10 +79,10 @@ export const newOrderCreation = Joi.object({
   description: Joi.string(),
 
   pickupDetails: Joi.object({
-    // location: Joi.object({
-    //   latitude: Joi.number().required(),
-    //   longitude: Joi.number().required(),
-    // }).required(),
+    location: Joi.object({
+      latitude: Joi.number().required(),
+      longitude: Joi.number().required(),
+    }).required(),
     dateTime: Joi.date().timestamp().required(),
     address: Joi.string().required(),
     merchantId: Joi.string().required(),
@@ -99,10 +99,10 @@ export const newOrderCreation = Joi.object({
       .required(),
   }),
   deliveryDetails: Joi.object({
-    // location: Joi.object({
-    //   latitude: Joi.number().required(),
-    //   longitude: Joi.number().required(),
-    // }).required(),
+    location: Joi.object({
+      latitude: Joi.number().required(),
+      longitude: Joi.number().required(),
+    }).required(),
     dateTime: Joi.date().timestamp(),
     address: Joi.string().required(),
     name: Joi.string().required(),
@@ -140,7 +140,6 @@ export const orderAcceptValidation = Joi.object({
 export const orderArriveValidation = Joi.object({
   orderId: Joi.number().required(),
 });
-
 
 export const orderListByDeliveryManValidation = Joi.object({
   startDate: Joi.string(),

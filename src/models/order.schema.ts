@@ -78,6 +78,13 @@ const OrderSchema = new mongoose.Schema(
     },
     deliveryDetails: {
       type: {
+        location: {
+          type: Object,
+          properties: {
+            type: String,
+            coordinates: Array<number>,
+          },
+        },
         orderTimestamp: { type: Date },
         address: { type: String },
         mobileNumber: { type: Number },
