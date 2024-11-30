@@ -76,6 +76,7 @@ declare const Model: mongoose.Model<{
         postCode?: string;
         mobileNumber?: number;
         email?: string;
+        location?: any;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
     };
@@ -139,6 +140,7 @@ declare const Model: mongoose.Model<{
         postCode?: string;
         mobileNumber?: number;
         email?: string;
+        location?: any;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
     };
@@ -202,6 +204,7 @@ declare const Model: mongoose.Model<{
         postCode?: string;
         mobileNumber?: number;
         email?: string;
+        location?: any;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
     };
@@ -272,6 +275,7 @@ declare const Model: mongoose.Model<{
         postCode?: string;
         mobileNumber?: number;
         email?: string;
+        location?: any;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
     };
@@ -335,6 +339,7 @@ declare const Model: mongoose.Model<{
         postCode?: string;
         mobileNumber?: number;
         email?: string;
+        location?: any;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
     };
@@ -398,6 +403,7 @@ declare const Model: mongoose.Model<{
         postCode?: string;
         mobileNumber?: number;
         email?: string;
+        location?: any;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
     };

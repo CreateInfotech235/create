@@ -57,7 +57,7 @@ const uploadFile = (fileName, base64FormatImage, fileType) => {
     return new Promise((resolve, reject) => {
         try {
             const extension = fileName.split(':')[1].split(';')[0].split('/')[1];
-            const filePath = `uploads/${Date.now()}-${fileType}.${extension}`;
+            const filePath = `${Date.now()}-${fileType}.${extension}`;
             fs_1.default.writeFileSync(filePath, Buffer.from(base64FormatImage, 'base64'));
             resolve(filePath);
         }

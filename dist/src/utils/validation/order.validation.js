@@ -73,10 +73,10 @@ exports.newOrderCreation = joi_1.default.object({
     paymentCollectionRupees: joi_1.default.number(),
     description: joi_1.default.string(),
     pickupDetails: joi_1.default.object({
-        // location: Joi.object({
-        //   latitude: Joi.number().required(),
-        //   longitude: Joi.number().required(),
-        // }).required(),
+        location: joi_1.default.object({
+            latitude: joi_1.default.number().required(),
+            longitude: joi_1.default.number().required(),
+        }).required(),
         dateTime: joi_1.default.date().timestamp().required(),
         address: joi_1.default.string().required(),
         merchantId: joi_1.default.string().required(),
@@ -93,10 +93,10 @@ exports.newOrderCreation = joi_1.default.object({
             .required(),
     }),
     deliveryDetails: joi_1.default.object({
-        // location: Joi.object({
-        //   latitude: Joi.number().required(),
-        //   longitude: Joi.number().required(),
-        // }).required(),
+        location: joi_1.default.object({
+            latitude: joi_1.default.number().required(),
+            longitude: joi_1.default.number().required(),
+        }).required(),
         dateTime: joi_1.default.date().timestamp(),
         address: joi_1.default.string().required(),
         name: joi_1.default.string().required(),

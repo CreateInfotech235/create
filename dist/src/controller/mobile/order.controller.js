@@ -118,7 +118,13 @@ const orderUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         // If deliveryManId is updated, update the assignee table too
         if (value.deliveryManId) {
-            yield orderAssignee_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });
+            if (existingOrder.status === 'UNASSIGNED') {
+                const updatedOrder = yield order_schema_1.default.findOneAndUpdate({ _id: orderId }, { status: 'CREATED' });
+                yield orderAssignee_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });
+            }
+            else {
+                yield orderAssignee_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });
+            }
         }
         // Log the order history for this update
         // await OrderHistorySchema.create({

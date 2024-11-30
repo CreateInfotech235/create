@@ -110,15 +110,8 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
     try {
         const { id } = req.params;
         const updateData = req.body;
+        console.log(updateData);
         // Update Profile Image Logic
-        if (updateData === null || updateData === void 0 ? void 0 : updateData.image) {
-            const Image = updateData.image.split(',');
-            const deliveryManData = yield deliveryMan_schema_1.default.findOne({ _id: id }, { image: 1 });
-            if (deliveryManData === null || deliveryManData === void 0 ? void 0 : deliveryManData.image) {
-                (0, common_1.removeUploadedFile)(deliveryManData.image);
-            }
-            updateData.image = yield (0, common_1.uploadFile)(Image[0], Image[1], 'DELIVERYMAN-PROFILE');
-        }
         // Update Password Logic
         if ((updateData === null || updateData === void 0 ? void 0 : updateData.oldPassword) ||
             (updateData === null || updateData === void 0 ? void 0 : updateData.newPassword) ||

@@ -73,6 +73,10 @@ const merchantSchema = new mongoose_1.default.Schema({
     image: {
         type: String,
     },
+    freeSubscription: {
+        type: Boolean,
+        default: false,
+    },
     address: {
         street: String,
         city: String,

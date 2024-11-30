@@ -33,6 +33,7 @@ declare const Model: mongoose.Model<{
     status: string;
     provider: string;
     language: string;
+    freeSubscription: boolean;
     name?: string;
     country?: string;
     city?: string;
@@ -66,6 +67,7 @@ declare const Model: mongoose.Model<{
     status: string;
     provider: string;
     language: string;
+    freeSubscription: boolean;
     name?: string;
     country?: string;
     city?: string;
@@ -99,6 +101,7 @@ declare const Model: mongoose.Model<{
     status: string;
     provider: string;
     language: string;
+    freeSubscription: boolean;
     name?: string;
     country?: string;
     city?: string;
@@ -139,6 +142,7 @@ declare const Model: mongoose.Model<{
     status: string;
     provider: string;
     language: string;
+    freeSubscription: boolean;
     name?: string;
     country?: string;
     city?: string;
@@ -172,6 +176,7 @@ declare const Model: mongoose.Model<{
     status: string;
     provider: string;
     language: string;
+    freeSubscription: boolean;
     name?: string;
     country?: string;
     city?: string;
@@ -205,6 +210,7 @@ declare const Model: mongoose.Model<{
     status: string;
     provider: string;
     language: string;
+    freeSubscription: boolean;
     name?: string;
     country?: string;
     city?: string;

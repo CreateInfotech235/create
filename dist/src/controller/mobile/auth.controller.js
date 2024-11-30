@@ -193,7 +193,12 @@ const activateFreeSubcription = (req, res) => __awaiter(void 0, void 0, void 0, 
             }),
             user_schema_1.default.updateOne({
                 _id: req.id,
-            }, { $set: { medicalCertificate: value.medicalCertificate } }),
+            }, {
+                $set: {
+                    medicalCertificate: value.medicalCertificate,
+                    freeSubscription: true,
+                },
+            }),
         ]);
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').accountActiveSuccessfully,

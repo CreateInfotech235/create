@@ -51,7 +51,14 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
             };
         }
         console.log('Constructed Query: ', query);
+        const pageLimit = value.pageLimit || 10; // default to 10 if not provided
+        const pageCount = value.pageCount || 1; // default to 1 if not provided
+        const skip = (pageCount - 1) * pageLimit; // Calculate the number of documents to skip
+        // Aggregation pipeline with pagination
         const data = yield orderAssignee_schema_1.default.aggregate([
+            {
+                $sort: { createdAt: -1 },
+            },
             {
                 $match: query,
             },
@@ -78,8 +85,20 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     createdAt: 1,
                 },
             },
+            {
+                $skip: skip, // Skip the calculated number of documents
+            },
+            {
+                $limit: pageLimit, // Limit the number of documents per page
+            },
         ]);
-        return res.ok({ data });
+        // Calculate total count for pagination
+        const totalCount = yield orderAssignee_schema_1.default.countDocuments(query);
+        // Calculate total pages
+        const totalPages = Math.ceil(totalCount / pageLimit);
+        return res.ok({
+            data,
+        });
     }
     catch (error) {
         // Handle errors and send failure response
@@ -198,8 +217,11 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // Check if the order exists and is not yet completed
         const existingOrder = yield order_schema_1.default.findOne({
             orderId: value.orderId,
-            status: { $in: [enum_1.ORDER_HISTORY.CREATED, enum_1.ORDER_HISTORY.ASSIGNED] },
+            status: {
+                $in: [enum_1.ORDER_HISTORY.CREATED, enum_1.ORDER_HISTORY.ASSIGNED],
+            },
         });
+        console.log(existingOrder);
         if (!existingOrder) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
@@ -214,7 +236,7 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
         }
         // Update the order status to canceled
-        yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { status: enum_1.ORDER_HISTORY.CANCELLED } });
+        yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { status: enum_1.ORDER_HISTORY.UNASSIGNED } });
         // Update the assignee status (if needed)
         yield orderAssignee_schema_1.default.findByIdAndUpdate(isAssigned._id, {
             $set: { status: enum_1.ORDER_REQUEST.REJECT },
@@ -223,9 +245,10 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         yield orderHistory_schema_1.default.create({
             message: `Order ${value.orderId} has been canceled by the delivery man.`,
             order: value.orderId,
-            status: enum_1.ORDER_HISTORY.CANCELLED,
+            status: enum_1.ORDER_HISTORY.UNASSIGNED,
             merchantID: existingOrder.merchant,
         });
+        yield (0, common_1.sendMailService)(existingOrder.pickupDetails.email, 'Cancel Order ', 'Your order is cancelled by deliveryman plz assign order other deliveryman');
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
         });

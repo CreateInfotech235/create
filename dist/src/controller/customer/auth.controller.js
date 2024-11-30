@@ -93,6 +93,11 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const data = yield customer_schema_1.default.aggregate([
             {
+                $sort: {
+                    createdAt: -1, // Sort by createdAt in descending order
+                },
+            },
+            {
                 $lookup: {
                     from: 'country',
                     localField: 'country',

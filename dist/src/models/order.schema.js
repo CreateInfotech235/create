@@ -80,6 +80,13 @@ const OrderSchema = new mongoose_1.default.Schema({
     },
     deliveryDetails: {
         type: {
+            location: {
+                type: Object,
+                properties: {
+                    type: String,
+                    coordinates: (Array),
+                },
+            },
             orderTimestamp: { type: Date },
             address: { type: String },
             mobileNumber: { type: Number },
@@ -104,7 +111,7 @@ const OrderSchema = new mongoose_1.default.Schema({
     },
     status: {
         type: String,
-        default: enum_1.ORDER_HISTORY.CREATED,
+        default: enum_1.ORDER_HISTORY.ASSIGNED,
         enum: enum_1.ORDER_HISTORY,
     },
     // customer: {

@@ -50,6 +50,7 @@ exports.userSignUpValidation = joi_1.default.object().keys({
         country: joi_1.default.string().required(),
     })
         .required(),
+    freeSubscription: joi_1.default.boolean().default(false),
     createdByAdmin: joi_1.default.boolean().optional(),
 });
 exports.deliveryManSignUpValidation = joi_1.default.object().keys({
