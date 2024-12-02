@@ -301,7 +301,7 @@ export const updateLocation = async (req: RequestParams, res: Response) => {
       {
         $set: {
           countryId: value.country,
-          cityId: value.city,
+          // cityId: value.city,
           location: {
             type: 'Point',
             coordinates: [value.location.longitude, value.location.latitude],

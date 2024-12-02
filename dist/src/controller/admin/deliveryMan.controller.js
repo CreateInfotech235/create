@@ -34,12 +34,20 @@ const updateVerificationStatus = (req, res) => __awaiter(void 0, void 0, void 0,
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
-        const Query = { deliveryManId: value.deliveryManId, document: value.documentId, status: enum_1.SUBCRIPTION_REQUEST.PENDING };
+        const Query = {
+            deliveryManId: value.deliveryManId,
+            document: value.documentId,
+            status: enum_1.SUBCRIPTION_REQUEST.PENDING,
+        };
         const checkDocumentExist = yield deliveryManDocument_schema_1.default.findOne(Query);
         if (!checkDocumentExist) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)("en").errorDocumentNotFound });
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').errorDocumentNotFound,
+            });
         }
-        const documentUpdated = yield deliveryManDocument_schema_1.default.updateOne(Query, { $set: { status: value.status } });
+        const documentUpdated = yield deliveryManDocument_schema_1.default.updateOne(Query, {
+            $set: { status: value.status },
+        });
         if (documentUpdated) {
             yield deliveryManDocument_schema_1.default.updateOne({ _id: value.deliveryManId }, { $set: { isVerified: true } });
         }
@@ -276,7 +284,7 @@ const getOrderLocations = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 },
             },
             {
-                $match: { "orderAssignData": { $exists: true } }
+                $match: { orderAssignData: { $exists: true } },
             },
             {
                 $project: {
@@ -538,7 +546,7 @@ const getAllDeliveryMansFromAdmin = (req, res) => __awaiter(void 0, void 0, void
     try {
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
-                $match: { createdByAdmin: true }
+                $match: { createdByAdmin: true },
             },
             {
                 $lookup: {
@@ -612,7 +620,7 @@ const getDeliveryManOrders = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const Query = {
             'orderAssignInfo.deliveryBoy': new mongoose_1.default.Types.ObjectId(value.deliveryManId),
             'orderAssignInfo.status': enum_1.ORDER_REQUEST.ACCEPTED,
-            status: { $ne: enum_1.ORDER_HISTORY.DELIVERED }
+            status: { $ne: enum_1.ORDER_HISTORY.DELIVERED },
         };
         if (value.orderListType === enum_1.ORDER_LIST.COMPLETED) {
             Query.status = enum_1.ORDER_HISTORY.DELIVERED;

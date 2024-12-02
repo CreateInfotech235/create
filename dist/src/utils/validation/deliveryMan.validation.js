@@ -9,9 +9,9 @@ exports.updateLocationValidation = joi_1.default.object({
     country: joi_1.default.string()
         .regex(/^[0-9a-fA-F]{24}$/)
         .required(),
-    city: joi_1.default.string()
-        .regex(/^[0-9a-fA-F]{24}$/)
-        .required(),
+    // city: Joi.string()
+    //   .regex(/^[0-9a-fA-F]{24}$/)
+    //   .required(),
     location: joi_1.default.object({
         latitude: joi_1.default.number().required(),
         longitude: joi_1.default.number().required(),

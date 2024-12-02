@@ -49,7 +49,10 @@ export const updateVerificationStatus = async (
   res: Response,
 ) => {
   try {
-    const validateRequest = validateParamsWithJoi<IVerificationStatus>(req.body, verificationStatusValidation);
+    const validateRequest = validateParamsWithJoi<IVerificationStatus>(
+      req.body,
+      verificationStatusValidation,
+    );
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -57,25 +60,29 @@ export const updateVerificationStatus = async (
 
     const { value } = validateRequest;
 
-    const Query:FilterQuery<IVerificationStatus> = { deliveryManId: value.deliveryManId, document: value.documentId, status:SUBCRIPTION_REQUEST.PENDING }
+    const Query: FilterQuery<IVerificationStatus> = {
+      deliveryManId: value.deliveryManId,
+      document: value.documentId,
+      status: SUBCRIPTION_REQUEST.PENDING,
+    };
 
-    const checkDocumentExist = await deliveryManDocumentSchema.findOne(Query)
+    const checkDocumentExist = await deliveryManDocumentSchema.findOne(Query);
 
     if (!checkDocumentExist) {
-      return res.badRequest({message:getLanguage("en").errorDocumentNotFound})
+      return res.badRequest({
+        message: getLanguage('en').errorDocumentNotFound,
+      });
     }
 
-    const documentUpdated = await deliveryManDocumentSchema.updateOne(
-      Query,
-      { $set: { status: value.status } },
-    );
+    const documentUpdated = await deliveryManDocumentSchema.updateOne(Query, {
+      $set: { status: value.status },
+    });
     if (documentUpdated) {
       await deliveryManDocumentSchema.updateOne(
-        { _id : value.deliveryManId },
+        { _id: value.deliveryManId },
         { $set: { isVerified: true } },
       );
     }
-
 
     return res.ok({
       message: getLanguage('en').documentVerificationUpdatedSuccessfully,
@@ -168,7 +175,7 @@ export const getDeliveryManDocuments = async (
       },
       {
         $project: {
-          _id:0,
+          _id: 0,
           deliveryManId: '$_id',
           deliveryManName: '$deliveryManData.name',
           documents: '$data',
@@ -186,7 +193,7 @@ export const getDeliveryManDocuments = async (
       }),
     ]);
 
-    return res.ok({ data:data[0] });
+    return res.ok({ data: data[0] });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -211,71 +218,71 @@ export const getDeliveryManLocations = async (
     const { value } = validateRequest;
 
     const data = await deliveryManSchema.aggregate([
-        {
-          $match: {
-            isCustomer: false,
-          },
+      {
+        $match: {
+          isCustomer: false,
         },
-        {
-          $lookup: {
-            from: 'country',
-            localField: 'countryId',
-            foreignField: '_id',
-            as: 'countryData',
-            pipeline: [
-              {
-                $project: {
-                  _id: 0,
-                  name: 1,
-                },
-              },
-            ],
-          },
-        },
-        {
-          $unwind: {
-            path: '$countryData',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $lookup: {
-            from: 'city',
-            localField: 'cityId',
-            foreignField: '_id',
-            as: 'cityData',
-            pipeline: [
-              {
-                $project: {
-                  _id: 0,
-                  name: 1,
-                },
-              },
-            ],
-          },
-        },
-        {
-          $unwind: {
-            path: '$cityData',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $project: {
-            deliveryManId: '$_id',
-            location: {
-              latitude: { $arrayElemAt: ['$location.coordinates', 1] },
-              longitude: { $arrayElemAt: ['$location.coordinates', 0] },
-            },
-            country: '$countryData.countryName',
-            city: '$cityData.cityName',
-          },
       },
-        ...getMongoCommonPagination({
+      {
+        $lookup: {
+          from: 'country',
+          localField: 'countryId',
+          foreignField: '_id',
+          as: 'countryData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$countryData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'city',
+          localField: 'cityId',
+          foreignField: '_id',
+          as: 'cityData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$cityData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          deliveryManId: '$_id',
+          location: {
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+          },
+          country: '$countryData.countryName',
+          city: '$cityData.cityName',
+        },
+      },
+      ...getMongoCommonPagination({
         pageCount: value.pageCount,
         pageLimit: value.pageLimit,
       }),
-      ])
+    ]);
 
     return res.ok({
       data: data[0],
@@ -336,7 +343,7 @@ export const getOrderLocations = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        $match:{"orderAssignData":{$exists:true}}
+        $match: { orderAssignData: { $exists: true } },
       },
       {
         $project: {
@@ -348,7 +355,7 @@ export const getOrderLocations = async (req: RequestParams, res: Response) => {
       },
     ]);
 
-    return res.ok({data:data[0]})
+    return res.ok({ data: data[0] });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -541,7 +548,7 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
       }),
     ]);
 
-    return res.ok({ data:data[0] });
+    return res.ok({ data: data[0] });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -613,11 +620,14 @@ export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
   }
 };
 
-export const getAllDeliveryMansFromAdmin = async (req: RequestParams, res: Response) => {
+export const getAllDeliveryMansFromAdmin = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const data = await deliveryManSchema.aggregate([
       {
-        $match: { createdByAdmin : true}
+        $match: { createdByAdmin: true },
       },
       {
         $lookup: {
@@ -702,7 +712,7 @@ export const getDeliveryManOrders = async (
         value.deliveryManId,
       ),
       'orderAssignInfo.status': ORDER_REQUEST.ACCEPTED,
-      status:{$ne:ORDER_HISTORY.DELIVERED}
+      status: { $ne: ORDER_HISTORY.DELIVERED },
     };
 
     if (value.orderListType === ORDER_LIST.COMPLETED) {
@@ -901,7 +911,7 @@ export const getDeliveryManInfo = async (req: RequestParams, res: Response) => {
       }),
     ]);
 
-    return res.ok({ data:data[0] });
+    return res.ok({ data: data[0] });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -938,7 +948,7 @@ export const getDeliveryManNames = async (
       }),
     ]);
 
-    return res.ok({ data:data[0] });
+    return res.ok({ data: data[0] });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -1182,7 +1192,7 @@ export const addDeliveryMan = async (req: RequestParams, res: Response) => {
             documentNumber: i.documentNumber,
             deliveryManId: data._id,
           };
-        })
+        }),
       );
       await DeliveryManDocumentSchema.insertMany(documentNames);
     }

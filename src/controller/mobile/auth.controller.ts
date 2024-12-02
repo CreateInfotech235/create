@@ -19,6 +19,7 @@ import {
   passwordValidation,
   uploadFile,
   removeUploadedFile,
+  getMongoCommonPagination,
 } from '../../utils/common';
 import { RequestParams } from '../../utils/types/expressTypes';
 import validateParamsWithJoi from '../../utils/validateRequest';
@@ -34,6 +35,7 @@ import orderHistorySchema from '../../models/orderHistory.schema';
 import orderSchema from '../../models/order.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
 import subscribedSchema from '../../models/subcription.schema';
+import { paginationValidation } from '../../utils/validation/adminSide.validation';
 
 export const signUp = async (req: RequestParams, res: Response) => {
   try {
@@ -763,6 +765,102 @@ export const getorderHistory = async (req: RequestParams, res: Response) => {
     res.status(401).json({
       status: 'Failed',
       error: error,
+    });
+  }
+};
+
+export const getDeliveryManLocations = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const validateRequest = validateParamsWithJoi<IPagination>(
+      req.query,
+      paginationValidation,
+    );
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    const data = await deliveryManSchema.aggregate([
+      {
+        $match: {
+          isCustomer: false,
+          _id: new mongoose.Types.ObjectId(req.params.id),
+        },
+      },
+      {
+        $lookup: {
+          from: 'country',
+          localField: 'countryId',
+          foreignField: '_id',
+          as: 'countryData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$countryData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'city',
+          localField: 'cityId',
+          foreignField: '_id',
+          as: 'cityData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$cityData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          deliveryManId: '$_id',
+          location: {
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+          },
+          country: '$countryData.countryName',
+          city: '$cityData.cityName',
+        },
+      },
+      ...getMongoCommonPagination({
+        pageCount: value.pageCount,
+        pageLimit: value.pageLimit,
+      }),
+    ]);
+
+    return res.ok({
+      data: data[0],
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
     });
   }
 };

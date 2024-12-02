@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getorderHistory = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -42,6 +42,7 @@ const auth_validation_1 = require("../../utils/validation/auth.validation");
 const orderHistory_schema_2 = __importDefault(require("../../models/orderHistory.schema"));
 const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
+const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.userSignUpValidation);
@@ -619,3 +620,89 @@ const getorderHistory = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getorderHistory = getorderHistory;
+const getDeliveryManLocations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.query, adminSide_validation_1.paginationValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const data = yield deliveryMan_schema_1.default.aggregate([
+            {
+                $match: {
+                    isCustomer: false,
+                    _id: new mongoose_1.default.Types.ObjectId(req.params.id),
+                },
+            },
+            {
+                $lookup: {
+                    from: 'country',
+                    localField: 'countryId',
+                    foreignField: '_id',
+                    as: 'countryData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 0,
+                                name: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$countryData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'city',
+                    localField: 'cityId',
+                    foreignField: '_id',
+                    as: 'cityData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 0,
+                                name: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$cityData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: {
+                    deliveryManId: '$_id',
+                    location: {
+                        latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+                        longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+                    },
+                    country: '$countryData.countryName',
+                    city: '$cityData.cityName',
+                },
+            },
+            ...(0, common_1.getMongoCommonPagination)({
+                pageCount: value.pageCount,
+                pageLimit: value.pageLimit,
+            }),
+        ]);
+        return res.ok({
+            data: data[0],
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getDeliveryManLocations = getDeliveryManLocations;

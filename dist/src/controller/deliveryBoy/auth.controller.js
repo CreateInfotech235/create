@@ -220,7 +220,7 @@ const updateLocation = (req, res) => __awaiter(void 0, void 0, void 0, function*
         yield deliveryMan_schema_1.default.updateOne({ _id: req.id }, {
             $set: {
                 countryId: value.country,
-                cityId: value.city,
+                // cityId: value.city,
                 location: {
                     type: 'Point',
                     coordinates: [value.location.longitude, value.location.latitude],
