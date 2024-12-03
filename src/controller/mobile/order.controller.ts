@@ -802,6 +802,7 @@ export const getAllOrdersFromMerchant = async (
         $project: {
           _id: 1,
           orderId: 1,
+          parcelsCount: 1,
           customerName: '$deliveryDetails.name',
           pickupAddress: '$pickupDetails',
           deliveryAddress: '$deliveryDetails',

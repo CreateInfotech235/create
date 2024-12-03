@@ -11,6 +11,7 @@ export declare const getProfileOfMerchant: (req: RequestParams, res: Response) =
 export declare const updateProfileOfMerchant: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getAllDeliveryManOfMerchant: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getOrderCounts: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getOrderCountsbyDate: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const getorderHistory: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getDeliveryManLocations: (req: RequestParams, res: Response) => Promise<void>;
 export declare const updateDeliveryManProfileAndPassword: (req: RequestParams, res: Response) => Promise<void>;

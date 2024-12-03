@@ -46,6 +46,12 @@ export const paginationValidation = Joi.object({
   pageLimit: Joi.number().required(),
 });
 
+
+export const orderCount = Joi.object({
+  startDate: Joi.string(),
+  endDate: Joi.string(),
+});
+
 export const manageSubscriptionValidation = Joi.object({
   type: Joi.string(),
   amount: Joi.string(),
@@ -59,7 +65,7 @@ export const subscription = Joi.object({
     'any.required': 'Subscription ID is required',
     'string.base': 'Subscription ID must be a string',
   }),
-})
+});
 
 export const subcriptionStatusValidation = Joi.object({
   subscriptionId: Joi.string()

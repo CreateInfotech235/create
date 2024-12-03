@@ -36,7 +36,7 @@ import orderHistorySchema from '../../models/orderHistory.schema';
 import orderSchema from '../../models/order.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
 import subscribedSchema from '../../models/subcription.schema';
-import { paginationValidation } from '../../utils/validation/adminSide.validation';
+import { orderCount, paginationValidation } from '../../utils/validation/adminSide.validation';
 import { verifyPassword } from '../deliveryBoy/auth.controller';
 
 export const signUp = async (req: RequestParams, res: Response) => {
@@ -831,6 +831,135 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
+  }
+};
+
+export const getOrderCountsbyDate = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const merchantID = req.params.id;
+    console.log('Merchant ID:', merchantID);
+
+    // Validate the incoming query parameters (startDate and endDate)
+    const validateRequest = validateParamsWithJoi<{
+      startDate?: string;
+      endDate?: string;
+    }>(req.query, orderCount);
+
+    if (!validateRequest.isValid) {
+      return res.status(400).json({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+    const { startDate, endDate } = value;
+
+    // Build the query for order counts dynamically based on dates
+    const dateQuery: any = {};
+
+    if (startDate) {
+      dateQuery.$gte = new Date(startDate);
+    }
+
+    if (endDate) {
+      // Convert endDate to the last moment of that day (23:59:59)
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999); // Set to 23:59:59.999
+      dateQuery.$lte = endOfDay;
+    }
+
+    console.log('Date Query:', dateQuery);
+
+    // Prepare the query object for createdAt condition
+    const dateCondition =
+      Object.keys(dateQuery).length > 0 ? { createdAt: dateQuery } : {};
+
+    const totalOrders = await orderSchema.countDocuments({
+      merchant: merchantID,
+      ...dateCondition,
+    });
+
+    // Count orders based on various statuses
+    const orderCounts = await Promise.all([
+      orderHistorySchema.countDocuments({
+        status: 'CREATED',
+        merchantID: merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'ASSIGNED',
+        merchantID: merchantID,
+        ...dateCondition,
+      }),
+      orderAssignSchema.countDocuments({
+        status: 'ACCEPTED',
+        merchant: merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'ARRIVED',
+        merchantID: merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'PICKED_UP',
+        merchantID: merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'DEPARTED',
+        merchantID: merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'DELIVERED',
+        merchantID: merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'CANCELLED',
+        merchantID: merchantID,
+        ...dateCondition,
+      }),
+      deliveryManSchema.countDocuments({
+        merchantId: merchantID,
+        ...dateCondition,
+      }),
+    ]);
+
+    // Organize the results
+    const [
+      createdOrders,
+      assignedOrders,
+      acceptedOrders,
+      arrivedOrders,
+      pickedOrders,
+      departedOrders,
+      deliveredOrders,
+      cancelledOrders,
+      deliveryMan,
+    ] = orderCounts;
+
+    const data = {
+      totalOrders,
+      createdOrders,
+      assignedOrders,
+      acceptedOrders,
+      arrivedOrders,
+      pickedOrders,
+      departedOrders,
+      deliveredOrders,
+      cancelledOrders,
+      deliveryMan,
+    };
+
+    // Return the counts
+    res.status(200).json({ data });
+  } catch (error) {
+    // Handle any error that occurs during the process
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred.' });
   }
 };
 

@@ -635,6 +635,7 @@ const getAllOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0,
                 $project: {
                     _id: 1,
                     orderId: 1,
+                    parcelsCount: 1,
                     customerName: '$deliveryDetails.name',
                     pickupAddress: '$pickupDetails',
                     deliveryAddress: '$deliveryDetails',

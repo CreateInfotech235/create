@@ -5,6 +5,7 @@ export declare const deleteParcelValidation: Joi.ObjectSchema<any>;
 export declare const adminSignInValidation: Joi.ObjectSchema<any>;
 export declare const deliveryManListValidation: Joi.ObjectSchema<any>;
 export declare const paginationValidation: Joi.ObjectSchema<any>;
+export declare const orderCount: Joi.ObjectSchema<any>;
 export declare const manageSubscriptionValidation: Joi.ObjectSchema<any>;
 export declare const subscription: Joi.ObjectSchema<any>;
 export declare const subcriptionStatusValidation: Joi.ObjectSchema<any>;

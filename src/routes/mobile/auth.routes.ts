@@ -14,6 +14,7 @@ import {
   getorderHistory,
   getDeliveryManLocations,
   updateDeliveryManProfileAndPassword,
+  getOrderCountsbyDate,
 } from '../../controller/mobile/auth.controller';
 import multer from 'multer';
 import {
@@ -196,4 +197,6 @@ router.patch(
   '/updateDeliveryManProfile/:id',
   updateDeliveryManProfileAndPassword,
 );
+router.get('/getOrderCountsbyDate/:id', getOrderCountsbyDate);
+
 export default router;

@@ -170,4 +170,5 @@ router.delete('/deleteDeliveryMan/:id', auth_controller_2.deleteDeliveryMan);
 router.get('/getDeliveryManLocations/:id', auth_controller_1.getDeliveryManLocations);
 router.patch('/moveToTrashDeliveryMan/:id', auth_controller_2.moveToTrashDeliveryMan);
 router.patch('/updateDeliveryManProfile/:id', auth_controller_1.updateDeliveryManProfileAndPassword);
+router.get('/getOrderCountsbyDate/:id', auth_controller_1.getOrderCountsbyDate);
 exports.default = router;

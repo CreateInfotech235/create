@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -675,6 +675,68 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getOrderCounts = getOrderCounts;
+const getOrderCountsbyDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const merchantID = req.params.id;
+        console.log('Merchant ID:', merchantID);
+        // Validate the incoming query parameters (startDate and endDate)
+        const validateRequest = (0, validateRequest_1.default)(req.query, adminSide_validation_1.orderCount);
+        if (!validateRequest.isValid) {
+            return res.status(400).json({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const { startDate, endDate } = value;
+        // Build the query for order counts dynamically based on dates
+        const dateQuery = {};
+        if (startDate) {
+            dateQuery.$gte = new Date(startDate);
+        }
+        if (endDate) {
+            // Convert endDate to the last moment of that day (23:59:59)
+            const endOfDay = new Date(endDate);
+            endOfDay.setHours(23, 59, 59, 999); // Set to 23:59:59.999
+            dateQuery.$lte = endOfDay;
+        }
+        console.log('Date Query:', dateQuery);
+        // Prepare the query object for createdAt condition
+        const dateCondition = Object.keys(dateQuery).length > 0 ? { createdAt: dateQuery } : {};
+        const totalOrders = yield order_schema_1.default.countDocuments(Object.assign({ merchant: merchantID }, dateCondition));
+        // Count orders based on various statuses
+        const orderCounts = yield Promise.all([
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'CREATED', merchantID: merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'ASSIGNED', merchantID: merchantID }, dateCondition)),
+            orderAssignee_schema_1.default.countDocuments(Object.assign({ status: 'ACCEPTED', merchant: merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'ARRIVED', merchantID: merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'PICKED_UP', merchantID: merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DEPARTED', merchantID: merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DELIVERED', merchantID: merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'CANCELLED', merchantID: merchantID }, dateCondition)),
+            deliveryMan_schema_1.default.countDocuments(Object.assign({ merchantId: merchantID }, dateCondition)),
+        ]);
+        // Organize the results
+        const [createdOrders, assignedOrders, acceptedOrders, arrivedOrders, pickedOrders, departedOrders, deliveredOrders, cancelledOrders, deliveryMan,] = orderCounts;
+        const data = {
+            totalOrders,
+            createdOrders,
+            assignedOrders,
+            acceptedOrders,
+            arrivedOrders,
+            pickedOrders,
+            departedOrders,
+            deliveredOrders,
+            cancelledOrders,
+            deliveryMan,
+        };
+        // Return the counts
+        res.status(200).json({ data });
+    }
+    catch (error) {
+        // Handle any error that occurs during the process
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred.' });
+    }
+});
+exports.getOrderCountsbyDate = getOrderCountsbyDate;
 const getorderHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield orderHistory_schema_1.default.find();

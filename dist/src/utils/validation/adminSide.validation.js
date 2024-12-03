@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verificationStatusValidation = exports.deliveryManOrderListValidation = exports.userWalletListValidation = exports.deliveryManWalletListValidation = exports.orderWiseDeliveryManValidation = exports.deliveryManIdValidation = exports.orderLocationValidation = exports.subcriptionStatusListValidation = exports.subcriptionStatusValidation = exports.subscription = exports.manageSubscriptionValidation = exports.paginationValidation = exports.deliveryManListValidation = exports.adminSignInValidation = exports.deleteParcelValidation = exports.updateParcelValidation = exports.createParcelValidation = void 0;
+exports.verificationStatusValidation = exports.deliveryManOrderListValidation = exports.userWalletListValidation = exports.deliveryManWalletListValidation = exports.orderWiseDeliveryManValidation = exports.deliveryManIdValidation = exports.orderLocationValidation = exports.subcriptionStatusListValidation = exports.subcriptionStatusValidation = exports.subscription = exports.manageSubscriptionValidation = exports.orderCount = exports.paginationValidation = exports.deliveryManListValidation = exports.adminSignInValidation = exports.deleteParcelValidation = exports.updateParcelValidation = exports.createParcelValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 const enum_1 = require("../../enum");
 exports.createParcelValidation = joi_1.default.object({
@@ -38,6 +38,10 @@ exports.deliveryManListValidation = joi_1.default.object({
 exports.paginationValidation = joi_1.default.object({
     pageCount: joi_1.default.number().required(),
     pageLimit: joi_1.default.number().required(),
+});
+exports.orderCount = joi_1.default.object({
+    startDate: joi_1.default.string(),
+    endDate: joi_1.default.string(),
 });
 exports.manageSubscriptionValidation = joi_1.default.object({
     type: joi_1.default.string(),
