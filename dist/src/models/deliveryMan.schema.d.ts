@@ -69,6 +69,10 @@ declare const Model: mongoose.Model<{
         isValid?: {};
     };
     merchantId?: mongoose.Types.ObjectId;
+    emergencyContact?: {
+        number?: number;
+        name?: string;
+    };
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -114,6 +118,10 @@ declare const Model: mongoose.Model<{
         isValid?: {};
     };
     merchantId?: mongoose.Types.ObjectId;
+    emergencyContact?: {
+        number?: number;
+        name?: string;
+    };
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -159,6 +167,10 @@ declare const Model: mongoose.Model<{
         isValid?: {};
     };
     merchantId?: mongoose.Types.ObjectId;
+    emergencyContact?: {
+        number?: number;
+        name?: string;
+    };
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -211,6 +223,10 @@ declare const Model: mongoose.Model<{
         isValid?: {};
     };
     merchantId?: mongoose.Types.ObjectId;
+    emergencyContact?: {
+        number?: number;
+        name?: string;
+    };
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -256,6 +272,10 @@ declare const Model: mongoose.Model<{
         isValid?: {};
     };
     merchantId?: mongoose.Types.ObjectId;
+    emergencyContact?: {
+        number?: number;
+        name?: string;
+    };
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -301,6 +321,10 @@ declare const Model: mongoose.Model<{
         isValid?: {};
     };
     merchantId?: mongoose.Types.ObjectId;
+    emergencyContact?: {
+        number?: number;
+        name?: string;
+    };
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

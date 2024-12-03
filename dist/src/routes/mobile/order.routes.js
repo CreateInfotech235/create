@@ -31,6 +31,7 @@ const router = express_1.default.Router();
  */
 router.post('/create', order_controller_1.orderCreation);
 router.patch('/updateOrder/:orderId', order_controller_1.orderUpdate);
+router.get('/getAllPaymentInfo', order_controller_1.getAllPaymentInfo);
 /**
  * @swagger
  * /mobile/order/cancel:

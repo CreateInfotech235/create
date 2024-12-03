@@ -122,6 +122,25 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
   }
 };
 
+export const getAllPaymentInfo = async (req: RequestParams, res: Response) => {
+  try {
+    const paymentInfo = await PaymentInfoSchema.find();
+
+    if (!paymentInfo) {
+      return res.badRequest({ message: 'No payment information found' });
+    }
+
+    return res.ok({
+      data: paymentInfo,
+    });
+  } catch (error) {
+    console.error('Error fetching payment info:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
 export const orderUpdate = async (req: RequestParams, res: Response) => {
   try {
     console.log('in order update route');

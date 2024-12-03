@@ -97,6 +97,12 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
     merchantId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'merchant' }, // Associating with Merchant
     createdByMerchant: { type: Boolean, default: false },
     createdByAdmin: { type: Boolean, default: false },
+    emergencyContact: {
+        type: {
+            name: { type: String },
+            number: { type: Number },
+        },
+    },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('deliveryMan', DeliveryManSchema, 'deliveryMan');
 exports.default = Model;

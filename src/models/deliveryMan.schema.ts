@@ -94,6 +94,12 @@ const DeliveryManSchema = new mongoose.Schema(
     merchantId: { type: mongoose.Schema.Types.ObjectId, ref: 'merchant' }, // Associating with Merchant
     createdByMerchant: { type: Boolean, default: false },
     createdByAdmin: { type: Boolean, default: false },
+    emergencyContact: {
+      type: {
+        name: { type: String },
+        number: { type: Number },
+      },
+    },
   },
   { timestamps: true, versionKey: false },
 );

@@ -251,8 +251,12 @@ exports.updateLocation = updateLocation;
 // };
 const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.params.id);
-        const result = yield deliveryMan_schema_1.default.aggregate([
+        // Validate ID before using it
+        if (!mongoose_1.default.Types.ObjectId.isValid(req.params.id)) {
+            return res.badRequest({ message: 'Invalid delivery man ID' });
+        }
+        const result = yield deliveryMan_schema_1.default
+            .aggregate([
             {
                 $match: {
                     _id: new mongoose_1.default.Types.ObjectId(req.params.id),
@@ -266,17 +270,57 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         {
                             $match: {
                                 $expr: {
-                                    $and: [{ $eq: ['$deliveryBoy', '$$deliveryBoyId'] }],
+                                    $eq: ['$deliveryBoy', '$$deliveryBoyId'],
                                 },
                             },
                         },
                     ],
-                    as: 'orderAssignments',
+                    as: 'allOrders',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'orderAssign',
+                    let: { deliveryBoyId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$deliveryBoy', '$$deliveryBoyId'] },
+                                        { $eq: ['$status', enum_1.ORDER_REQUEST.ACCEPTED] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: 'acceptedOrders',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'orderAssign',
+                    let: { deliveryBoyId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$deliveryBoy', '$$deliveryBoyId'] },
+                                        { $eq: ['$status', enum_1.ORDER_REQUEST.REJECT] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: 'rejectedOrders',
                 },
             },
             {
                 $addFields: {
-                    totalOrderCount: { $size: '$orderAssignments' },
+                    totalOrderCount: { $size: '$allOrders' },
+                    totalAcceptedOrders: { $size: '$acceptedOrders' },
+                    totalCancelledOrders: { $size: '$rejectedOrders' },
                 },
             },
             {
@@ -314,19 +358,20 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     isVerified: 1,
                     createdDate: '$createdAt',
                     totalOrderCount: 1,
+                    totalAcceptedOrders: 1,
+                    totalCancelledOrders: 1,
                     location: 1,
                     postCode: 1,
                     balance: 1,
                     earning: 1,
-                    bankData: 1,
-                    isCustomer: 1,
-                    merchantId: 1,
-                    createdByMerchant: 1,
-                    createdByAdmin: 1,
                 },
             },
-        ]);
-        if (!result.length) {
+        ])
+            .catch((err) => {
+            console.error('Aggregation error:', err);
+            return [];
+        });
+        if (!result || !result.length) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
         }
         const data = result[0];

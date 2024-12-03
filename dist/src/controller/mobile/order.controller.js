@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.orderCreation = void 0;
+exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderCreation = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -92,6 +92,24 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.orderCreation = orderCreation;
+const getAllPaymentInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const paymentInfo = yield paymentInfo_schema_1.default.find();
+        if (!paymentInfo) {
+            return res.badRequest({ message: 'No payment information found' });
+        }
+        return res.ok({
+            data: paymentInfo,
+        });
+    }
+    catch (error) {
+        console.error('Error fetching payment info:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getAllPaymentInfo = getAllPaymentInfo;
 const orderUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log('in order update route');

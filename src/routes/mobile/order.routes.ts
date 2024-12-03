@@ -7,6 +7,7 @@ import {
   moveToTrash,
   orderUpdate,
   getAllRecentOrdersFromMerchant,
+  getAllPaymentInfo,
   // getAllOrdersFromMerchantt,
 } from '../../controller/mobile/order.controller';
 
@@ -37,7 +38,7 @@ const router = express.Router();
  */
 router.post('/create', orderCreation);
 router.patch('/updateOrder/:orderId', orderUpdate);
-
+router.get('/getAllPaymentInfo', getAllPaymentInfo);
 /**
  * @swagger
  * /mobile/order/cancel:
