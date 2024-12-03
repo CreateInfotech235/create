@@ -586,7 +586,7 @@ export const sendEmailOrMobileOtp = async (
       });
     }
 
-    const otp = generateIntRandomNo(111111, 999999);
+    const otp = await generateIntRandomNo(111111, 999999);
 
     await emailOrMobileOtp(
       orderExist.pickupDetails.email,
@@ -623,6 +623,7 @@ export const sendEmailOrMobileOtp = async (
     });
   } catch (error) {
     return res.failureResponse({
+      error: error,
       message: getLanguage('en').somethingWentWrong,
     });
   }
