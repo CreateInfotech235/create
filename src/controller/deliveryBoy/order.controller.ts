@@ -490,76 +490,6 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
   }
 };
 
-// export const sendEmailOrMobileOtp = async (
-//   req: RequestParams,
-//   res: Response,
-// ) => {
-//   try {
-//     const validateRequest = validateParamsWithJoi<{
-//       orderId: number;
-//     }>(req.body, orderIdValidation);
-
-//     if (!validateRequest.isValid) {
-//       return res.badRequest({ message: validateRequest.message });
-//     }
-
-//     const { value } = validateRequest;
-
-//     const orderExist = await orderSchema.findOne({
-//       orderId: value.orderId,
-//       status: { $ne: ORDER_HISTORY.DELIVERED },
-//     });
-
-//     if (!orderExist) {
-//       return res.badRequest({
-//         message: getLanguage('en').invalidOrder,
-//       });
-//     }
-
-//     const otp =
-//       process.env.ENV === 'DEV' ? 999999 : generateIntRandomNo(111111, 999999);
-
-//     if (process.env.ENV !== 'DEV') {
-//       await emailOrMobileOtp(
-//         orderExist.pickupDetails.email,
-//         `This is your otp for identity verification ${otp}`,
-//       );
-//     }
-
-//     const isAtPickUp = orderExist.status === ORDER_HISTORY.ARRIVED;
-//     const email = isAtPickUp
-//       ? orderExist.pickupDetails.email
-//       : orderExist.deliveryDetails.email;
-
-//     const contactNumber = isAtPickUp
-//       ? orderExist.pickupDetails.mobileNumber
-//       : orderExist.deliveryDetails.mobileNumber;
-
-//     await otpSchema.updateOne(
-//       {
-//         value: otp,
-//         customerEmail: email,
-//         customerMobile: contactNumber,
-//       },
-//       {
-//         value: otp,
-//         customerEmail: email,
-//         customerMobile: contactNumber,
-//         expiry: Date.now() + 600000,
-//       },
-//       { upsert: true },
-//     );
-
-//     return res.ok({
-//       message: getLanguage('en').otpSentSuccess,
-//       data: process.env.ENV !== 'DEV' ? {} : { otp },
-//     });
-//   } catch (error) {
-//     return res.failureResponse({
-//       message: getLanguage('en').somethingWentWrong,
-//     });
-//   }
-// };
 export const sendEmailOrMobileOtp = async (
   req: RequestParams,
   res: Response,
@@ -586,12 +516,15 @@ export const sendEmailOrMobileOtp = async (
       });
     }
 
-    const otp = await generateIntRandomNo(111111, 999999);
+    const otp =
+      process.env.ENV === 'DEV' ? 999999 : generateIntRandomNo(111111, 999999);
 
-    await emailOrMobileOtp(
-      orderExist.pickupDetails.email,
-      `This is your otp for identity verification ${otp}`,
-    );
+    if (process.env.ENV !== 'DEV') {
+      await emailOrMobileOtp(
+        orderExist.pickupDetails.email,
+        `This is your otp for identity verification ${otp}`,
+      );
+    }
 
     const isAtPickUp = orderExist.status === ORDER_HISTORY.ARRIVED;
     const email = isAtPickUp
@@ -619,15 +552,82 @@ export const sendEmailOrMobileOtp = async (
 
     return res.ok({
       message: getLanguage('en').otpSentSuccess,
-      data: { otp },
+      data: process.env.ENV !== 'DEV' ? {} : { otp },
     });
   } catch (error) {
     return res.failureResponse({
-      error: error,
       message: getLanguage('en').somethingWentWrong,
     });
   }
 };
+// export const sendEmailOrMobileOtp = async (
+//   req: RequestParams,
+//   res: Response,
+// ) => {
+//   try {
+//     const validateRequest = validateParamsWithJoi<{
+//       orderId: number;
+//     }>(req.body, orderIdValidation);
+
+//     if (!validateRequest.isValid) {
+//       return res.badRequest({ message: validateRequest.message });
+//     }
+
+//     const { value } = validateRequest;
+
+//     const orderExist = await orderSchema.findOne({
+//       orderId: value.orderId,
+//       status: { $ne: ORDER_HISTORY.DELIVERED },
+//     });
+
+//     if (!orderExist) {
+//       return res.badRequest({
+//         message: getLanguage('en').invalidOrder,
+//       });
+//     }
+
+//     const otp = await generateIntRandomNo(111111, 999999);
+
+//     await emailOrMobileOtp(
+//       orderExist.pickupDetails.email,
+//       `This is your otp for identity verification ${otp}`,
+//     );
+
+//     const isAtPickUp = orderExist.status === ORDER_HISTORY.ARRIVED;
+//     const email = isAtPickUp
+//       ? orderExist.pickupDetails.email
+//       : orderExist.deliveryDetails.email;
+
+//     const contactNumber = isAtPickUp
+//       ? orderExist.pickupDetails.mobileNumber
+//       : orderExist.deliveryDetails.mobileNumber;
+
+//     await otpSchema.updateOne(
+//       {
+//         value: otp,
+//         customerEmail: email,
+//         customerMobile: contactNumber,
+//       },
+//       {
+//         value: otp,
+//         customerEmail: email,
+//         customerMobile: contactNumber,
+//         expiry: Date.now() + 600000,
+//       },
+//       { upsert: true },
+//     );
+
+//     return res.ok({
+//       message: getLanguage('en').otpSentSuccess,
+//       data: { otp },
+//     });
+//   } catch (error) {
+//     return res.failureResponse({
+//       error: error,
+//       message: getLanguage('en').somethingWentWrong,
+//     });
+//   }
+// };
 
 export const deliverOrder = async (req: RequestParams, res: Response) => {
   try {
