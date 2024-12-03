@@ -360,6 +360,66 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.pickUpOrder = pickUpOrder;
+// export const sendEmailOrMobileOtp = async (
+//   req: RequestParams,
+//   res: Response,
+// ) => {
+//   try {
+//     const validateRequest = validateParamsWithJoi<{
+//       orderId: number;
+//     }>(req.body, orderIdValidation);
+//     if (!validateRequest.isValid) {
+//       return res.badRequest({ message: validateRequest.message });
+//     }
+//     const { value } = validateRequest;
+//     const orderExist = await orderSchema.findOne({
+//       orderId: value.orderId,
+//       status: { $ne: ORDER_HISTORY.DELIVERED },
+//     });
+//     if (!orderExist) {
+//       return res.badRequest({
+//         message: getLanguage('en').invalidOrder,
+//       });
+//     }
+//     const otp =
+//       process.env.ENV === 'DEV' ? 999999 : generateIntRandomNo(111111, 999999);
+//     if (process.env.ENV !== 'DEV') {
+//       await emailOrMobileOtp(
+//         orderExist.pickupDetails.email,
+//         `This is your otp for identity verification ${otp}`,
+//       );
+//     }
+//     const isAtPickUp = orderExist.status === ORDER_HISTORY.ARRIVED;
+//     const email = isAtPickUp
+//       ? orderExist.pickupDetails.email
+//       : orderExist.deliveryDetails.email;
+//     const contactNumber = isAtPickUp
+//       ? orderExist.pickupDetails.mobileNumber
+//       : orderExist.deliveryDetails.mobileNumber;
+//     await otpSchema.updateOne(
+//       {
+//         value: otp,
+//         customerEmail: email,
+//         customerMobile: contactNumber,
+//       },
+//       {
+//         value: otp,
+//         customerEmail: email,
+//         customerMobile: contactNumber,
+//         expiry: Date.now() + 600000,
+//       },
+//       { upsert: true },
+//     );
+//     return res.ok({
+//       message: getLanguage('en').otpSentSuccess,
+//       data: process.env.ENV !== 'DEV' ? {} : { otp },
+//     });
+//   } catch (error) {
+//     return res.failureResponse({
+//       message: getLanguage('en').somethingWentWrong,
+//     });
+//   }
+// };
 const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderIdValidation);
@@ -376,10 +436,8 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 message: (0, languageHelper_1.getLanguage)('en').invalidOrder,
             });
         }
-        const otp = process.env.ENV === 'DEV' ? 999999 : (0, common_1.generateIntRandomNo)(111111, 999999);
-        if (process.env.ENV !== 'DEV') {
-            yield (0, common_1.emailOrMobileOtp)(orderExist.pickupDetails.email, `This is your otp for identity verification ${otp}`);
-        }
+        const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
+        yield (0, common_1.emailOrMobileOtp)(orderExist.pickupDetails.email, `This is your otp for identity verification ${otp}`);
         const isAtPickUp = orderExist.status === enum_1.ORDER_HISTORY.ARRIVED;
         const email = isAtPickUp
             ? orderExist.pickupDetails.email
@@ -399,7 +457,7 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
         }, { upsert: true });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').otpSentSuccess,
-            data: process.env.ENV !== 'DEV' ? {} : { otp },
+            data: { otp },
         });
     }
     catch (error) {

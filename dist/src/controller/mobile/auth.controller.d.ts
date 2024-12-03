@@ -13,3 +13,4 @@ export declare const getAllDeliveryManOfMerchant: (req: RequestParams, res: Resp
 export declare const getOrderCounts: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getorderHistory: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getDeliveryManLocations: (req: RequestParams, res: Response) => Promise<void>;
+export declare const updateDeliveryManProfileAndPassword: (req: RequestParams, res: Response) => Promise<void>;

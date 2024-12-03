@@ -27,6 +27,7 @@ import {
   activateFreeSubcriptionValidation,
   otpVerifyValidation,
   renewTokenValidation,
+  updatePasswordValidation,
   userSignInValidation,
   userSignUpValidation,
 } from '../../utils/validation/auth.validation';
@@ -36,6 +37,7 @@ import orderSchema from '../../models/order.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
 import subscribedSchema from '../../models/subcription.schema';
 import { paginationValidation } from '../../utils/validation/adminSide.validation';
+import { verifyPassword } from '../deliveryBoy/auth.controller';
 
 export const signUp = async (req: RequestParams, res: Response) => {
   try {
@@ -287,6 +289,88 @@ export const activateFreeSubcription = async (
   }
 };
 
+// export const sendEmailOrMobileOtp = async (
+//   req: RequestParams,
+//   res: Response,
+// ) => {
+//   try {
+//     const validateRequest = validateParamsWithJoi<{
+//       email: string;
+//       contactNumber: number;
+//       countryCode: string;
+//       personType: PERSON_TYPE;
+//     }>(req.body, otpVerifyValidation);
+
+//     if (!validateRequest.isValid) {
+//       return res.badRequest({ message: validateRequest.message });
+//     }
+//     const { value } = validateRequest;
+
+//     let userExist;
+
+//     const isCustomer = value.personType === PERSON_TYPE.CUSTOMER;
+
+//     if (isCustomer) {
+//       userExist = await merchantSchema.findOne({
+//         email: value.email,
+//         contactNumber: value.contactNumber,
+//         countryCode: value.countryCode,
+//       });
+//     } else {
+//       userExist = await deliveryManSchema.findOne({
+//         email: value.email,
+//         contactNumber: value.contactNumber,
+//         countryCode: value.countryCode,
+//       });
+//     }
+
+//     if (userExist) {
+//       return res.badRequest({
+//         message: getLanguage('en').emailRegisteredAlready,
+//       });
+//     }
+
+//     const otp =
+//       process.env.ENV === 'DEV' ? 999999 : generateIntRandomNo(111111, 999999);
+
+//     if (process.env.ENV !== 'DEV') {
+//       await emailOrMobileOtp(
+//         value.email,
+//         `This is your otp for registration ${otp}`,
+//       );
+//     }
+
+//     const data = await otpSchema.updateOne(
+//       {
+//         value: otp,
+//         customerEmail: value.email,
+//         customerMobile: value.contactNumber,
+//         action: value.personType,
+//       },
+//       {
+//         value: otp,
+//         customerEmail: value.email,
+//         customerMobile: value.contactNumber,
+//         expiry: Date.now() + 600000,
+//         action: value.personType,
+//       },
+//       { upsert: true },
+//     );
+
+//     if (!data.upsertedCount && !data.modifiedCount) {
+//       return res.badRequest({ message: getLanguage('en').invalidData });
+//     }
+
+//     return res.ok({
+//       message: getLanguage('en').otpSentSuccess,
+//       data: process.env.ENV !== 'DEV' ? {} : { otp },
+//     });
+//   } catch (error) {
+//     return res.failureResponse({
+//       message: getLanguage('en').somethingWentWrong,
+//     });
+//   }
+// };
 export const sendEmailOrMobileOtp = async (
   req: RequestParams,
   res: Response,
@@ -328,15 +412,12 @@ export const sendEmailOrMobileOtp = async (
       });
     }
 
-    const otp =
-      process.env.ENV === 'DEV' ? 999999 : generateIntRandomNo(111111, 999999);
+    const otp = generateIntRandomNo(111111, 999999);
 
-    if (process.env.ENV !== 'DEV') {
-      await emailOrMobileOtp(
-        value.email,
-        `This is your otp for registration ${otp}`,
-      );
-    }
+    await emailOrMobileOtp(
+      value.email,
+      `This is your otp for registration ${otp}`,
+    );
 
     const data = await otpSchema.updateOne(
       {
@@ -361,7 +442,7 @@ export const sendEmailOrMobileOtp = async (
 
     return res.ok({
       message: getLanguage('en').otpSentSuccess,
-      data: process.env.ENV !== 'DEV' ? {} : { otp },
+      data: { otp },
     });
   } catch (error) {
     return res.failureResponse({
@@ -859,6 +940,88 @@ export const getDeliveryManLocations = async (
   } catch (error) {
     console.log(error);
 
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const updateDeliveryManProfileAndPassword = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    console.log(updateData);
+
+    // Update Profile Image Logic
+
+    // Update Password Logic
+    if (
+      updateData?.oldPassword ||
+      updateData?.newPassword ||
+      updateData?.confirmPassword
+    ) {
+      const validateRequest = validateParamsWithJoi<{
+        oldPassword: string;
+        newPassword: string;
+        confirmPassword: string;
+      }>(req.body, updatePasswordValidation);
+
+      if (!validateRequest.isValid) {
+        return res.badRequest({ message: validateRequest.message });
+      }
+
+      const { value } = validateRequest;
+
+      if (value.newPassword !== value.confirmPassword) {
+        return res.badRequest({ message: getLanguage('en').passwordMismatch });
+      }
+
+      const user = await deliveryManSchema.findById(id);
+      if (!user) {
+        return res.badRequest({ message: getLanguage('en').userNotFound });
+      }
+
+      const isPasswordValid = await verifyPassword({
+        password: value.oldPassword,
+        hash: user.password,
+      });
+      if (!isPasswordValid) {
+        return res.badRequest({
+          message: getLanguage('en').invalidOldPassword,
+        });
+      }
+
+      const hashedPassword = await encryptPassword({
+        password: value.newPassword,
+      });
+
+      await deliveryManSchema.updateOne(
+        { _id: user._id },
+        { $set: { password: hashedPassword } },
+      );
+    }
+
+    // Update DeliveryMan Profile Data (excluding password)
+    const updatedDeliveryMan = await deliveryManSchema.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true },
+    );
+
+    if (!updatedDeliveryMan) {
+      return res.badRequest({ message: getLanguage('en').deliveryManNotFound });
+    }
+
+    return res.ok({
+      message: getLanguage('en').dataUpdatedSuccessfully,
+      data: updatedDeliveryMan,
+    });
+  } catch (error) {
+    console.error('Error updating delivery man profile or password:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

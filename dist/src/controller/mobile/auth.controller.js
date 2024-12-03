@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -43,6 +43,7 @@ const orderHistory_schema_2 = __importDefault(require("../../models/orderHistory
 const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
+const auth_controller_1 = require("../deliveryBoy/auth.controller");
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.userSignUpValidation);
@@ -212,6 +213,78 @@ const activateFreeSubcription = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.activateFreeSubcription = activateFreeSubcription;
+// export const sendEmailOrMobileOtp = async (
+//   req: RequestParams,
+//   res: Response,
+// ) => {
+//   try {
+//     const validateRequest = validateParamsWithJoi<{
+//       email: string;
+//       contactNumber: number;
+//       countryCode: string;
+//       personType: PERSON_TYPE;
+//     }>(req.body, otpVerifyValidation);
+//     if (!validateRequest.isValid) {
+//       return res.badRequest({ message: validateRequest.message });
+//     }
+//     const { value } = validateRequest;
+//     let userExist;
+//     const isCustomer = value.personType === PERSON_TYPE.CUSTOMER;
+//     if (isCustomer) {
+//       userExist = await merchantSchema.findOne({
+//         email: value.email,
+//         contactNumber: value.contactNumber,
+//         countryCode: value.countryCode,
+//       });
+//     } else {
+//       userExist = await deliveryManSchema.findOne({
+//         email: value.email,
+//         contactNumber: value.contactNumber,
+//         countryCode: value.countryCode,
+//       });
+//     }
+//     if (userExist) {
+//       return res.badRequest({
+//         message: getLanguage('en').emailRegisteredAlready,
+//       });
+//     }
+//     const otp =
+//       process.env.ENV === 'DEV' ? 999999 : generateIntRandomNo(111111, 999999);
+//     if (process.env.ENV !== 'DEV') {
+//       await emailOrMobileOtp(
+//         value.email,
+//         `This is your otp for registration ${otp}`,
+//       );
+//     }
+//     const data = await otpSchema.updateOne(
+//       {
+//         value: otp,
+//         customerEmail: value.email,
+//         customerMobile: value.contactNumber,
+//         action: value.personType,
+//       },
+//       {
+//         value: otp,
+//         customerEmail: value.email,
+//         customerMobile: value.contactNumber,
+//         expiry: Date.now() + 600000,
+//         action: value.personType,
+//       },
+//       { upsert: true },
+//     );
+//     if (!data.upsertedCount && !data.modifiedCount) {
+//       return res.badRequest({ message: getLanguage('en').invalidData });
+//     }
+//     return res.ok({
+//       message: getLanguage('en').otpSentSuccess,
+//       data: process.env.ENV !== 'DEV' ? {} : { otp },
+//     });
+//   } catch (error) {
+//     return res.failureResponse({
+//       message: getLanguage('en').somethingWentWrong,
+//     });
+//   }
+// };
 const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.otpVerifyValidation);
@@ -240,10 +313,8 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 message: (0, languageHelper_1.getLanguage)('en').emailRegisteredAlready,
             });
         }
-        const otp = process.env.ENV === 'DEV' ? 999999 : (0, common_1.generateIntRandomNo)(111111, 999999);
-        if (process.env.ENV !== 'DEV') {
-            yield (0, common_1.emailOrMobileOtp)(value.email, `This is your otp for registration ${otp}`);
-        }
+        const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
+        yield (0, common_1.emailOrMobileOtp)(value.email, `This is your otp for registration ${otp}`);
         const data = yield otp_schema_1.default.updateOne({
             value: otp,
             customerEmail: value.email,
@@ -261,7 +332,7 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
         }
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').otpSentSuccess,
-            data: process.env.ENV !== 'DEV' ? {} : { otp },
+            data: { otp },
         });
     }
     catch (error) {
@@ -706,3 +777,57 @@ const getDeliveryManLocations = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.getDeliveryManLocations = getDeliveryManLocations;
+const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        console.log(updateData);
+        // Update Profile Image Logic
+        // Update Password Logic
+        if ((updateData === null || updateData === void 0 ? void 0 : updateData.oldPassword) ||
+            (updateData === null || updateData === void 0 ? void 0 : updateData.newPassword) ||
+            (updateData === null || updateData === void 0 ? void 0 : updateData.confirmPassword)) {
+            const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.updatePasswordValidation);
+            if (!validateRequest.isValid) {
+                return res.badRequest({ message: validateRequest.message });
+            }
+            const { value } = validateRequest;
+            if (value.newPassword !== value.confirmPassword) {
+                return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').passwordMismatch });
+            }
+            const user = yield deliveryMan_schema_1.default.findById(id);
+            if (!user) {
+                return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').userNotFound });
+            }
+            const isPasswordValid = yield (0, auth_controller_1.verifyPassword)({
+                password: value.oldPassword,
+                hash: user.password,
+            });
+            if (!isPasswordValid) {
+                return res.badRequest({
+                    message: (0, languageHelper_1.getLanguage)('en').invalidOldPassword,
+                });
+            }
+            const hashedPassword = yield (0, common_1.encryptPassword)({
+                password: value.newPassword,
+            });
+            yield deliveryMan_schema_1.default.updateOne({ _id: user._id }, { $set: { password: hashedPassword } });
+        }
+        // Update DeliveryMan Profile Data (excluding password)
+        const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+        if (!updatedDeliveryMan) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
+        }
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').dataUpdatedSuccessfully,
+            data: updatedDeliveryMan,
+        });
+    }
+    catch (error) {
+        console.error('Error updating delivery man profile or password:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.updateDeliveryManProfileAndPassword = updateDeliveryManProfileAndPassword;

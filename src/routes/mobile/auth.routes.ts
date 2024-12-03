@@ -13,6 +13,7 @@ import {
   getOrderCounts,
   getorderHistory,
   getDeliveryManLocations,
+  updateDeliveryManProfileAndPassword,
 } from '../../controller/mobile/auth.controller';
 import multer from 'multer';
 import {
@@ -191,5 +192,8 @@ router.get('/getorderHistory', getorderHistory);
 router.delete('/deleteDeliveryMan/:id', deleteDeliveryMan);
 router.get('/getDeliveryManLocations/:id', getDeliveryManLocations);
 router.patch('/moveToTrashDeliveryMan/:id', moveToTrashDeliveryMan);
-
+router.patch(
+  '/updateDeliveryManProfile/:id',
+  updateDeliveryManProfileAndPassword,
+);
 export default router;
