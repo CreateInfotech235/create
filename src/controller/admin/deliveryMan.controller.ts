@@ -274,8 +274,8 @@ export const getDeliveryManLocations = async (
             latitude: { $arrayElemAt: ['$location.coordinates', 1] },
             longitude: { $arrayElemAt: ['$location.coordinates', 0] },
           },
-          country: '$countryData.countryName',
-          city: '$cityData.cityName',
+          // country: '$countryData.countryName',
+          // city: '$cityData.cityName',
         },
       },
       ...getMongoCommonPagination({

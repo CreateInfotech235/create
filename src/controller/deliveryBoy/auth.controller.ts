@@ -300,7 +300,7 @@ export const updateLocation = async (req: RequestParams, res: Response) => {
       { _id: req.id },
       {
         $set: {
-          countryId: value.country,
+          // countryId: value.country,
           // cityId: value.city,
           location: {
             type: 'Point',
@@ -338,6 +338,7 @@ export const getDeliveryManProfile = async (
   res: Response,
 ) => {
   try {
+    console.log(req.params.id);
     const result = await deliveryManSchema.aggregate([
       {
         $match: {
@@ -345,13 +346,32 @@ export const getDeliveryManProfile = async (
         },
       },
       {
+        $lookup: {
+          from: 'orderAssign',
+          let: { deliveryBoyId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$deliveryBoy', '$$deliveryBoyId'] }],
+                },
+              },
+            },
+          ],
+          as: 'orderAssignments',
+        },
+      },
+      {
+        $addFields: {
+          totalOrderCount: { $size: '$orderAssignments' },
+        },
+      },
+      {
         $project: {
-          _id: 0,
-          cityId: '$cityData._id',
-          cityName: '$cityData.cityName',
-          countryID: '$countryData._id',
-          countryName: '$countryData.countryName',
-          address: '$address',
+          _id: 1,
+          cityId: 1,
+          countryId: 1,
+          address: 1,
           firstName: {
             $ifNull: [
               '$firstName',
@@ -369,30 +389,39 @@ export const getDeliveryManProfile = async (
               {
                 $ifNull: [
                   { $arrayElemAt: [{ $split: ['$name', ' '] }, 1] },
-                  '', // Fallback to empty string if index 1 does not exist
+                  '',
                 ],
               },
             ],
           },
-          email: '$email',
-          contactNumber: '$contactNumber',
-          image: '$image',
-          countryCode: '$countryCode',
-          status: '$status',
-          isVerified: '$isVerified',
+          email: 1,
+          contactNumber: 1,
+          image: 1,
+          status: 1,
+          isVerified: 1,
           createdDate: '$createdAt',
-        },
-      },
-      {
-        $sort: {
-          createdAt: -1,
+          totalOrderCount: 1,
+          location: 1,
+          postCode: 1,
+          balance: 1,
+          earning: 1,
+          bankData: 1,
+          isCustomer: 1,
+          merchantId: 1,
+          createdByMerchant: 1,
+          createdByAdmin: 1,
         },
       },
     ]);
-    const data = result[0];
 
+    if (!result.length) {
+      return res.badRequest({ message: getLanguage('en').deliveryManNotFound });
+    }
+
+    const data = result[0];
     return res.ok({ data });
   } catch (error) {
+    console.error('Error fetching delivery man profile:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

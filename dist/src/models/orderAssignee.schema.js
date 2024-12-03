@@ -8,6 +8,7 @@ const enum_1 = require("../enum");
 const OrderAssigneeSchema = new mongoose_1.default.Schema({
     deliveryBoy: {
         type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'deliveryMan',
     },
     // customer: {
     //   type: mongoose.Schema.Types.ObjectId,

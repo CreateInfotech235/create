@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateLocationValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 exports.updateLocationValidation = joi_1.default.object({
-    country: joi_1.default.string()
-        .regex(/^[0-9a-fA-F]{24}$/)
-        .required(),
+    // country: Joi.string()
+    //   .regex(/^[0-9a-fA-F]{24}$/)
+    //   .required(),
     // city: Joi.string()
     //   .regex(/^[0-9a-fA-F]{24}$/)
     //   .required(),

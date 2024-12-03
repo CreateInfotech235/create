@@ -265,8 +265,8 @@ const swaggerOption = {
                 DeliveryManUpdateLocation: {
                     type: 'object',
                     properties: {
-                        country: { type: 'string' },
-                        city: { type: 'string' },
+                        // country: { type: 'string' },
+                        // city: { type: 'string' },
                         location: {
                             type: 'object',
                             properties: {

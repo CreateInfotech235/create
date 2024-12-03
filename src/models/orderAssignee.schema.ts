@@ -5,6 +5,7 @@ const OrderAssigneeSchema = new mongoose.Schema(
   {
     deliveryBoy: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: 'deliveryMan',
     },
     // customer: {
     //   type: mongoose.Schema.Types.ObjectId,

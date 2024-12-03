@@ -219,7 +219,7 @@ const updateLocation = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const { value } = validateRequest;
         yield deliveryMan_schema_1.default.updateOne({ _id: req.id }, {
             $set: {
-                countryId: value.country,
+                // countryId: value.country,
                 // cityId: value.city,
                 location: {
                     type: 'Point',
@@ -251,6 +251,7 @@ exports.updateLocation = updateLocation;
 // };
 const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log(req.params.id);
         const result = yield deliveryMan_schema_1.default.aggregate([
             {
                 $match: {
@@ -258,13 +259,32 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 },
             },
             {
+                $lookup: {
+                    from: 'orderAssign',
+                    let: { deliveryBoyId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $eq: ['$deliveryBoy', '$$deliveryBoyId'] }],
+                                },
+                            },
+                        },
+                    ],
+                    as: 'orderAssignments',
+                },
+            },
+            {
+                $addFields: {
+                    totalOrderCount: { $size: '$orderAssignments' },
+                },
+            },
+            {
                 $project: {
-                    _id: 0,
-                    cityId: '$cityData._id',
-                    cityName: '$cityData.cityName',
-                    countryID: '$countryData._id',
-                    countryName: '$countryData.countryName',
-                    address: '$address',
+                    _id: 1,
+                    cityId: 1,
+                    countryId: 1,
+                    address: 1,
                     firstName: {
                         $ifNull: [
                             '$firstName',
@@ -282,30 +302,38 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                             {
                                 $ifNull: [
                                     { $arrayElemAt: [{ $split: ['$name', ' '] }, 1] },
-                                    '', // Fallback to empty string if index 1 does not exist
+                                    '',
                                 ],
                             },
                         ],
                     },
-                    email: '$email',
-                    contactNumber: '$contactNumber',
-                    image: '$image',
-                    countryCode: '$countryCode',
-                    status: '$status',
-                    isVerified: '$isVerified',
+                    email: 1,
+                    contactNumber: 1,
+                    image: 1,
+                    status: 1,
+                    isVerified: 1,
                     createdDate: '$createdAt',
-                },
-            },
-            {
-                $sort: {
-                    createdAt: -1,
+                    totalOrderCount: 1,
+                    location: 1,
+                    postCode: 1,
+                    balance: 1,
+                    earning: 1,
+                    bankData: 1,
+                    isCustomer: 1,
+                    merchantId: 1,
+                    createdByMerchant: 1,
+                    createdByAdmin: 1,
                 },
             },
         ]);
+        if (!result.length) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
+        }
         const data = result[0];
         return res.ok({ data });
     }
     catch (error) {
+        console.error('Error fetching delivery man profile:', error);
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });
