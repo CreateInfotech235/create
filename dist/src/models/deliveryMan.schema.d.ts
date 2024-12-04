@@ -39,6 +39,16 @@ declare const Model: mongoose.Model<{
     firstName?: string;
     lastName?: string;
     address?: string;
+    merchantId?: mongoose.Types.ObjectId;
+    merchant?: {
+        prototype?: mongoose.Types.ObjectId;
+        cacheHexString?: unknown;
+        generate?: {};
+        createFromTime?: {};
+        createFromHexString?: {};
+        createFromBase64?: {};
+        isValid?: {};
+    };
     postCode?: string;
     email?: string;
     location?: {
@@ -59,16 +69,6 @@ declare const Model: mongoose.Model<{
     earning?: number;
     image?: string;
     providerId?: string;
-    merchant?: {
-        prototype?: mongoose.Types.ObjectId;
-        cacheHexString?: unknown;
-        generate?: {};
-        createFromTime?: {};
-        createFromHexString?: {};
-        createFromBase64?: {};
-        isValid?: {};
-    };
-    merchantId?: mongoose.Types.ObjectId;
     emergencyContact?: {
         number?: number;
         name?: string;
@@ -88,6 +88,16 @@ declare const Model: mongoose.Model<{
     firstName?: string;
     lastName?: string;
     address?: string;
+    merchantId?: mongoose.Types.ObjectId;
+    merchant?: {
+        prototype?: mongoose.Types.ObjectId;
+        cacheHexString?: unknown;
+        generate?: {};
+        createFromTime?: {};
+        createFromHexString?: {};
+        createFromBase64?: {};
+        isValid?: {};
+    };
     postCode?: string;
     email?: string;
     location?: {
@@ -108,16 +118,6 @@ declare const Model: mongoose.Model<{
     earning?: number;
     image?: string;
     providerId?: string;
-    merchant?: {
-        prototype?: mongoose.Types.ObjectId;
-        cacheHexString?: unknown;
-        generate?: {};
-        createFromTime?: {};
-        createFromHexString?: {};
-        createFromBase64?: {};
-        isValid?: {};
-    };
-    merchantId?: mongoose.Types.ObjectId;
     emergencyContact?: {
         number?: number;
         name?: string;
@@ -137,6 +137,16 @@ declare const Model: mongoose.Model<{
     firstName?: string;
     lastName?: string;
     address?: string;
+    merchantId?: mongoose.Types.ObjectId;
+    merchant?: {
+        prototype?: mongoose.Types.ObjectId;
+        cacheHexString?: unknown;
+        generate?: {};
+        createFromTime?: {};
+        createFromHexString?: {};
+        createFromBase64?: {};
+        isValid?: {};
+    };
     postCode?: string;
     email?: string;
     location?: {
@@ -157,16 +167,6 @@ declare const Model: mongoose.Model<{
     earning?: number;
     image?: string;
     providerId?: string;
-    merchant?: {
-        prototype?: mongoose.Types.ObjectId;
-        cacheHexString?: unknown;
-        generate?: {};
-        createFromTime?: {};
-        createFromHexString?: {};
-        createFromBase64?: {};
-        isValid?: {};
-    };
-    merchantId?: mongoose.Types.ObjectId;
     emergencyContact?: {
         number?: number;
         name?: string;
@@ -193,6 +193,16 @@ declare const Model: mongoose.Model<{
     firstName?: string;
     lastName?: string;
     address?: string;
+    merchantId?: mongoose.Types.ObjectId;
+    merchant?: {
+        prototype?: mongoose.Types.ObjectId;
+        cacheHexString?: unknown;
+        generate?: {};
+        createFromTime?: {};
+        createFromHexString?: {};
+        createFromBase64?: {};
+        isValid?: {};
+    };
     postCode?: string;
     email?: string;
     location?: {
@@ -213,16 +223,6 @@ declare const Model: mongoose.Model<{
     earning?: number;
     image?: string;
     providerId?: string;
-    merchant?: {
-        prototype?: mongoose.Types.ObjectId;
-        cacheHexString?: unknown;
-        generate?: {};
-        createFromTime?: {};
-        createFromHexString?: {};
-        createFromBase64?: {};
-        isValid?: {};
-    };
-    merchantId?: mongoose.Types.ObjectId;
     emergencyContact?: {
         number?: number;
         name?: string;
@@ -242,6 +242,16 @@ declare const Model: mongoose.Model<{
     firstName?: string;
     lastName?: string;
     address?: string;
+    merchantId?: mongoose.Types.ObjectId;
+    merchant?: {
+        prototype?: mongoose.Types.ObjectId;
+        cacheHexString?: unknown;
+        generate?: {};
+        createFromTime?: {};
+        createFromHexString?: {};
+        createFromBase64?: {};
+        isValid?: {};
+    };
     postCode?: string;
     email?: string;
     location?: {
@@ -262,16 +272,6 @@ declare const Model: mongoose.Model<{
     earning?: number;
     image?: string;
     providerId?: string;
-    merchant?: {
-        prototype?: mongoose.Types.ObjectId;
-        cacheHexString?: unknown;
-        generate?: {};
-        createFromTime?: {};
-        createFromHexString?: {};
-        createFromBase64?: {};
-        isValid?: {};
-    };
-    merchantId?: mongoose.Types.ObjectId;
     emergencyContact?: {
         number?: number;
         name?: string;
@@ -291,6 +291,16 @@ declare const Model: mongoose.Model<{
     firstName?: string;
     lastName?: string;
     address?: string;
+    merchantId?: mongoose.Types.ObjectId;
+    merchant?: {
+        prototype?: mongoose.Types.ObjectId;
+        cacheHexString?: unknown;
+        generate?: {};
+        createFromTime?: {};
+        createFromHexString?: {};
+        createFromBase64?: {};
+        isValid?: {};
+    };
     postCode?: string;
     email?: string;
     location?: {
@@ -311,16 +321,6 @@ declare const Model: mongoose.Model<{
     earning?: number;
     image?: string;
     providerId?: string;
-    merchant?: {
-        prototype?: mongoose.Types.ObjectId;
-        cacheHexString?: unknown;
-        generate?: {};
-        createFromTime?: {};
-        createFromHexString?: {};
-        createFromBase64?: {};
-        isValid?: {};
-    };
-    merchantId?: mongoose.Types.ObjectId;
     emergencyContact?: {
         number?: number;
         name?: string;

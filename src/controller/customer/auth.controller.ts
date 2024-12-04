@@ -26,6 +26,7 @@ export const createCustomer = async (req: RequestParams, res: Response) => {
         latitude: number;
         longitude: number;
       };
+      merchantId: String;
       trashed: boolean;
     }>(req.body, customerSignUpValidation);
 
@@ -74,6 +75,7 @@ export const updateCustomer = async (req: RequestParams, res: Response) => {
         longitude: number;
       };
       trashed?: boolean;
+      merchantId: String;
     }>(req.body, customerUpdateValidation);
 
     if (!validateRequest.isValid) {

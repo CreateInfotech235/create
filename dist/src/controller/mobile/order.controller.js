@@ -70,6 +70,7 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             message: 'New order has been created',
             order: newOrder.orderId,
             merchantID: newOrder.merchant,
+            status: enum_1.ORDER_HISTORY.ACCEPTED,
         });
         const paymentData = {
             // customer: req.id.toString(),
@@ -513,6 +514,10 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         yield Promise.all([
             order_schema_1.default.updateOne({ orderId: value.orderId }, {
                 $set,
+            }),
+            orderHistory_schema_1.default.deleteMany({
+                order: value.orderId,
+                merchantID: isCreated.merchant,
             }),
             orderHistory_schema_1.default.create({
                 message: `Your order ${value.orderId} has been cancelled`,

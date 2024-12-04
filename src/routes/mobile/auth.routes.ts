@@ -15,6 +15,10 @@ import {
   getDeliveryManLocations,
   updateDeliveryManProfileAndPassword,
   getOrderCountsbyDate,
+  getadmindata,
+  postSupportTicket,
+  getSupportTicket,
+  deleteSupportTicket,
 } from '../../controller/mobile/auth.controller';
 import multer from 'multer';
 import {
@@ -198,5 +202,10 @@ router.patch(
   updateDeliveryManProfileAndPassword,
 );
 router.get('/getOrderCountsbyDate/:id', getOrderCountsbyDate);
+
+router.get('/admindata', getadmindata);
+router.post('/postSupportTicket/:id', postSupportTicket);
+router.get('/getSupportTicket/:id', getSupportTicket);
+router.delete('/deleteSupportTicket/:ticketId', deleteSupportTicket);
 
 export default router;

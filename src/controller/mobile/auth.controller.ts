@@ -11,6 +11,8 @@ import subcriptionSchema from '../../models/subcription.schema';
 import subcriptionPurchaseSchema from '../../models/subcriptionPurchase.schema';
 import merchantSchema from '../../models/user.schema';
 import OrderHistorySchema from '../../models/orderHistory.schema';
+import SupportTicket from '../../models/SupportTicket';
+import adminSchema from '../../models/admin.schema';
 import {
   createAuthTokens,
   emailOrMobileOtp,
@@ -36,13 +38,17 @@ import orderHistorySchema from '../../models/orderHistory.schema';
 import orderSchema from '../../models/order.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
 import subscribedSchema from '../../models/subcription.schema';
-import { orderCount, paginationValidation } from '../../utils/validation/adminSide.validation';
+import {
+  orderCount,
+  paginationValidation,
+} from '../../utils/validation/adminSide.validation';
 import { verifyPassword } from '../deliveryBoy/auth.controller';
 
 export const signUp = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
-      name: string;
+      firstName: string;
+      lastName: string;
       email: string;
       password: string;
       contactNumber: number;
@@ -234,7 +240,7 @@ export const activateFreeSubcription = async (
     const checkSubcriptionAlreadyExist =
       await subcriptionPurchaseSchema.findOne({
         // customer: req.id,
-        merchant: req.id,
+        merchant: value.userId,
         expiry: { $gte: new Date() },
       });
 
@@ -268,7 +274,7 @@ export const activateFreeSubcription = async (
       }),
       merchantSchema.updateOne(
         {
-          _id: req.id,
+          _id: value.userId,
         },
         {
           $set: {
@@ -578,13 +584,15 @@ export const getLocationOfMerchant = async (
 
     const formattedData = pickupLocation
       .map((location) => {
-        const { name, contactNumber, countryCode, address } = location;
+        const { firstName, lastName, contactNumber, countryCode, address } =
+          location;
 
         if (address && address.street && address.city && address.country) {
           const fullAddress =
             `${address.street} ${address.city} ${address.country}`.trim(); // Combine address fields
           return {
-            name,
+            firstName,
+            lastName,
             contactNumber,
             countryCode,
             address: fullAddress,
@@ -1153,6 +1161,98 @@ export const updateDeliveryManProfileAndPassword = async (
     console.error('Error updating delivery man profile or password:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const getadmindata = async (req: RequestParams, res: Response) => {
+  try {
+    const data = await adminSchema.aggregate([
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+        },
+      },
+    ]);
+    console.log(data);
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred' });
+  }
+};
+
+export const postSupportTicket = async (req: RequestParams, res: Response) => {
+  try {
+    console.log('Request body:', req.body);
+    const data = await SupportTicket.create(req.body);
+    return res.status(201).json({
+      message: 'Support ticket created successfully',
+      data: data,
+    });
+  } catch (error) {
+    console.error('Error creating support ticket:', error);
+    return res.status(500).json({
+      message: 'There was an error creating the support ticket',
+    });
+  }
+};
+
+export const getSupportTicket = async (req: RequestParams, res: Response) => {
+  try {
+    console.log('Request body:', req.body);
+    const data = await SupportTicket.find().populate('adminId', 'name email');
+
+    console.log('data', data);
+    return res.status(200).json({
+      message: 'Support ticket get successfully',
+      data: data,
+    });
+  } catch (error) {
+    console.error('Error get support ticket:', error);
+    return res.status(500).json({
+      message: 'There was an error get the support ticket',
+    });
+  }
+};
+
+export const deleteSupportTicket = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { ticketId } = req.params; // Get the ticket ID from the request parameters
+    console.log(req.params);
+
+    // Check if ticketId is provided
+    if (!ticketId) {
+      return res.status(400).json({
+        message: 'Ticket ID is required',
+      });
+    }
+    // Find and delete the support ticket by ID
+    const deletedTicket = await SupportTicket.findOneAndDelete(ticketId);
+
+    // If the ticket was not found, return an error
+    if (!deletedTicket) {
+      return res.status(404).json({
+        message: 'Support ticket not found',
+      });
+    }
+
+    console.log('Deleted ticket:', deletedTicket);
+
+    // Return success response
+    return res.status(200).json({
+      message: 'Support ticket deleted successfully',
+      data: deletedTicket,
+    });
+  } catch (error) {
+    console.error('Error deleting support ticket:', error);
+    return res.status(500).json({
+      message: 'There was an error deleting the support ticket',
     });
   }
 };

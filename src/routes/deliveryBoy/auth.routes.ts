@@ -9,7 +9,10 @@ import {
   moveToTrashDeliveryMan,
   updateDeliveryManProfileAndPassword,
 } from '../../controller/deliveryBoy/auth.controller';
-import { OrderAssigneeSchemaData } from '../../controller/deliveryBoy/order.controller';
+import {
+  allPaymentInfo,
+  OrderAssigneeSchemaData,
+} from '../../controller/deliveryBoy/order.controller';
 
 const router = express.Router();
 
@@ -51,5 +54,6 @@ router.patch(
 router.patch('/updateDeliveryManStatus/:id', updateDeliveryManStatus);
 
 router.get('/all', OrderAssigneeSchemaData);
+router.get('/allPaymentInfo', allPaymentInfo);
 
 export default router;

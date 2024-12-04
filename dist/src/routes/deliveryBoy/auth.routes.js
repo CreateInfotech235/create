@@ -38,4 +38,5 @@ router.patch('/updateDeliveryManProfile/:id', auth_controller_1.updateDeliveryMa
 // );
 router.patch('/updateDeliveryManStatus/:id', auth_controller_1.updateDeliveryManStatus);
 router.get('/all', order_controller_1.OrderAssigneeSchemaData);
+router.get('/allPaymentInfo', order_controller_1.allPaymentInfo);
 exports.default = router;

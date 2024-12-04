@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOrderById = exports.OrderAssigneeSchemaData = exports.deliverOrder = exports.sendEmailOrMobileOtp = exports.pickUpOrder = exports.departOrder = exports.cancelOrder = exports.arriveOrder = exports.acceptOrder = exports.getAssignedOrders = void 0;
+exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrder = exports.sendEmailOrMobileOtp = exports.pickUpOrder = exports.departOrder = exports.cancelOrder = exports.arriveOrder = exports.acceptOrder = exports.getAssignedOrders = void 0;
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
 const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
@@ -195,6 +195,10 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             status: enum_1.ORDER_HISTORY.ARRIVED,
             merchantID: isCreated.merchant,
         });
+        yield orderHistory_schema_1.default.deleteOne({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.ASSIGNED,
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -293,6 +297,10 @@ const departOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             status: enum_1.ORDER_HISTORY.DEPARTED,
             merchantID: isCreated.merchant,
         });
+        yield orderHistory_schema_1.default.deleteOne({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.PICKED_UP,
+        });
         // io.to(`order_${value.orderId}`).emit('locationUpdate', {
         //   latitude: value.latitude,
         //   longitude: value.longitude,
@@ -348,6 +356,10 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.PICKED_UP,
             merchantID: isArrived.merchant,
+        });
+        yield orderHistory_schema_1.default.deleteOne({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.ARRIVED,
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -507,13 +519,14 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
         const city = yield city_schema_1.default.findById(isArrived.city);
         const chargeData = yield productCharges_schema_1.default.findOne({
-            cityId: city._id,
+            // cityId: city._id,
             pickupRequest: isArrived.pickupDetails.request,
             isCustomer: isArrived.isCustomer,
         });
-        const adminCommission = city.commissionType === enum_1.CHARGE_TYPE.PERCENTAGE
-            ? isArrived.totalCharge * (chargeData.adminCommission / 100)
-            : chargeData.adminCommission;
+        const adminCommission = chargeData.adminCommission;
+        // city.commissionType === CHARGE_TYPE.PERCENTAGE
+        //   ? isArrived.totalCharge * (chargeData.adminCommission / 100)
+        //   : chargeData.adminCommission;
         const message = `Order ${value.orderId} Amount`;
         if (isArrived.deliveryDetails.cashOnDelivery) {
             if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
@@ -540,6 +553,10 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.DELIVERED,
             merchantID: isArrived.merchant,
+        });
+        yield orderHistory_schema_1.default.deleteOne({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.DEPARTED,
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -568,6 +585,21 @@ const OrderAssigneeSchemaData = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.OrderAssigneeSchemaData = OrderAssigneeSchemaData;
+const allPaymentInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield paymentInfo_schema_1.default.find();
+        res.status(200).json({
+            data: data,
+        });
+    }
+    catch (error) {
+        console.log('🚀 ~ deliverOrder ~ error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.allPaymentInfo = allPaymentInfo;
 const getOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { orderId } = req.params; // Extract orderId from the request parameters

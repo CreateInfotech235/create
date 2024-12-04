@@ -6,7 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../enum");
 const merchantSchema = new mongoose_1.default.Schema({
-    name: {
+    firstName: {
+        type: String,
+    },
+    lastName: {
         type: String,
     },
     email: {

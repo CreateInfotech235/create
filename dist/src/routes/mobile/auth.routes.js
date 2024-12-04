@@ -171,4 +171,8 @@ router.get('/getDeliveryManLocations/:id', auth_controller_1.getDeliveryManLocat
 router.patch('/moveToTrashDeliveryMan/:id', auth_controller_2.moveToTrashDeliveryMan);
 router.patch('/updateDeliveryManProfile/:id', auth_controller_1.updateDeliveryManProfileAndPassword);
 router.get('/getOrderCountsbyDate/:id', auth_controller_1.getOrderCountsbyDate);
+router.get('/admindata', auth_controller_1.getadmindata);
+router.post('/postSupportTicket/:id', auth_controller_1.postSupportTicket);
+router.get('/getSupportTicket/:id', auth_controller_1.getSupportTicket);
+router.delete('/deleteSupportTicket/:ticketId', auth_controller_1.deleteSupportTicket);
 exports.default = router;

@@ -51,6 +51,10 @@ const CustomerSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    merchantId: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'merchant',
+    },
     postCode: { type: String, required: true },
     mobileNumber: { type: String, required: true },
     email: { type: String, required: true },

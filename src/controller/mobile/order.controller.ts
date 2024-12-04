@@ -98,6 +98,7 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
       message: 'New order has been created',
       order: newOrder.orderId,
       merchantID: newOrder.merchant,
+      status: ORDER_HISTORY.ACCEPTED,
     });
 
     const paymentData: PaymentInfoType = {
@@ -671,6 +672,10 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
           $set,
         },
       ),
+      OrderHistorySchema.deleteMany({
+        order: value.orderId,
+        merchantID: isCreated.merchant,
+      }),
       OrderHistorySchema.create({
         message: `Your order ${value.orderId} has been cancelled`,
         order: value.orderId,

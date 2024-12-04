@@ -9,4 +9,5 @@ export declare const pickUpOrder: (req: RequestParams, res: Response) => Promise
 export declare const sendEmailOrMobileOtp: (req: RequestParams, res: Response) => Promise<void>;
 export declare const deliverOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const OrderAssigneeSchemaData: (req: RequestParams, res: Response) => Promise<void>;
+export declare const allPaymentInfo: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getOrderById: (req: RequestParams, res: Response) => Promise<void>;

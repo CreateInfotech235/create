@@ -34,8 +34,8 @@ declare const Model: mongoose.Model<{
     cityType: string;
     name?: string;
     description?: string;
-    image?: string;
     merchant?: mongoose.Types.ObjectId;
+    image?: string;
     size?: number;
     capacity?: number;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
@@ -48,8 +48,8 @@ declare const Model: mongoose.Model<{
     cityType: string;
     name?: string;
     description?: string;
-    image?: string;
     merchant?: mongoose.Types.ObjectId;
+    image?: string;
     size?: number;
     capacity?: number;
 }> & {
@@ -62,8 +62,8 @@ declare const Model: mongoose.Model<{
     cityType: string;
     name?: string;
     description?: string;
-    image?: string;
     merchant?: mongoose.Types.ObjectId;
+    image?: string;
     size?: number;
     capacity?: number;
 } & {
@@ -83,8 +83,8 @@ declare const Model: mongoose.Model<{
     cityType: string;
     name?: string;
     description?: string;
-    image?: string;
     merchant?: mongoose.Types.ObjectId;
+    image?: string;
     size?: number;
     capacity?: number;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
@@ -97,8 +97,8 @@ declare const Model: mongoose.Model<{
     cityType: string;
     name?: string;
     description?: string;
-    image?: string;
     merchant?: mongoose.Types.ObjectId;
+    image?: string;
     size?: number;
     capacity?: number;
 }>> & mongoose.FlatRecord<{
@@ -111,8 +111,8 @@ declare const Model: mongoose.Model<{
     cityType: string;
     name?: string;
     description?: string;
-    image?: string;
     merchant?: mongoose.Types.ObjectId;
+    image?: string;
     size?: number;
     capacity?: number;
 }> & {

@@ -193,6 +193,7 @@ const getPendingSubscription = (req, res) => __awaiter(void 0, void 0, void 0, f
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        console.log(value);
         const data = yield user_schema_1.default.aggregate([
             {
                 $lookup: {

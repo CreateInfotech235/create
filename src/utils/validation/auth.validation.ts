@@ -14,7 +14,8 @@ export const userSignInValidation = Joi.object().keys({
 });
 
 export const userSignUpValidation = Joi.object().keys({
-  name: Joi.string().required(),
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
   email: Joi.string()
     .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
     .required(),
@@ -119,11 +120,13 @@ export const customerUpdateValidation = Joi.object({
     latitude: Joi.number().required(),
     longitude: Joi.number().required(),
   }).optional(),
+  merchantId: Joi.string().required(),
   trashed: Joi.boolean().optional(),
 });
 
 export const customerSignUpValidation = Joi.object().keys({
   firstName: Joi.string().required(),
+  merchantId: Joi.string().required(),
   lastName: Joi.string().required(),
   email: Joi.string()
     .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)

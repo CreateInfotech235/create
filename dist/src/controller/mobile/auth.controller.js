@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -36,6 +36,8 @@ const subcription_schema_1 = __importDefault(require("../../models/subcription.s
 const subcriptionPurchase_schema_1 = __importDefault(require("../../models/subcriptionPurchase.schema"));
 const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory.schema"));
+const SupportTicket_1 = __importDefault(require("../../models/SupportTicket"));
+const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
@@ -171,7 +173,7 @@ const activateFreeSubcription = (req, res) => __awaiter(void 0, void 0, void 0, 
         }
         const checkSubcriptionAlreadyExist = yield subcriptionPurchase_schema_1.default.findOne({
             // customer: req.id,
-            merchant: req.id,
+            merchant: value.userId,
             expiry: { $gte: new Date() },
         });
         if (checkSubcriptionAlreadyExist) {
@@ -194,7 +196,7 @@ const activateFreeSubcription = (req, res) => __awaiter(void 0, void 0, void 0, 
                 status: 'APPROVED',
             }),
             user_schema_1.default.updateOne({
-                _id: req.id,
+                _id: value.userId,
             }, {
                 $set: {
                     medicalCertificate: value.medicalCertificate,
@@ -431,11 +433,12 @@ const getLocationOfMerchant = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const pickupLocation = yield user_schema_1.default.find({}, 'name contactNumber countryCode address');
         const formattedData = pickupLocation
             .map((location) => {
-            const { name, contactNumber, countryCode, address } = location;
+            const { firstName, lastName, contactNumber, countryCode, address } = location;
             if (address && address.street && address.city && address.country) {
                 const fullAddress = `${address.street} ${address.city} ${address.country}`.trim(); // Combine address fields
                 return {
-                    name,
+                    firstName,
+                    lastName,
                     contactNumber,
                     countryCode,
                     address: fullAddress,
@@ -893,3 +896,91 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
     }
 });
 exports.updateDeliveryManProfileAndPassword = updateDeliveryManProfileAndPassword;
+const getadmindata = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield admin_schema_1.default.aggregate([
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    email: 1,
+                },
+            },
+        ]);
+        console.log(data);
+        res.json(data);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred' });
+    }
+});
+exports.getadmindata = getadmindata;
+const postSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Request body:', req.body);
+        const data = yield SupportTicket_1.default.create(req.body);
+        return res.status(201).json({
+            message: 'Support ticket created successfully',
+            data: data,
+        });
+    }
+    catch (error) {
+        console.error('Error creating support ticket:', error);
+        return res.status(500).json({
+            message: 'There was an error creating the support ticket',
+        });
+    }
+});
+exports.postSupportTicket = postSupportTicket;
+const getSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Request body:', req.body);
+        const data = yield SupportTicket_1.default.find().populate('adminId', 'name email');
+        console.log('data', data);
+        return res.status(200).json({
+            message: 'Support ticket get successfully',
+            data: data,
+        });
+    }
+    catch (error) {
+        console.error('Error get support ticket:', error);
+        return res.status(500).json({
+            message: 'There was an error get the support ticket',
+        });
+    }
+});
+exports.getSupportTicket = getSupportTicket;
+const deleteSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { ticketId } = req.params; // Get the ticket ID from the request parameters
+        console.log(req.params);
+        // Check if ticketId is provided
+        if (!ticketId) {
+            return res.status(400).json({
+                message: 'Ticket ID is required',
+            });
+        }
+        // Find and delete the support ticket by ID
+        const deletedTicket = yield SupportTicket_1.default.findOneAndDelete(ticketId);
+        // If the ticket was not found, return an error
+        if (!deletedTicket) {
+            return res.status(404).json({
+                message: 'Support ticket not found',
+            });
+        }
+        console.log('Deleted ticket:', deletedTicket);
+        // Return success response
+        return res.status(200).json({
+            message: 'Support ticket deleted successfully',
+            data: deletedTicket,
+        });
+    }
+    catch (error) {
+        console.error('Error deleting support ticket:', error);
+        return res.status(500).json({
+            message: 'There was an error deleting the support ticket',
+        });
+    }
+});
+exports.deleteSupportTicket = deleteSupportTicket;

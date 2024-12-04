@@ -264,6 +264,10 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
       status: ORDER_HISTORY.ARRIVED,
       merchantID: isCreated.merchant,
     });
+    await OrderHistorySchema.deleteOne({
+      order: value.orderId,
+      status: ORDER_HISTORY.ASSIGNED,
+    });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -398,6 +402,11 @@ export const departOrder = async (req: RequestParams, res: Response) => {
       status: ORDER_HISTORY.DEPARTED,
       merchantID: isCreated.merchant,
     });
+
+    await OrderHistorySchema.deleteOne({
+      order: value.orderId,
+      status: ORDER_HISTORY.PICKED_UP,
+    });
     // io.to(`order_${value.orderId}`).emit('locationUpdate', {
     //   latitude: value.latitude,
     //   longitude: value.longitude,
@@ -478,6 +487,10 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       status: ORDER_HISTORY.PICKED_UP,
       merchantID: isArrived.merchant,
+    });
+    await OrderHistorySchema.deleteOne({
+      order: value.orderId,
+      status: ORDER_HISTORY.ARRIVED,
     });
 
     return res.ok({
@@ -689,15 +702,15 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     });
     const city = await CitySchema.findById(isArrived.city);
     const chargeData = await ProductChargesSchema.findOne({
-      cityId: city._id,
+      // cityId: city._id,
       pickupRequest: isArrived.pickupDetails.request,
       isCustomer: isArrived.isCustomer,
     });
 
-    const adminCommission =
-      city.commissionType === CHARGE_TYPE.PERCENTAGE
-        ? isArrived.totalCharge * (chargeData.adminCommission / 100)
-        : chargeData.adminCommission;
+    const adminCommission = chargeData.adminCommission;
+    // city.commissionType === CHARGE_TYPE.PERCENTAGE
+    //   ? isArrived.totalCharge * (chargeData.adminCommission / 100)
+    //   : chargeData.adminCommission;
 
     const message = `Order ${value.orderId} Amount`;
 
@@ -762,6 +775,10 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       status: ORDER_HISTORY.DELIVERED,
       merchantID: isArrived.merchant,
     });
+    await OrderHistorySchema.deleteOne({
+      order: value.orderId,
+      status: ORDER_HISTORY.DEPARTED,
+    });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -779,6 +796,19 @@ export const OrderAssigneeSchemaData = async (
 ) => {
   try {
     const data = await OrderAssigneeSchema.find();
+    res.status(200).json({
+      data: data,
+    });
+  } catch (error) {
+    console.log('🚀 ~ deliverOrder ~ error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+export const allPaymentInfo = async (req: RequestParams, res: Response) => {
+  try {
+    const data = await PaymentInfoSchema.find();
     res.status(200).json({
       data: data,
     });

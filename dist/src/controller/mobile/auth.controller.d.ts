@@ -15,3 +15,7 @@ export declare const getOrderCountsbyDate: (req: RequestParams, res: Response) =
 export declare const getorderHistory: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getDeliveryManLocations: (req: RequestParams, res: Response) => Promise<void>;
 export declare const updateDeliveryManProfileAndPassword: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getadmindata: (req: RequestParams, res: Response) => Promise<void>;
+export declare const postSupportTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getSupportTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const deleteSupportTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;

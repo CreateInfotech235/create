@@ -258,6 +258,7 @@ export const getPendingSubscription = async (
     }
 
     const { value } = validateRequest;
+    console.log(value);
 
     const data = await merchantSchema.aggregate([
       {

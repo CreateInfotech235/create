@@ -28,44 +28,32 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    isCustomer: boolean;
-    cancelCharge: number;
-    minimumDistance: number;
-    minimumWeight: number;
-    perDistanceCharge: number;
-    perWeightCharge: number;
-    pickupRequest: string;
-    merchant?: mongoose.Types.ObjectId;
-    cityId?: mongoose.Types.ObjectId;
-    adminCommission?: number;
+    name: string;
+    adminId: mongoose.Types.ObjectId;
+    userid: mongoose.Types.ObjectId;
+    subject: string;
+    problem: string;
+    problemSolved: boolean;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    isCustomer: boolean;
-    cancelCharge: number;
-    minimumDistance: number;
-    minimumWeight: number;
-    perDistanceCharge: number;
-    perWeightCharge: number;
-    pickupRequest: string;
-    merchant?: mongoose.Types.ObjectId;
-    cityId?: mongoose.Types.ObjectId;
-    adminCommission?: number;
+    name: string;
+    adminId: mongoose.Types.ObjectId;
+    userid: mongoose.Types.ObjectId;
+    subject: string;
+    problem: string;
+    problemSolved: boolean;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    isCustomer: boolean;
-    cancelCharge: number;
-    minimumDistance: number;
-    minimumWeight: number;
-    perDistanceCharge: number;
-    perWeightCharge: number;
-    pickupRequest: string;
-    merchant?: mongoose.Types.ObjectId;
-    cityId?: mongoose.Types.ObjectId;
-    adminCommission?: number;
+    name: string;
+    adminId: mongoose.Types.ObjectId;
+    userid: mongoose.Types.ObjectId;
+    subject: string;
+    problem: string;
+    problemSolved: boolean;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -77,44 +65,32 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    isCustomer: boolean;
-    cancelCharge: number;
-    minimumDistance: number;
-    minimumWeight: number;
-    perDistanceCharge: number;
-    perWeightCharge: number;
-    pickupRequest: string;
-    merchant?: mongoose.Types.ObjectId;
-    cityId?: mongoose.Types.ObjectId;
-    adminCommission?: number;
+    name: string;
+    adminId: mongoose.Types.ObjectId;
+    userid: mongoose.Types.ObjectId;
+    subject: string;
+    problem: string;
+    problemSolved: boolean;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    isCustomer: boolean;
-    cancelCharge: number;
-    minimumDistance: number;
-    minimumWeight: number;
-    perDistanceCharge: number;
-    perWeightCharge: number;
-    pickupRequest: string;
-    merchant?: mongoose.Types.ObjectId;
-    cityId?: mongoose.Types.ObjectId;
-    adminCommission?: number;
+    name: string;
+    adminId: mongoose.Types.ObjectId;
+    userid: mongoose.Types.ObjectId;
+    subject: string;
+    problem: string;
+    problemSolved: boolean;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    isCustomer: boolean;
-    cancelCharge: number;
-    minimumDistance: number;
-    minimumWeight: number;
-    perDistanceCharge: number;
-    perWeightCharge: number;
-    pickupRequest: string;
-    merchant?: mongoose.Types.ObjectId;
-    cityId?: mongoose.Types.ObjectId;
-    adminCommission?: number;
+    name: string;
+    adminId: mongoose.Types.ObjectId;
+    userid: mongoose.Types.ObjectId;
+    subject: string;
+    problem: string;
+    problemSolved: boolean;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

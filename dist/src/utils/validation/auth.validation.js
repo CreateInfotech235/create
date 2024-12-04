@@ -18,7 +18,8 @@ exports.userSignInValidation = joi_1.default.object().keys({
         .required(),
 });
 exports.userSignUpValidation = joi_1.default.object().keys({
-    name: joi_1.default.string().required(),
+    firstName: joi_1.default.string().required(),
+    lastName: joi_1.default.string().required(),
     email: joi_1.default.string()
         .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
         .required(),
@@ -107,10 +108,12 @@ exports.customerUpdateValidation = joi_1.default.object({
         latitude: joi_1.default.number().required(),
         longitude: joi_1.default.number().required(),
     }).optional(),
+    merchantId: joi_1.default.string().required(),
     trashed: joi_1.default.boolean().optional(),
 });
 exports.customerSignUpValidation = joi_1.default.object().keys({
     firstName: joi_1.default.string().required(),
+    merchantId: joi_1.default.string().required(),
     lastName: joi_1.default.string().required(),
     email: joi_1.default.string()
         .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)

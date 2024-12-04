@@ -3,7 +3,10 @@ import { PROVIDER, SWITCH } from '../enum';
 
 const merchantSchema = new mongoose.Schema(
   {
-    name: {
+    firstName: {
+      type: String,
+    },
+    lastName: {
       type: String,
     },
     email: {

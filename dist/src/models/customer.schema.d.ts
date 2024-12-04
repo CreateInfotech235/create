@@ -39,6 +39,7 @@ declare const Model: mongoose.Model<{
     trashed: boolean;
     createdByAdmin: boolean;
     customerId?: string;
+    merchantId?: mongoose.Types.ObjectId;
     location?: {
         type: string;
         coordinates: number[];
@@ -58,6 +59,7 @@ declare const Model: mongoose.Model<{
     trashed: boolean;
     createdByAdmin: boolean;
     customerId?: string;
+    merchantId?: mongoose.Types.ObjectId;
     location?: {
         type: string;
         coordinates: number[];
@@ -77,6 +79,7 @@ declare const Model: mongoose.Model<{
     trashed: boolean;
     createdByAdmin: boolean;
     customerId?: string;
+    merchantId?: mongoose.Types.ObjectId;
     location?: {
         type: string;
         coordinates: number[];
@@ -102,6 +105,7 @@ declare const Model: mongoose.Model<{
     trashed: boolean;
     createdByAdmin: boolean;
     customerId?: string;
+    merchantId?: mongoose.Types.ObjectId;
     location?: {
         type: string;
         coordinates: number[];
@@ -121,6 +125,7 @@ declare const Model: mongoose.Model<{
     trashed: boolean;
     createdByAdmin: boolean;
     customerId?: string;
+    merchantId?: mongoose.Types.ObjectId;
     location?: {
         type: string;
         coordinates: number[];
@@ -140,6 +145,7 @@ declare const Model: mongoose.Model<{
     trashed: boolean;
     createdByAdmin: boolean;
     customerId?: string;
+    merchantId?: mongoose.Types.ObjectId;
     location?: {
         type: string;
         coordinates: number[];
