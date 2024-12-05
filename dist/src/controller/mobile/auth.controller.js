@@ -338,7 +338,9 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
         });
     }
     catch (error) {
+        console.log(error);
         return res.failureResponse({
+            error: error,
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });
     }

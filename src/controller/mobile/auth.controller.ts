@@ -451,7 +451,9 @@ export const sendEmailOrMobileOtp = async (
       data: { otp },
     });
   } catch (error) {
+    console.log(error);
     return res.failureResponse({
+      error: error,
       message: getLanguage('en').somethingWentWrong,
     });
   }
