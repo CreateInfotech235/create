@@ -130,8 +130,7 @@ export const sendEmailOrMobileOtp = async (
 
     const { value } = validateRequest;
 
-    const otp =
-      process.env.ENV === 'DEV' ? 999999 : generateIntRandomNo(111111, 999999);
+    const otp = generateIntRandomNo(111111, 999999);
 
     await emailOrMobileOtp(
       value.email,
@@ -156,7 +155,7 @@ export const sendEmailOrMobileOtp = async (
 
     return res.ok({
       message: getLanguage('en').otpSentSuccess,
-      data: process.env.ENV !== 'DEV' ? {} : { otp },
+      data: { otp },
     });
   } catch (error) {
     return res.failureResponse({
@@ -243,7 +242,7 @@ export const renewToken = async (req: RequestParams, res: Response) => {
     });
   } catch (error) {
     console.log(error);
-    
+
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
@@ -298,7 +297,7 @@ export const logout = async (req: RequestParams, res: Response) => {
     });
   } catch (error) {
     console.log(error);
-    
+
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
@@ -309,17 +308,37 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
   try {
     const totalOrders = await orderSchema.countDocuments();
 
-    const createdOrders = await orderHistorySchema.countDocuments({ status: 'CREATED' });
-    const assignedOrders = await orderHistorySchema.countDocuments({ status: 'ASSIGNED' });
-    const acceptedOrders = await orderAssignSchema.countDocuments({ status: 'ACCEPTED' });
-    const arrivedOrders = await orderHistorySchema.countDocuments({ status: 'ARRIVED' });
-    const pickedOrders = await orderHistorySchema.countDocuments({ status: 'PICKED_UP' });
-    const departedOrders = await orderHistorySchema.countDocuments({ status: 'DEPARTED' });
-    const deliveredOrders = await orderHistorySchema.countDocuments({ status: 'DELIVERED' });
-    const cancelledOrders = await orderHistorySchema.countDocuments({ status: 'CANCELLED' });
+    const createdOrders = await orderHistorySchema.countDocuments({
+      status: 'CREATED',
+    });
+    const assignedOrders = await orderHistorySchema.countDocuments({
+      status: 'ASSIGNED',
+    });
+    const acceptedOrders = await orderAssignSchema.countDocuments({
+      status: 'ACCEPTED',
+    });
+    const arrivedOrders = await orderHistorySchema.countDocuments({
+      status: 'ARRIVED',
+    });
+    const pickedOrders = await orderHistorySchema.countDocuments({
+      status: 'PICKED_UP',
+    });
+    const departedOrders = await orderHistorySchema.countDocuments({
+      status: 'DEPARTED',
+    });
+    const deliveredOrders = await orderHistorySchema.countDocuments({
+      status: 'DELIVERED',
+    });
+    const cancelledOrders = await orderHistorySchema.countDocuments({
+      status: 'CANCELLED',
+    });
     const deliveryMan = await deliveryManSchema.countDocuments();
-    const subscribedMerchants = await subscribedSchema.countDocuments({ isActive : true});
-    const unsubscribedMerchants = await subscribedSchema.countDocuments({ isActive : {$ne : true } });
+    const subscribedMerchants = await subscribedSchema.countDocuments({
+      isActive: true,
+    });
+    const unsubscribedMerchants = await subscribedSchema.countDocuments({
+      isActive: { $ne: true },
+    });
 
     let totalCounts = {
       totalOrders,
@@ -333,15 +352,15 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       cancelledOrders,
       deliveryMan,
       subscribedMerchants,
-      unsubscribedMerchants
-    }
+      unsubscribedMerchants,
+    };
     // return res.status(200).json({
     //   success: true,
     //   data: totalCounts
     // });
     return res.ok({
       message: getLanguage('en').countedData,
-      data: totalCounts
+      data: totalCounts,
     });
   } catch (error) {
     console.log(error);

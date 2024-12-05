@@ -93,7 +93,7 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
-        const otp = process.env.ENV === 'DEV' ? 999999 : (0, common_1.generateIntRandomNo)(111111, 999999);
+        const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
         yield (0, common_1.emailOrMobileOtp)(value.email, `This is your otp for registration ${otp}`);
         yield otp_schema_1.default.updateOne({
             value: otp,
@@ -108,7 +108,7 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
         }, { upsert: true });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').otpSentSuccess,
-            data: process.env.ENV !== 'DEV' ? {} : { otp },
+            data: { otp },
         });
     }
     catch (error) {
@@ -218,17 +218,37 @@ exports.logout = logout;
 const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const totalOrders = yield order_schema_1.default.countDocuments();
-        const createdOrders = yield orderHistory_schema_1.default.countDocuments({ status: 'CREATED' });
-        const assignedOrders = yield orderHistory_schema_1.default.countDocuments({ status: 'ASSIGNED' });
-        const acceptedOrders = yield orderAssignee_schema_1.default.countDocuments({ status: 'ACCEPTED' });
-        const arrivedOrders = yield orderHistory_schema_1.default.countDocuments({ status: 'ARRIVED' });
-        const pickedOrders = yield orderHistory_schema_1.default.countDocuments({ status: 'PICKED_UP' });
-        const departedOrders = yield orderHistory_schema_1.default.countDocuments({ status: 'DEPARTED' });
-        const deliveredOrders = yield orderHistory_schema_1.default.countDocuments({ status: 'DELIVERED' });
-        const cancelledOrders = yield orderHistory_schema_1.default.countDocuments({ status: 'CANCELLED' });
+        const createdOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'CREATED',
+        });
+        const assignedOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'ASSIGNED',
+        });
+        const acceptedOrders = yield orderAssignee_schema_1.default.countDocuments({
+            status: 'ACCEPTED',
+        });
+        const arrivedOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'ARRIVED',
+        });
+        const pickedOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'PICKED_UP',
+        });
+        const departedOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'DEPARTED',
+        });
+        const deliveredOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'DELIVERED',
+        });
+        const cancelledOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'CANCELLED',
+        });
         const deliveryMan = yield deliveryMan_schema_1.default.countDocuments();
-        const subscribedMerchants = yield subcription_schema_1.default.countDocuments({ isActive: true });
-        const unsubscribedMerchants = yield subcription_schema_1.default.countDocuments({ isActive: { $ne: true } });
+        const subscribedMerchants = yield subcription_schema_1.default.countDocuments({
+            isActive: true,
+        });
+        const unsubscribedMerchants = yield subcription_schema_1.default.countDocuments({
+            isActive: { $ne: true },
+        });
         let totalCounts = {
             totalOrders,
             createdOrders,
@@ -241,7 +261,7 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
             cancelledOrders,
             deliveryMan,
             subscribedMerchants,
-            unsubscribedMerchants
+            unsubscribedMerchants,
         };
         // return res.status(200).json({
         //   success: true,
@@ -249,7 +269,7 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
         // });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').countedData,
-            data: totalCounts
+            data: totalCounts,
         });
     }
     catch (error) {
