@@ -24,23 +24,39 @@ const adminSettings_schema_1 = __importDefault(require("../models/adminSettings.
 const deliveryMan_schema_1 = __importDefault(require("../models/deliveryMan.schema"));
 const user_schema_1 = __importDefault(require("../models/user.schema"));
 const wallet_schema_1 = __importDefault(require("../models/wallet.schema"));
-const sendMailService = (to, subject, text) => {
+const sendMailService = (to, subject, text) => __awaiter(void 0, void 0, void 0, function* () {
     const transporter = nodemailer_1.default.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
-        secure: false, // Use `true` for port 465, `false` for all other ports
+        secure: false, // true for 465, false for other ports
         auth: {
             user: process.env.APP_EMAIL,
             pass: process.env.APP_PASSWORD,
         },
     });
-    return transporter.sendMail({
-        from: process.env.APP_EMAIL,
-        to,
-        subject,
-        text,
-    });
-};
+    try {
+        yield transporter.verify();
+        console.log('SMTP server is ready to take messages');
+    }
+    catch (error) {
+        console.error('SMTP connection error:', error);
+        throw new Error('Failed to connect to SMTP server');
+    }
+    try {
+        const info = yield transporter.sendMail({
+            from: process.env.APP_EMAIL,
+            to,
+            subject,
+            text,
+        });
+        console.log('Email sent: %s', info.messageId);
+        return info;
+    }
+    catch (error) {
+        console.error('Error sending email:', error);
+        throw error;
+    }
+});
 exports.sendMailService = sendMailService;
 const passwordValidation = (password, hashPassword) => __awaiter(void 0, void 0, void 0, function* () {
     return bcrypt_1.default.compare(password, hashPassword);

@@ -12,23 +12,41 @@ import merchantSchema from '../models/user.schema';
 import WalletSchema from '../models/wallet.schema';
 import { encryptPasswordParams } from './types/expressTypes';
 
-export const sendMailService = (to: string, subject: string, text: string) => {
+export const sendMailService = async (
+  to: string,
+  subject: string,
+  text: string,
+) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // Use `true` for port 465, `false` for all other ports
+    secure: false, // true for 465, false for other ports
     auth: {
       user: process.env.APP_EMAIL,
       pass: process.env.APP_PASSWORD,
     },
   });
 
-  return transporter.sendMail({
-    from: process.env.APP_EMAIL,
-    to,
-    subject,
-    text,
-  });
+  try {
+    await transporter.verify();
+    console.log('SMTP server is ready to take messages');
+  } catch (error) {
+    console.error('SMTP connection error:', error);
+    throw new Error('Failed to connect to SMTP server');
+  }
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.APP_EMAIL,
+      to,
+      subject,
+      text,
+    });
+    console.log('Email sent: %s', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
 };
 
 export const passwordValidation = async (
