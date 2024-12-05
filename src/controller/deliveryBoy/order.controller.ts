@@ -568,10 +568,10 @@ export const sendEmailOrMobileOtp = async (
 
     const otp = generateIntRandomNo(111111, 999999);
 
-    await emailOrMobileOtp(
-      orderExist.pickupDetails.email,
-      `This is your otp for identity verification ${otp}`,
-    );
+    // await emailOrMobileOtp(
+    //   orderExist.pickupDetails.email,
+    //   `This is your otp for identity verification ${otp}`,
+    // );
 
     const isAtPickUp = orderExist.status === ORDER_HISTORY.ARRIVED;
     const email = isAtPickUp

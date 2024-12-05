@@ -421,7 +421,10 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
             });
         }
         const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
-        yield (0, common_1.emailOrMobileOtp)(orderExist.pickupDetails.email, `This is your otp for identity verification ${otp}`);
+        // await emailOrMobileOtp(
+        //   orderExist.pickupDetails.email,
+        //   `This is your otp for identity verification ${otp}`,
+        // );
         const isAtPickUp = orderExist.status === enum_1.ORDER_HISTORY.ARRIVED;
         const email = isAtPickUp
             ? orderExist.pickupDetails.email
