@@ -88,17 +88,17 @@ export const createAuthTokens = (id: Types.ObjectId) => {
 };
 
 export const emailOrMobileOtp = async (email: string, message: string) => {
-  if (process.env.ENV !== 'DEV') {
-    const adminEmailOptionCheck = await adminSettingsSchema.findOne();
+  // if (process.env.ENV !== 'DEV') {
+  const adminEmailOptionCheck = await adminSettingsSchema.findOne();
 
-    if (adminEmailOptionCheck.emailVerify) {
-      await sendMailService(email, 'Email Otp Verification Mail', message);
-    }
-
-    if (adminEmailOptionCheck.mobileNumberVerify) {
-      // TODO: Third party integration sms service for otp sent to mobile
-    }
+  if (adminEmailOptionCheck.emailVerify) {
+    await sendMailService(email, 'Email Otp Verification Mail', message);
   }
+
+  if (adminEmailOptionCheck.mobileNumberVerify) {
+    // TODO: Third party integration sms service for otp sent to mobile
+  }
+  // }
 };
 
 export const updateWallet = async (

@@ -83,15 +83,15 @@ const createAuthTokens = (id) => {
 };
 exports.createAuthTokens = createAuthTokens;
 const emailOrMobileOtp = (email, message) => __awaiter(void 0, void 0, void 0, function* () {
-    if (process.env.ENV !== 'DEV') {
-        const adminEmailOptionCheck = yield adminSettings_schema_1.default.findOne();
-        if (adminEmailOptionCheck.emailVerify) {
-            yield (0, exports.sendMailService)(email, 'Email Otp Verification Mail', message);
-        }
-        if (adminEmailOptionCheck.mobileNumberVerify) {
-            // TODO: Third party integration sms service for otp sent to mobile
-        }
+    // if (process.env.ENV !== 'DEV') {
+    const adminEmailOptionCheck = yield adminSettings_schema_1.default.findOne();
+    if (adminEmailOptionCheck.emailVerify) {
+        yield (0, exports.sendMailService)(email, 'Email Otp Verification Mail', message);
     }
+    if (adminEmailOptionCheck.mobileNumberVerify) {
+        // TODO: Third party integration sms service for otp sent to mobile
+    }
+    // }
 });
 exports.emailOrMobileOtp = emailOrMobileOtp;
 const updateWallet = (amount_1, adminId_1, personId_1, transactionType_1, transactionMessage_1, ...args_1) => __awaiter(void 0, [amount_1, adminId_1, personId_1, transactionType_1, transactionMessage_1, ...args_1], void 0, function* (amount, adminId, personId, transactionType, transactionMessage, isCustomer = true) {

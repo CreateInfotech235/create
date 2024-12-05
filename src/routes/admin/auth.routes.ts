@@ -215,5 +215,6 @@ router.patch('/logout', logout);
  *
  */
 router.get('/count', adminAuth, getOrderCounts);
+router.get('/count1', adminAuth, getOrderCounts);
 
 export default router;

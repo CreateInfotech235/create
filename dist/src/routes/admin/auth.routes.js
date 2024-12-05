@@ -203,4 +203,5 @@ router.patch('/logout', auth_controller_1.logout);
  *
  */
 router.get('/count', admin_auth_1.default, auth_controller_1.getOrderCounts);
+router.get('/count1', admin_auth_1.default, auth_controller_1.getOrderCounts);
 exports.default = router;
