@@ -21,6 +21,7 @@ const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.s
 const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
 const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory.schema"));
+const orderAssignee_schema_2 = __importDefault(require("../../models/orderAssignee.schema"));
 const paymentInfo_schema_1 = __importDefault(require("../../models/paymentInfo.schema"));
 const productCharges_schema_1 = __importDefault(require("../../models/productCharges.schema"));
 const user_schema_1 = __importDefault(require("../../models/user.schema"));
@@ -55,7 +56,6 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // value.customer = req.id.toString();
         value.merchant = req.id.toString();
         const newOrder = yield order_schema_1.default.create(value);
-        // console.log(newOrder, 'New Order');
         if (value.deliveryManId) {
             value.isCustomer = true;
             yield orderAssignee_schema_1.default.create({
@@ -71,6 +71,12 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             order: newOrder.orderId,
             merchantID: newOrder.merchant,
             status: enum_1.ORDER_HISTORY.ACCEPTED,
+        });
+        yield orderHistory_schema_1.default.create({
+            message: 'New order has been Assigned',
+            order: newOrder.orderId,
+            merchantID: newOrder.merchant,
+            status: enum_1.ORDER_HISTORY.ASSIGNED,
         });
         const paymentData = {
             // customer: req.id.toString(),
@@ -138,8 +144,14 @@ const orderUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // If deliveryManId is updated, update the assignee table too
         if (value.deliveryManId) {
             if (existingOrder.status === 'UNASSIGNED') {
-                const updatedOrder = yield order_schema_1.default.findOneAndUpdate({ _id: orderId }, { status: 'CREATED' });
+                const updatedOrder = yield order_schema_1.default.findOneAndUpdate({ _id: orderId }, { status: 'ASSIGNED' });
                 yield orderAssignee_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });
+                yield orderHistory_schema_1.default.create({
+                    message: 'Order has been assigned',
+                    order: updatedOrder.orderId,
+                    merchantID: updatedOrder.merchant,
+                    status: enum_1.ORDER_HISTORY.ASSIGNED,
+                });
             }
             else {
                 yield orderAssignee_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });
@@ -860,6 +872,8 @@ const deleteOrderFormMerchant = (req, res) => __awaiter(void 0, void 0, void 0, 
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').orderNotFound });
         }
         yield order_schema_1.default.findByIdAndDelete(id);
+        yield orderHistory_schema_1.default.deleteMany({ order: OrderData.orderId });
+        yield orderAssignee_schema_2.default.deleteMany({ order: OrderData.orderId });
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').orderDeleted });
     }
     catch (error) {

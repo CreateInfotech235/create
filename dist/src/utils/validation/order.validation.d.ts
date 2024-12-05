@@ -9,4 +9,5 @@ export declare const orderPickUpValidation: Joi.ObjectSchema<any>;
 export declare const orderDeliverValidation: Joi.ObjectSchema<any>;
 export declare const orderIdValidation: Joi.ObjectSchema<any>;
 export declare const orderCancelValidation: Joi.ObjectSchema<any>;
+export declare const invoiceValidation: Joi.ObjectSchema<any>;
 export declare const orderAdminListValidation: Joi.ObjectSchema<any>;

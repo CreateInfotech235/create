@@ -163,8 +163,15 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
 
     const isCreated = await orderSchema.findOne({
       orderId: value.orderId,
-      status: { $eq: ORDER_HISTORY.CREATED },
+      status: {
+        $in: [
+          ORDER_HISTORY.CREATED,
+          ORDER_HISTORY.ASSIGNED,
+          ORDER_HISTORY.UNASSIGNED,
+        ],
+      },
     });
+    console.log(isCreated, 'isCreated');
 
     if (!isCreated) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
@@ -198,12 +205,12 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
         name: 1,
       });
 
-      await OrderHistorySchema.create({
-        message: `Your order ${value.orderId} has been assigned to ${data.firstName}`,
-        order: value.orderId,
-        status: ORDER_HISTORY.ASSIGNED,
-        merchantID: isCreated.merchant,
-      });
+      // await OrderHistorySchema.create({
+      //   message: `Your order ${value.orderId} has been assigned to ${data.firstName}`,
+      //   order: value.orderId,
+      //   status: ORDER_HISTORY.ASSIGNED,
+      //   merchantID: isCreated.merchant,
+      // });
     }
 
     return res.ok({
@@ -301,7 +308,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
         $in: [ORDER_HISTORY.CREATED, ORDER_HISTORY.ASSIGNED],
       },
     });
-    console.log(existingOrder);
+    console.log(existingOrder, 'First');
 
     if (!existingOrder) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
@@ -312,6 +319,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       deliveryBoy: value.deliveryManId,
     });
+    console.log(isAssigned, 'Secound');
 
     if (!isAssigned) {
       return res.badRequest({
@@ -324,12 +332,37 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       { orderId: value.orderId },
       { $set: { status: ORDER_HISTORY.UNASSIGNED } },
     );
-
+    console.log('Third');
     // Update the assignee status (if needed)
     await OrderAssigneeSchema.findByIdAndUpdate(isAssigned._id, {
-      $set: { status: ORDER_REQUEST.REJECT },
+      // $set: {
+      status: ORDER_REQUEST.REJECT,
+      // deliveryBoy: '',
+      // },
     });
 
+    console.log('Four');
+    const history = await OrderHistorySchema.find({
+      order: value.orderId,
+      status: ORDER_HISTORY.ASSIGNED,
+    });
+    console.log(
+      history,
+      'Fivedsjsdvsdhjfsdvfsdfjkfsdvf',
+      existingOrder.merchant,
+    );
+    await OrderHistorySchema.deleteMany({
+      // message: `Order ${value.orderId} has been canceled by the delivery man`,
+      order: value.orderId,
+      status: ORDER_HISTORY.ASSIGNED,
+      merchantID: existingOrder.merchant,
+    });
+
+    const history1 = await OrderHistorySchema.find({
+      order: value.orderId,
+      status: ORDER_HISTORY.ASSIGNED,
+    });
+    console.log(history1, 'Sixxxxxxxxxxxxxxxxxxxxxx');
     // Record the cancellation in the order history
     await OrderHistorySchema.create({
       message: `Order ${value.orderId} has been canceled by the delivery man.`,
@@ -337,12 +370,16 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       status: ORDER_HISTORY.UNASSIGNED,
       merchantID: existingOrder.merchant,
     });
+    console.log('Fifth');
+
+    console.log('Six');
 
     await sendMailService(
       existingOrder.pickupDetails.email,
       'Cancel Order ',
       'Your order is cancelled by deliveryman plz assign order other deliveryman',
     );
+    console.log('Seaven');
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,

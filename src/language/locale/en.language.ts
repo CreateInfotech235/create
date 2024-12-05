@@ -12,6 +12,12 @@ const messages = {
   passwordUpdated: 'Your password has been successfully updated.',
   passwordMismatch: 'New password and confirm password do not match.',
   orderNotAssignedToYou: 'order Not Assigned To You.',
+  invoiceCreatedSuccessfully: 'Invoice created successfully',
+  invoiceAlreadyExists: 'Invoice already exists',
+  invoiceNotFound: 'Invoice not found',
+  invoiceUpdatedSuccessfully: 'Invoice updated successfully',
+  invoiceDeletedSuccessfully: 'Invoice deleted successfully',
+  invoiceDataFetchedSuccessfully: 'Invoice data fetched successfully',
 
   invalidCountry: 'Country or city not found',
   subcriptionExpired: 'Your subcription is expired',

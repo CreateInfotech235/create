@@ -184,5 +184,23 @@ router.post('/renewToken', auth_controller_1.renewToken);
  *         description: Something went wrong
  */
 router.patch('/logout', auth_controller_1.logout);
+/**
+ * @swagger
+ * /admin/auth/count:
+ *   get:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Get Order Counts
+ *     tags: [ Admin - Auth ]
+ *     description: Get Order Counts
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ *
+ */
 router.get('/count', admin_auth_1.default, auth_controller_1.getOrderCounts);
 exports.default = router;

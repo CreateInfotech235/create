@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.orderAdminListValidation = exports.orderCancelValidation = exports.orderIdValidation = exports.orderDeliverValidation = exports.orderPickUpValidation = exports.orderListByDeliveryManValidation = exports.orderArriveValidation = exports.orderAcceptValidation = exports.orderAssignValidation = exports.newOrderCreation = exports.orderCreateValidation = void 0;
+exports.orderAdminListValidation = exports.invoiceValidation = exports.orderCancelValidation = exports.orderIdValidation = exports.orderDeliverValidation = exports.orderPickUpValidation = exports.orderListByDeliveryManValidation = exports.orderArriveValidation = exports.orderAcceptValidation = exports.orderAssignValidation = exports.newOrderCreation = exports.orderCreateValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 const enum_1 = require("../../enum");
 exports.orderCreateValidation = joi_1.default.object({
@@ -162,6 +162,15 @@ exports.orderIdValidation = joi_1.default.object({
 exports.orderCancelValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),
     reason: joi_1.default.string(),
+});
+exports.invoiceValidation = joi_1.default.object({
+    companyName: joi_1.default.string().required(),
+    city: joi_1.default.string(),
+    address: joi_1.default.string().required(),
+    logo: joi_1.default.string(),
+    header: joi_1.default.string(),
+    footer: joi_1.default.string(),
+    merchantId: joi_1.default.string().required(),
 });
 exports.orderAdminListValidation = joi_1.default.object({
     date: joi_1.default.string(),

@@ -6,10 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const auth_controller_1 = require("../../controller/mobile/auth.controller");
 const auth_controller_2 = require("../../controller/deliveryBoy/auth.controller");
-/**
- * index.js
- * @description :: index route of platforms
- */
 const router = express_1.default.Router();
 /**
  * @swagger
@@ -33,16 +29,6 @@ const router = express_1.default.Router();
  *         description: Something went wrong
  */
 router.post('/signUp', auth_controller_1.signUp);
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, 'uploads/');
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, `${Date.now()}-${file.originalname}`);
-//   },
-// });
-// const upload = multer({ storage });
-// router.post('/signUp', upload.single('medicalCertificate'), signUp);
 /**
  * @swagger
  * /mobile/auth/signIn:
@@ -69,10 +55,10 @@ router.post('/signIn', auth_controller_1.signIn);
  * @swagger
  * /mobile/auth/activatePlan:
  *   post:
- *     summary: Activate Free Subcription
+ *     summary: Activate Free Subscription
  *     tags: [ Mobile - Auth ]
  *     requestBody:
- *      description: free subcription activation call
+ *      description: free subscription activation call
  *      required: true
  *      content:
  *        application/json:
@@ -160,19 +146,324 @@ router.post('/renewToken', auth_controller_1.renewToken);
  *         description: Something went wrong
  */
 router.patch('/logout', auth_controller_1.logout);
+/**
+ * @swagger
+ * /mobile/auth/getLocationOfMerchant:
+ *   get:
+ *     summary: Get Merchant Location
+ *     tags: [ Mobile - Auth ]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved merchant location
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getLocationOfMerchant', auth_controller_1.getLocationOfMerchant);
+/**
+ * @swagger
+ * /mobile/auth/getProfileOfMerchant/{id}:
+ *   get:
+ *     summary: Get Merchant Profile
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved merchant profile
+ *       404:
+ *         description: Merchant not found
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getProfileOfMerchant/:id', auth_controller_1.getProfileOfMerchant);
+/**
+ * @swagger
+ * /mobile/auth/updateProfileOfMerchant/{id}:
+ *   post:
+ *     summary: Update Merchant Profile
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       404:
+ *         description: Merchant not found
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/updateProfileOfMerchant/:id', auth_controller_1.updateProfileOfMerchant);
+/**
+ * @swagger
+ * /mobile/auth/count/{id}:
+ *   get:
+ *     summary: Get Order Counts
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved order counts
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/count/:id', auth_controller_1.getOrderCounts);
+/**
+ * @swagger
+ * /mobile/auth/getAllDeliveryManOfMerchant/{id}:
+ *   get:
+ *     summary: Get All Delivery Men of Merchant
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved delivery men
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getAllDeliveryManOfMerchant/:id', auth_controller_1.getAllDeliveryManOfMerchant);
+/**
+ * @swagger
+ * /mobile/auth/getorderHistory:
+ *   get:
+ *     summary: Get Order History
+ *     tags: [ Mobile - Auth ]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved order history
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getorderHistory', auth_controller_1.getorderHistory);
+/**
+ * @swagger
+ * /mobile/auth/deleteDeliveryMan/{id}:
+ *   delete:
+ *     summary: Delete Delivery Man
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Delivery man deleted successfully
+ *       404:
+ *         description: Delivery man not found
+ *       500:
+ *         description: Something went wrong
+ */
 router.delete('/deleteDeliveryMan/:id', auth_controller_2.deleteDeliveryMan);
+/**
+ * @swagger
+ * /mobile/auth/getDeliveryManLocations/{id}:
+ *   get:
+ *     summary: Get Delivery Man Locations
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved locations
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getDeliveryManLocations/:id', auth_controller_1.getDeliveryManLocations);
+/**
+ * @swagger
+ * /mobile/auth/moveToTrashDeliveryMan/{id}:
+ *   patch:
+ *     summary: Move Delivery Man to Trash
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully moved to trash
+ *       404:
+ *         description: Delivery man not found
+ *       500:
+ *         description: Something went wrong
+ */
 router.patch('/moveToTrashDeliveryMan/:id', auth_controller_2.moveToTrashDeliveryMan);
+// /**
+//  * @swagger
+//  * /mobile/auth/updateDeliveryManProfile/{id}:
+//  *   patch:
+//  *     summary: Update Delivery Man Profile
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               firstName:
+//  *                 type: string
+//  *               lastName:
+//  *                 type: string
+//  *               email:
+//  *                 type: string
+//  *               phone:
+//  *                 type: string
+//  *     responses:
+//  *       200:
+//  *         description: Profile updated successfully
+//  *       404:
+//  *         description: Delivery man not found
+//  *       500:
+//  *         description: Something went wrong
+//  */
 router.patch('/updateDeliveryManProfile/:id', auth_controller_1.updateDeliveryManProfileAndPassword);
+/**
+ * @swagger
+ * /mobile/auth/getOrderCountsbyDate/{id}:
+ *   get:
+ *     summary: Get Order Counts by Date
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved order counts
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getOrderCountsbyDate/:id', auth_controller_1.getOrderCountsbyDate);
+/**
+ * @swagger
+ * /mobile/auth/admindata:
+ *   get:
+ *     summary: Get Admin Data
+ *     tags: [ Mobile - Auth ]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved admin data
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/admindata', auth_controller_1.getadmindata);
+/**
+ * @swagger
+ * /mobile/auth/postSupportTicket/{id}:
+ *   post:
+ *     summary: Create Support Ticket
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               subject:
+ *                 type: string
+ *               message:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Ticket created successfully
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/postSupportTicket/:id', auth_controller_1.postSupportTicket);
+/**
+ * @swagger
+ * /mobile/auth/getSupportTicket/{id}:
+ *   get:
+ *     summary: Get Support Tickets
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved tickets
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getSupportTicket/:id', auth_controller_1.getSupportTicket);
+/**
+ * @swagger
+ * /mobile/auth/deleteSupportTicket/{ticketId}:
+ *   delete:
+ *     summary: Delete Support Ticket
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: ticketId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ticket deleted successfully
+ *       404:
+ *         description: Ticket not found
+ *       500:
+ *         description: Something went wrong
+ */
 router.delete('/deleteSupportTicket/:ticketId', auth_controller_1.deleteSupportTicket);
 exports.default = router;

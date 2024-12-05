@@ -5,21 +5,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const auth_controller_1 = require("../../controller/deliveryBoy/auth.controller");
-const order_controller_1 = require("../../controller/deliveryBoy/order.controller");
 const router = express_1.default.Router();
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     DeliveryManSignUp:
+ *       type: object
+ *       properties:
+ *         firstName:
+ *           type: string
+ *         lastName:
+ *           type: string
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ *         contactNumber:
+ *           type: string
+ *       required:
+ *         - firstName
+ *         - lastName
+ *         - email
+ *         - password
+ *         - contactNumber
+ *
  * /deliveryBoy/auth/signUp:
  *   post:
  *     summary: Sign Up
  *     tags: [ Delivery Boy - Auth ]
  *     requestBody:
- *      description: for sign up
- *      required: true
- *      content:
- *        application/json:
- *          schema:
- *            $ref: "#/components/schemas/DeliveryManSignUp"
+ *       description: for sign up
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/DeliveryManSignUp'
  *     responses:
  *       200:
  *         description: Your request is successfully executed.
@@ -29,14 +50,130 @@ const router = express_1.default.Router();
  *         description: Something went wrong
  */
 router.post('/signUp', auth_controller_1.signUp);
+/**
+ * @swagger
+ * /deliveryBoy/auth/getDeliveryBoysForMerchant/{merchantId}:
+ *   get:
+ *     summary: Get delivery boys for a merchant
+ *     tags: [ Delivery Boy - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: merchantId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved delivery boys
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getDeliveryBoysForMerchant/:merchantId', auth_controller_1.getDeliveryBoysForMerchant);
+/**
+ * @swagger
+ * /deliveryBoy/auth/getDeliveryManProfile/{id}:
+ *   get:
+ *     summary: Get delivery man profile
+ *     tags: [ Delivery Boy - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved profile
+ *       404:
+ *         description: Profile not found
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getDeliveryManProfile/:id', auth_controller_1.getDeliveryManProfile);
+/**
+ * @swagger
+ * /deliveryBoy/auth/updateDeliveryManProfile/{id}:
+ *   patch:
+ *     summary: Update delivery man profile and password
+ *     tags: [ Delivery Boy - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               mobileNumber:
+ *                 type: string
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *               confirmPassword:
+ *                 type: string
+ *               documents:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     documentId:
+ *                       type: string
+ *                     image:
+ *                       type: string
+ *                     documentNumber:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       400:
+ *         description: Bad request - Invalid input or password mismatch
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Something went wrong
+ */
 router.patch('/updateDeliveryManProfile/:id', auth_controller_1.updateDeliveryManProfileAndPassword);
-// router.patch(
-//   '/updateDeliveryManPassword/:id',
-//   ,
-// );
+/**
+ * @swagger
+ * /deliveryBoy/auth/updateDeliveryManStatus/{id}:
+ *   patch:
+ *     summary: Update delivery man status
+ *     tags: [ Delivery Boy - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive]
+ *     responses:
+ *       200:
+ *         description: Status updated successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Something went wrong
+ */
 router.patch('/updateDeliveryManStatus/:id', auth_controller_1.updateDeliveryManStatus);
-router.get('/all', order_controller_1.OrderAssigneeSchemaData);
-router.get('/allPaymentInfo', order_controller_1.allPaymentInfo);
 exports.default = router;

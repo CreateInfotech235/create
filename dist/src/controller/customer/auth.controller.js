@@ -19,6 +19,7 @@ const city_schema_1 = __importDefault(require("../../models/city.schema"));
 const country_schema_1 = __importDefault(require("../../models/country.schema"));
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
+const mongoose_1 = __importDefault(require("mongoose"));
 const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.customerSignUpValidation);
@@ -91,7 +92,14 @@ const updateCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.updateCustomer = updateCustomer;
 const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const merchantId = yield req.query.merchantId;
+        console.log(merchantId);
         const data = yield customer_schema_1.default.aggregate([
+            {
+                $match: {
+                    merchantId: new mongoose_1.default.Types.ObjectId(merchantId),
+                },
+            },
             {
                 $sort: {
                     createdAt: -1, // Sort by createdAt in descending order
@@ -141,13 +149,15 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     location: '$location',
                     createdDate: '$createdAt',
                     customerId: 1,
+                    merchantId: 1,
                     trashed: {
                         $ifNull: ['$trashed', false],
                     },
                 },
             },
         ]);
-        return res.ok({ data: data });
+        console.log(data);
+        return res.ok({ data: data === null ? [] : data });
     }
     catch (error) {
         return res.failureResponse({

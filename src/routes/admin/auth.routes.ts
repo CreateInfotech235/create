@@ -6,7 +6,7 @@ import {
   renewToken,
   sendEmailOrMobileOtp,
   signIn,
-  getOrderCounts
+  getOrderCounts,
 } from '../../controller/admin/auth.controller';
 import adminAuth from '../../middleware/admin.auth';
 
@@ -195,6 +195,25 @@ router.post('/renewToken', renewToken);
  *         description: Something went wrong
  */
 router.patch('/logout', logout);
+
+/**
+ * @swagger
+ * /admin/auth/count:
+ *   get:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Get Order Counts
+ *     tags: [ Admin - Auth ]
+ *     description: Get Order Counts
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ *
+ */
 router.get('/count', adminAuth, getOrderCounts);
 
 export default router;

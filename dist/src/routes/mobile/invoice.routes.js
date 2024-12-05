@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const invoice_controller_1 = require("../../controller/mobile/invoice.controller");
+const router = (0, express_1.Router)();
+router.post('/create', invoice_controller_1.createInvoice);
+router.get('/:merchantId', invoice_controller_1.getInvoice);
+router.put('/update/:merchantId', invoice_controller_1.updateInvoice);
+router.delete('/delete/:merchantId', invoice_controller_1.deleteInvoice);
+exports.default = router;

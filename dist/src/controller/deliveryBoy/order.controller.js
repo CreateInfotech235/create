@@ -119,8 +119,15 @@ const acceptOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         value.deliveryManId = req.id.toString();
         const isCreated = yield order_schema_1.default.findOne({
             orderId: value.orderId,
-            status: { $eq: enum_1.ORDER_HISTORY.CREATED },
+            status: {
+                $in: [
+                    enum_1.ORDER_HISTORY.CREATED,
+                    enum_1.ORDER_HISTORY.ASSIGNED,
+                    enum_1.ORDER_HISTORY.UNASSIGNED,
+                ],
+            },
         });
+        console.log(isCreated, 'isCreated');
         if (!isCreated) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
@@ -144,12 +151,12 @@ const acceptOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 _id: 0,
                 name: 1,
             });
-            yield orderHistory_schema_1.default.create({
-                message: `Your order ${value.orderId} has been assigned to ${data.firstName}`,
-                order: value.orderId,
-                status: enum_1.ORDER_HISTORY.ASSIGNED,
-                merchantID: isCreated.merchant,
-            });
+            // await OrderHistorySchema.create({
+            //   message: `Your order ${value.orderId} has been assigned to ${data.firstName}`,
+            //   order: value.orderId,
+            //   status: ORDER_HISTORY.ASSIGNED,
+            //   merchantID: isCreated.merchant,
+            // });
         }
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -225,7 +232,7 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 $in: [enum_1.ORDER_HISTORY.CREATED, enum_1.ORDER_HISTORY.ASSIGNED],
             },
         });
-        console.log(existingOrder);
+        console.log(existingOrder, 'First');
         if (!existingOrder) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
@@ -234,6 +241,7 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             order: value.orderId,
             deliveryBoy: value.deliveryManId,
         });
+        console.log(isAssigned, 'Secound');
         if (!isAssigned) {
             return res.badRequest({
                 message: (0, languageHelper_1.getLanguage)('en').orderNotAssignedToYou,
@@ -241,10 +249,31 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         // Update the order status to canceled
         yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { status: enum_1.ORDER_HISTORY.UNASSIGNED } });
+        console.log('Third');
         // Update the assignee status (if needed)
         yield orderAssignee_schema_1.default.findByIdAndUpdate(isAssigned._id, {
-            $set: { status: enum_1.ORDER_REQUEST.REJECT },
+            // $set: {
+            status: enum_1.ORDER_REQUEST.REJECT,
+            // deliveryBoy: '',
+            // },
         });
+        console.log('Four');
+        const history = yield orderHistory_schema_1.default.find({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.ASSIGNED,
+        });
+        console.log(history, 'Fivedsjsdvsdhjfsdvfsdfjkfsdvf', existingOrder.merchant);
+        yield orderHistory_schema_1.default.deleteMany({
+            // message: `Order ${value.orderId} has been canceled by the delivery man`,
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.ASSIGNED,
+            merchantID: existingOrder.merchant,
+        });
+        const history1 = yield orderHistory_schema_1.default.find({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.ASSIGNED,
+        });
+        console.log(history1, 'Sixxxxxxxxxxxxxxxxxxxxxx');
         // Record the cancellation in the order history
         yield orderHistory_schema_1.default.create({
             message: `Order ${value.orderId} has been canceled by the delivery man.`,
@@ -252,7 +281,10 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             status: enum_1.ORDER_HISTORY.UNASSIGNED,
             merchantID: existingOrder.merchant,
         });
+        console.log('Fifth');
+        console.log('Six');
         yield (0, common_1.sendMailService)(existingOrder.pickupDetails.email, 'Cancel Order ', 'Your order is cancelled by deliveryman plz assign order other deliveryman');
+        console.log('Seaven');
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
         });

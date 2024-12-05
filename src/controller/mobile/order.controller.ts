@@ -22,6 +22,7 @@ import extraChargesSchema from '../../models/extraCharges.schema';
 import orderSchema from '../../models/order.schema';
 import OrderAssigneeSchema from '../../models/orderAssignee.schema';
 import OrderHistorySchema from '../../models/orderHistory.schema';
+import orderAssignSchema from '../../models/orderAssignee.schema';
 import PaymentInfoSchema from '../../models/paymentInfo.schema';
 import PostCodeSchema from '../../models/postCode.schema';
 import ProductChargesSchema from '../../models/productCharges.schema';
@@ -82,7 +83,6 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
     // value.customer = req.id.toString();
     value.merchant = req.id.toString();
     const newOrder = await orderSchema.create(value);
-    // console.log(newOrder, 'New Order');
 
     if (value.deliveryManId) {
       value.isCustomer = true;
@@ -99,6 +99,12 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
       order: newOrder.orderId,
       merchantID: newOrder.merchant,
       status: ORDER_HISTORY.ACCEPTED,
+    });
+    await OrderHistorySchema.create({
+      message: 'New order has been Assigned',
+      order: newOrder.orderId,
+      merchantID: newOrder.merchant,
+      status: ORDER_HISTORY.ASSIGNED,
     });
 
     const paymentData: PaymentInfoType = {
@@ -187,13 +193,19 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
       if (existingOrder.status === 'UNASSIGNED') {
         const updatedOrder = await orderSchema.findOneAndUpdate(
           { _id: orderId },
-          { status: 'CREATED' },
+          { status: 'ASSIGNED' },
           // { new: true }, // Return the updated order object
         );
         await OrderAssigneeSchema.updateOne(
           { _id: orderId },
           { deliveryBoy: value.deliveryManId },
         );
+        await OrderHistorySchema.create({
+          message: 'Order has been assigned',
+          order: updatedOrder.orderId,
+          merchantID: updatedOrder.merchant,
+          status: ORDER_HISTORY.ASSIGNED,
+        });
       } else {
         await OrderAssigneeSchema.updateOne(
           { _id: orderId },
@@ -1046,6 +1058,8 @@ export const deleteOrderFormMerchant = async (
     }
 
     await orderSchema.findByIdAndDelete(id);
+    await OrderHistorySchema.deleteMany({ order: OrderData.orderId });
+    await orderAssignSchema.deleteMany({ order: OrderData.orderId });
 
     return res.ok({ message: getLanguage('en').orderDeleted });
   } catch (error) {

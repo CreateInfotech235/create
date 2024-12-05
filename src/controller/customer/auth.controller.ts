@@ -9,6 +9,7 @@ import {
   customerSignUpValidation,
   customerUpdateValidation,
 } from '../../utils/validation/auth.validation';
+import mongoose from 'mongoose';
 
 export const createCustomer = async (req: RequestParams, res: Response) => {
   try {
@@ -126,10 +127,17 @@ export const updateCustomer = async (req: RequestParams, res: Response) => {
     });
   }
 };
-
 export const getCustomers = async (req: RequestParams, res: Response) => {
   try {
+    const merchantId = await req.query.merchantId;
+    console.log(merchantId);
+
     const data = await customerSchema.aggregate([
+      {
+        $match: {
+          merchantId: new mongoose.Types.ObjectId(merchantId as string),
+        },
+      },
       {
         $sort: {
           createdAt: -1, // Sort by createdAt in descending order
@@ -179,13 +187,15 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
           location: '$location',
           createdDate: '$createdAt',
           customerId: 1,
+          merchantId: 1,
           trashed: {
             $ifNull: ['$trashed', false],
           },
         },
       },
     ]);
-    return res.ok({ data: data });
+    console.log(data);
+    return res.ok({ data: data === null ? [] : data });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,

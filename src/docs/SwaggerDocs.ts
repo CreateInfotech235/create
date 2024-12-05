@@ -17,7 +17,8 @@ import {
 } from '../enum';
 
 const signUp = {
-  name: { type: 'string' },
+  firstName: { type: 'string' },
+  lastName: { type: 'string' },
   email: { type: 'string', example: 'demo@gmail.com' },
   password: { type: 'string', example: 'demoDEMO@1121' },
   contactNumber: { type: 'number' },
@@ -399,6 +400,65 @@ const swaggerOption = {
             },
           },
         },
+        customerSignUpValidation: {
+          type: 'object',
+          properties: {
+            firstName: { type: 'string' },
+            merchantId: { type: 'string' },
+            lastName: { type: 'string' },
+            email: { type: 'string' },
+            address: { type: 'string' },
+            postCode: { type: 'string' },
+            mobileNumber: { type: 'string' },
+            country: { type: 'string' },
+            city: { type: 'string' },
+            location: {
+              type: 'object',
+              properties: {
+                latitude: { type: 'number' },
+                longitude: { type: 'number' },
+              },
+            },
+            createdByAdmin: { type: 'boolean' },
+            trashed: {
+              type: 'boolean',
+              default: false,
+            },
+          },
+          required: [
+            'firstName',
+            'merchantId',
+            'lastName',
+            'email',
+            'address',
+            'postCode',
+            'mobileNumber',
+            'country',
+            'city',
+          ],
+        },
+        customerUpdateValidation: {
+          type: 'object',
+          properties: {
+            firstName: { type: 'string' },
+            lastName: { type: 'string' },
+            country: { type: 'string' },
+            city: { type: 'string' },
+            address: { type: 'string' },
+            postCode: { type: 'string' },
+            mobileNumber: { type: 'string' },
+            email: { type: 'string' },
+            location: {
+              type: 'object',
+              properties: {
+                latitude: { type: 'number' },
+                longitude: { type: 'number' },
+              },
+            },
+            merchantId: { type: 'string' },
+            trashed: { type: 'boolean' },
+          },
+        },
       },
     },
     // security: [
@@ -410,6 +470,7 @@ const swaggerOption = {
   apis: [
     './src/routes/admin/*.ts',
     './src/routes/deliveryBoy/*.ts',
+    './src/routes/customer/*.ts',
     './src/routes/mobile/*.ts',
   ],
 };

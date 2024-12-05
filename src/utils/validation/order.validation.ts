@@ -186,7 +186,15 @@ export const orderCancelValidation = Joi.object({
   orderId: Joi.number().required(),
   reason: Joi.string(),
 });
-
+export const invoiceValidation = Joi.object({
+  companyName: Joi.string().required(),
+  city: Joi.string(),
+  address: Joi.string().required(),
+  logo: Joi.string(),
+  header: Joi.string(),
+  footer: Joi.string(),
+  merchantId: Joi.string().required(),
+});
 export const orderAdminListValidation = Joi.object({
   date: Joi.string(),
   status: Joi.string().valid(...Object.keys(ORDER_HISTORY)),

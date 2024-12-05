@@ -13,6 +13,12 @@ export declare const getLanguage: (lang: language) => {
     passwordUpdated: string;
     passwordMismatch: string;
     orderNotAssignedToYou: string;
+    invoiceCreatedSuccessfully: string;
+    invoiceAlreadyExists: string;
+    invoiceNotFound: string;
+    invoiceUpdatedSuccessfully: string;
+    invoiceDeletedSuccessfully: string;
+    invoiceDataFetchedSuccessfully: string;
     invalidCountry: string;
     subcriptionExpired: string;
     subcriptionPending: string;
