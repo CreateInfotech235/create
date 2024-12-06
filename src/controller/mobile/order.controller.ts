@@ -820,6 +820,7 @@ export const getAllOrdersFromMerchant = async (
           orderId: 1,
           parcelsCount: 1,
           customerName: '$deliveryDetails.name',
+          cutomerEmail: '$deliveryDetails.email',
           pickupAddress: '$pickupDetails',
           deliveryAddress: '$deliveryDetails',
           deliveryMan: {

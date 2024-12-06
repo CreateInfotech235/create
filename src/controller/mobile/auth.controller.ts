@@ -1205,7 +1205,11 @@ export const postSupportTicket = async (req: RequestParams, res: Response) => {
 export const getSupportTicket = async (req: RequestParams, res: Response) => {
   try {
     console.log('Request body:', req.body);
-    const data = await SupportTicket.find().populate('adminId', 'name email');
+    const { id } = req.params;
+    const data = await SupportTicket.find({ userid: id }).populate(
+      'adminId',
+      'name email',
+    );
 
     console.log('data', data);
     return res.status(200).json({

@@ -28,7 +28,6 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    name: string;
     adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
@@ -38,7 +37,6 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    name: string;
     adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
@@ -48,7 +46,6 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    name: string;
     adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
@@ -65,7 +62,6 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    name: string;
     adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
@@ -75,7 +71,6 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    name: string;
     adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
@@ -85,7 +80,6 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    name: string;
     adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;

@@ -938,7 +938,8 @@ exports.postSupportTicket = postSupportTicket;
 const getSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         console.log('Request body:', req.body);
-        const data = yield SupportTicket_1.default.find().populate('adminId', 'name email');
+        const { id } = req.params;
+        const data = yield SupportTicket_1.default.find({ userid: id }).populate('adminId', 'name email');
         console.log('data', data);
         return res.status(200).json({
             message: 'Support ticket get successfully',
