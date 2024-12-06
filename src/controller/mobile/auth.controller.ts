@@ -420,10 +420,10 @@ export const sendEmailOrMobileOtp = async (
 
     const otp = generateIntRandomNo(111111, 999999);
 
-    // await emailOrMobileOtp(
-    //   value.email,
-    //   `This is your otp for registration ${otp}`,
-    // );
+    await emailOrMobileOtp(
+      value.email,
+      `This is your otp for registration ${otp}`,
+    );
 
     const data = await otpSchema.updateOne(
       {

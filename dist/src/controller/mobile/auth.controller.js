@@ -316,10 +316,7 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
             });
         }
         const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
-        // await emailOrMobileOtp(
-        //   value.email,
-        //   `This is your otp for registration ${otp}`,
-        // );
+        yield (0, common_1.emailOrMobileOtp)(value.email, `This is your otp for registration ${otp}`);
         const data = yield otp_schema_1.default.updateOne({
             value: otp,
             customerEmail: value.email,
