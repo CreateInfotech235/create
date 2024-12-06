@@ -534,6 +534,8 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
   } catch (error) {
+    console.log('error', error);
+
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

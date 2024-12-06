@@ -88,7 +88,6 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
       value.isCustomer = true;
       await OrderAssigneeSchema.create({
         deliveryBoy: value.deliveryManId,
-        // customer: req.id,
         merchant: req.id,
         order: newOrder.orderId,
         status: ORDER_HISTORY.ACCEPTED,

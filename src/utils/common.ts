@@ -72,7 +72,7 @@ export const uploadFile = (
   return new Promise((resolve, reject) => {
     try {
       const extension = fileName.split(':')[1].split(';')[0].split('/')[1];
-      const filePath = `/uploads/${Date.now()}-${fileType}.${extension}`;
+      const filePath = `uploads/${Date.now()}-${fileType}.${extension}`;
       fs.writeFileSync(filePath, Buffer.from(base64FormatImage, 'base64'));
       resolve(filePath);
     } catch (error) {

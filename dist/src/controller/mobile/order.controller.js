@@ -60,7 +60,6 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             value.isCustomer = true;
             yield orderAssignee_schema_1.default.create({
                 deliveryBoy: value.deliveryManId,
-                // customer: req.id,
                 merchant: req.id,
                 order: newOrder.orderId,
                 status: enum_1.ORDER_HISTORY.ACCEPTED,
