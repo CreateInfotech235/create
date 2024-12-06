@@ -511,12 +511,12 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
       },
     );
 
-    if (isArrived.pickupDetails.cashOnDelivery) {
-      await PaymentInfoSchema.updateOne(
-        { order: value.orderId },
-        { $set: { status: PAYMENT_INFO.SUCCESS } },
-      );
-    }
+    // if (isArrived.cashOnDelivery) {
+    //   await PaymentInfoSchema.updateOne(
+    //     { order: value.orderId },
+    //     { $set: { status: PAYMENT_INFO.SUCCESS } },
+    //   );
+    // }
 
     await OrderHistorySchema.create({
       message:
@@ -748,7 +748,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
 
     const message = `Order ${value.orderId} Amount`;
 
-    if (isArrived.deliveryDetails.cashOnDelivery) {
+    if (isArrived.cashOnDelivery) {
       if (paymentInfo.status !== PAYMENT_INFO.SUCCESS) {
         await PaymentInfoSchema.updateOne(
           { order: value.orderId },

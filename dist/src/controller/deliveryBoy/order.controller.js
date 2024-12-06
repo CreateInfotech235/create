@@ -380,9 +380,12 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 status: enum_1.ORDER_HISTORY.PICKED_UP,
             },
         });
-        if (isArrived.pickupDetails.cashOnDelivery) {
-            yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
-        }
+        // if (isArrived.cashOnDelivery) {
+        //   await PaymentInfoSchema.updateOne(
+        //     { order: value.orderId },
+        //     { $set: { status: PAYMENT_INFO.SUCCESS } },
+        //   );
+        // }
         yield orderHistory_schema_1.default.create({
             message: 'Delivery Person has been arrived at pick up location and waiting for client',
             order: value.orderId,
@@ -561,7 +564,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         //   ? isArrived.totalCharge * (chargeData.adminCommission / 100)
         //   : chargeData.adminCommission;
         const message = `Order ${value.orderId} Amount`;
-        if (isArrived.deliveryDetails.cashOnDelivery) {
+        if (isArrived.cashOnDelivery) {
             if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
                 yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
             }

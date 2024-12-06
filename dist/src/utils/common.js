@@ -26,7 +26,7 @@ const user_schema_1 = __importDefault(require("../models/user.schema"));
 const wallet_schema_1 = __importDefault(require("../models/wallet.schema"));
 const sendMailService = (to, subject, text) => __awaiter(void 0, void 0, void 0, function* () {
     const transporter = nodemailer_1.default.createTransport({
-        host: 'smtp.gmail.com',
+        service: 'gmail',
         port: 465,
         secure: true, // true for 465, false for other ports
         auth: {
@@ -73,7 +73,7 @@ const uploadFile = (fileName, base64FormatImage, fileType) => {
     return new Promise((resolve, reject) => {
         try {
             const extension = fileName.split(':')[1].split(';')[0].split('/')[1];
-            const filePath = `${Date.now()}-${fileType}.${extension}`;
+            const filePath = `/uploads/${Date.now()}-${fileType}.${extension}`;
             fs_1.default.writeFileSync(filePath, Buffer.from(base64FormatImage, 'base64'));
             resolve(filePath);
         }
