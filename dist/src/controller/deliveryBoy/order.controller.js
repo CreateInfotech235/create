@@ -157,12 +157,13 @@ const acceptOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 _id: 0,
                 name: 1,
             });
-            // await OrderHistorySchema.create({
-            //   message: `Your order ${value.orderId} has been assigned to ${data.firstName}`,
-            //   order: value.orderId,
-            //   status: ORDER_HISTORY.ASSIGNED,
-            //   merchantID: isCreated.merchant,
-            // });
+            yield orderHistory_schema_1.default.create({
+                message: `Your order ${value.orderId} has been assigned to ${data.firstName}`,
+                order: value.orderId,
+                status: enum_1.ORDER_HISTORY.ASSIGNED,
+                merchantID: isCreated.merchant,
+                deliveryBoy: value.deliveryManId,
+            });
         }
         // await createNotification({
         //   userId: isCreated.merchant,
@@ -214,6 +215,7 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.ARRIVED,
             merchantID: isCreated.merchant,
+            deliveryBoy: value.deliveryManId,
         });
         yield orderHistory_schema_1.default.deleteOne({
             order: value.orderId,
@@ -300,6 +302,7 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.UNASSIGNED,
             merchantID: existingOrder.merchant,
+            deliveryBoy: value.deliveryManId,
         });
         console.log('Fifth');
         console.log('Six');
@@ -355,6 +358,7 @@ const departOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.DEPARTED,
             merchantID: isCreated.merchant,
+            deliveryBoy: value.deliveryManId,
         });
         yield orderHistory_schema_1.default.deleteOne({
             order: value.orderId,
@@ -601,16 +605,16 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             order: value.orderId,
         });
         console.log('Order Assignment:', assignData);
-        console.log("Order Assignee details", assignData.deliveryBoy);
+        console.log('Order Assignee details', assignData.deliveryBoy);
         // Only update delivery boy balance if it's cash on delivery
         if (isArrived.cashOnDelivery) {
             const balance = isArrived.paymentCollectionRupees;
             const deliveryBoy = yield deliveryMan_schema_1.default.findByIdAndUpdate(assignData.deliveryBoy, { $inc: { balance: balance } });
-            console.log("Delivery Boy Details", deliveryBoy);
+            console.log('Delivery Boy Details', deliveryBoy);
         }
         else {
-            console.log("Delivery Boy Details", "Not updated");
-            console.log("isArrived.cashOnDelivery is false");
+            console.log('Delivery Boy Details', 'Not updated');
+            console.log('isArrived.cashOnDelivery is false');
         }
         const city = yield city_schema_1.default.findById(isArrived.city);
         console.log('City Details:', city);
@@ -669,7 +673,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             status: enum_1.ORDER_HISTORY.DELIVERED,
             paymentInfo: paymentInfo,
             adminCommission: adminCommission,
-            totalCharge: isArrived.totalCharge
+            totalCharge: isArrived.totalCharge,
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -679,7 +683,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         console.error('Error in deliverOrder:', error);
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
-            error: (error === null || error === void 0 ? void 0 : error.message) || 'Unknown error'
+            error: (error === null || error === void 0 ? void 0 : error.message) || 'Unknown error',
         });
     }
 });

@@ -212,12 +212,13 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
         name: 1,
       });
 
-      // await OrderHistorySchema.create({
-      //   message: `Your order ${value.orderId} has been assigned to ${data.firstName}`,
-      //   order: value.orderId,
-      //   status: ORDER_HISTORY.ASSIGNED,
-      //   merchantID: isCreated.merchant,
-      // });
+      await OrderHistorySchema.create({
+        message: `Your order ${value.orderId} has been assigned to ${data.firstName}`,
+        order: value.orderId,
+        status: ORDER_HISTORY.ASSIGNED,
+        merchantID: isCreated.merchant,
+        deliveryBoy: value.deliveryManId,
+      });
     }
 
     // await createNotification({
@@ -284,6 +285,7 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       status: ORDER_HISTORY.ARRIVED,
       merchantID: isCreated.merchant,
+      deliveryBoy: value.deliveryManId,
     });
     await OrderHistorySchema.deleteOne({
       order: value.orderId,
@@ -391,6 +393,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       status: ORDER_HISTORY.UNASSIGNED,
       merchantID: existingOrder.merchant,
+      deliveryBoy: value.deliveryManId,
     });
     console.log('Fifth');
 
@@ -467,6 +470,7 @@ export const departOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       status: ORDER_HISTORY.DEPARTED,
       merchantID: isCreated.merchant,
+      deliveryBoy: value.deliveryManId,
     });
 
     await OrderHistorySchema.deleteOne({
@@ -786,19 +790,19 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
     });
     console.log('Order Assignment:', assignData);
-    console.log("Order Assignee details", assignData.deliveryBoy);
+    console.log('Order Assignee details', assignData.deliveryBoy);
 
     // Only update delivery boy balance if it's cash on delivery
     if (isArrived.cashOnDelivery) {
       const balance = isArrived.paymentCollectionRupees;
       const deliveryBoy = await DeliveryManSchema.findByIdAndUpdate(
         assignData.deliveryBoy,
-        { $inc: { balance: balance } }
+        { $inc: { balance: balance } },
       );
-      console.log("Delivery Boy Details", deliveryBoy);
+      console.log('Delivery Boy Details', deliveryBoy);
     } else {
-      console.log("Delivery Boy Details", "Not updated");
-      console.log("isArrived.cashOnDelivery is false" );
+      console.log('Delivery Boy Details', 'Not updated');
+      console.log('isArrived.cashOnDelivery is false');
     }
 
     const city = await CitySchema.findById(isArrived.city);
@@ -901,7 +905,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       status: ORDER_HISTORY.DELIVERED,
       paymentInfo: paymentInfo,
       adminCommission: adminCommission,
-      totalCharge: isArrived.totalCharge
+      totalCharge: isArrived.totalCharge,
     });
 
     return res.ok({
@@ -911,7 +915,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     console.error('Error in deliverOrder:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
-      error: error?.message || 'Unknown error'
+      error: error?.message || 'Unknown error',
     });
   }
 };
