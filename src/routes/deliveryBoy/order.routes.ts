@@ -6,6 +6,7 @@ import {
   deliverOrder,
   departOrder,
   getAssignedOrders,
+  getOederForDeliveryMan,
   getOrderById,
   pickUpOrder,
   sendEmailOrMobileOtp,
@@ -215,5 +216,6 @@ router.patch('/deliver', deliverOrder);
  */
 router.post('/sendEmailOrMobileOtp', sendEmailOrMobileOtp);
 router.get('/getOrderById/:orderId', getOrderById);
+router.get('/getOrderForDeliveryMan', getOederForDeliveryMan);
 
 export default router;

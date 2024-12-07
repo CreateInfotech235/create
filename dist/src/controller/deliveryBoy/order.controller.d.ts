@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { RequestParams } from '../../utils/types/expressTypes';
 export declare const getAssignedOrders: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getOederForDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
 export declare const acceptOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const arriveOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const cancelOrder: (req: RequestParams, res: Response) => Promise<void>;

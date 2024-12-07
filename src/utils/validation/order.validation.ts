@@ -142,8 +142,8 @@ export const orderArriveValidation = Joi.object({
 });
 
 export const orderListByDeliveryManValidation = Joi.object({
-  startDate: Joi.string(),
-  endDate: Joi.string(),
+  startDate: Joi.string().allow(''),
+  endDate: Joi.string().allow(''),
   status: Joi.string()
     .valid(
       ORDER_HISTORY.CREATED,

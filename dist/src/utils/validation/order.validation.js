@@ -132,8 +132,8 @@ exports.orderArriveValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),
 });
 exports.orderListByDeliveryManValidation = joi_1.default.object({
-    startDate: joi_1.default.string(),
-    endDate: joi_1.default.string(),
+    startDate: joi_1.default.string().allow(''),
+    endDate: joi_1.default.string().allow(''),
     status: joi_1.default.string()
         .valid(enum_1.ORDER_HISTORY.CREATED, enum_1.ORDER_HISTORY.ASSIGNED, enum_1.ORDER_HISTORY.ACCEPTED, enum_1.ORDER_HISTORY.ARRIVED, enum_1.ORDER_HISTORY.PICKED_UP, enum_1.ORDER_HISTORY.DELIVERED, enum_1.ORDER_HISTORY.DEPARTED, enum_1.ORDER_HISTORY.CANCELLED)
         .allow(''),

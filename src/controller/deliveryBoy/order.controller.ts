@@ -1,5 +1,5 @@
 import { query, Response } from 'express';
-import { PipelineStage } from 'mongoose';
+import mongoose, { PipelineStage } from 'mongoose';
 import {
   CHARGE_TYPE,
   ORDER_HISTORY,
@@ -63,7 +63,8 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     const { value } = validateRequest;
 
     const query: any = {
-      deliveryBoy: req.id.toString(),
+      deliveryBoy: new mongoose.Types.ObjectId(req.id),
+      // .toString(),
     };
 
     // If 'status' is provided, add it to the query, otherwise don't filter by status
@@ -97,7 +98,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     // console.log(demo, 'demo');
 
     // Aggregation pipeline with pagination
-    const data = await OrderHistorySchema.aggregate([
+    const data = await OrderAssigneeSchema.aggregate([
       {
         $sort: { createdAt: -1 },
       },
@@ -147,6 +148,205 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
   } catch (error) {
     // Handle errors and send failure response
     console.error('Error occurred: ', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const getOederForDeliveryMan = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const {
+      startDate,
+      endDate,
+      status,
+      pageCount = 1,
+      pageLimit = 10,
+    } = req.query; // Add pageCount and pageLimit params
+
+    // Calculate pagination values
+    const pageNumber = parseInt(pageCount as string);
+    const pageLimitt = parseInt(pageLimit as string);
+    const skip = (pageNumber - 1) * pageLimitt;
+
+    // Initialize dateFilter object
+    let dateFilter = {};
+    console.log(req.id, 'req.id');
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      // Adjust start and end dates to include the full day (UTC time)
+      start.setUTCHours(0, 0, 0, 0); // Set startDate to 00:00:00 UTC
+      end.setUTCHours(23, 59, 59, 999); // Set endDate to 23:59:59 UTC
+
+      // Add date range filter
+      dateFilter = {
+        dateTime: {
+          $gte: start, // Greater than or equal to start date
+          $lte: end, // Less than or equal to end date
+        },
+      };
+    }
+    console.log(dateFilter, 'dateFilter');
+
+    // Initialize status filter
+    let statusFilter = {};
+    if (status) {
+      statusFilter = { status };
+    }
+
+    // Build match condition for count
+    const matchCondition = {
+      deliveryManId: new mongoose.Types.ObjectId(req.id),
+      ...statusFilter,
+      ...dateFilter,
+    };
+
+    const data = await orderSchema.aggregate([
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: 'orderAssign',
+          localField: 'orderId',
+          foreignField: 'order',
+          as: 'orderAssignData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                deliveryBoy: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$orderAssignData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          // localField: 'customer',
+          localField: 'merchant',
+          foreignField: '_id',
+          as: 'userData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                name: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$userData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'deliveryMan',
+          localField: 'orderAssignData.deliveryBoy',
+          foreignField: '_id',
+          as: 'deliveryManData',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$deliveryManData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          orderId: 1,
+          parcelsCount: 1,
+          customerName: '$deliveryDetails.name',
+          cutomerEmail: '$deliveryDetails.email',
+          pickupAddress: '$pickupDetails',
+          deliveryAddress: '$deliveryDetails',
+          deliveryMan: {
+            $concat: [
+              '$deliveryManData.firstName',
+              ' ',
+              '$deliveryManData.lastName',
+            ],
+          },
+          deliveryManId: '$deliveryManData._id',
+          pickupDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$pickupDetails.dateTime',
+            },
+          },
+          merchantId: '$pickupDetails.merchantId',
+          deliveryDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$deliveryDetails.orderTimestamp',
+            },
+          },
+          createdDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$createdAt',
+            },
+          },
+          pickupRequest: '$pickupDetails.request',
+          postCode: '$pickupDetails.postCode',
+          cashOnDelivery: 1,
+          status: 1,
+          dateTime: 1,
+          trashed: {
+            $ifNull: ['$trashed', false],
+          },
+          paymentCollectionRupees: 1,
+        },
+      },
+      {
+        $match: matchCondition,
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: pageLimitt,
+      },
+    ]);
+
+    // Get total count for pagination
+    const totalCount = await orderSchema.countDocuments(matchCondition);
+    const totalPages = Math.ceil(totalCount / pageLimitt);
+
+    return res.ok({
+      data,
+    });
+  } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
