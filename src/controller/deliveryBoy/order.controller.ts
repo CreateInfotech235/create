@@ -63,7 +63,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     const { value } = validateRequest;
 
     const query: any = {
-      deliveryBoy: req.id,
+      deliveryBoy: req.id.toString(),
     };
 
     // If 'status' is provided, add it to the query, otherwise don't filter by status
@@ -87,11 +87,17 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
 
     const pageLimit = value.pageLimit || 10; // default to 10 if not provided
     const pageCount = value.pageCount || 1; // default to 1 if not provided
-
     const skip = (pageCount - 1) * pageLimit; // Calculate the number of documents to skip
+    // console.log(req.id, 'req.id', typeof req.id);
+
+    // const demo = await OrderHistorySchema.find({
+    //   status: ORDER_HISTORY.ARRIVED,
+    //   deliveryBoy: req.id.toString() // Convert to string to match schema type
+    // });
+    // console.log(demo, 'demo');
 
     // Aggregation pipeline with pagination
-    const data = await OrderAssigneeSchema.aggregate([
+    const data = await OrderHistorySchema.aggregate([
       {
         $sort: { createdAt: -1 },
       },
@@ -715,7 +721,6 @@ export const sendEmailOrMobileOtp = async (
 //     });
 //   }
 // };
-
 export const deliverOrder = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<OrderDeliverType>(
@@ -728,11 +733,12 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
+    console.log('Request Body:', value);
 
     const isArrived = await orderSchema.findOne({
       orderId: value.orderId,
-      status: ORDER_HISTORY.DEPARTED,
     });
+    console.log('Order Details:', isArrived);
 
     if (!isArrived) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
@@ -743,6 +749,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       customerEmail: isArrived.deliveryDetails.email,
       expiry: { $gte: Date.now() },
     });
+    console.log('OTP Data:', otpData);
 
     if (!otpData) {
       return res.badRequest({ message: getLanguage('en').otpExpired });
@@ -755,6 +762,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       signDocs[1],
       'USER-SIGNATURE',
     );
+    console.log('Signature Upload:', value.deliveryManSignature);
 
     const [paymentInfo] = await Promise.all([
       PaymentInfoSchema.findOne({ order: value.orderId }),
@@ -769,26 +777,46 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         },
       ),
     ]);
+    console.log('Payment Info:', paymentInfo);
 
     const admin = await AdminSchema.findOne();
+    console.log('Admin Details:', admin);
+
     const assignData = await OrderAssigneeSchema.findOne({
       order: value.orderId,
     });
+    console.log('Order Assignment:', assignData);
+    console.log("Order Assignee details", assignData.deliveryBoy);
+
+    // Only update delivery boy balance if it's cash on delivery
+    if (isArrived.cashOnDelivery) {
+      const balance = isArrived.paymentCollectionRupees;
+      const deliveryBoy = await DeliveryManSchema.findByIdAndUpdate(
+        assignData.deliveryBoy,
+        { $inc: { balance: balance } }
+      );
+      console.log("Delivery Boy Details", deliveryBoy);
+    } else {
+      console.log("Delivery Boy Details", "Not updated");
+      console.log("isArrived.cashOnDelivery is false" );
+    }
+
     const city = await CitySchema.findById(isArrived.city);
+    console.log('City Details:', city);
+
     const chargeData = await ProductChargesSchema.findOne({
-      // cityId: city._id,
       pickupRequest: isArrived.pickupDetails.request,
       isCustomer: isArrived.isCustomer,
     });
+    console.log('Charge Data:', chargeData);
 
     const adminCommission = chargeData.adminCommission;
-    // city.commissionType === CHARGE_TYPE.PERCENTAGE
-    //   ? isArrived.totalCharge * (chargeData.adminCommission / 100)
-    //   : chargeData.adminCommission;
+    console.log('Admin Commission:', adminCommission);
 
     const message = `Order ${value.orderId} Amount`;
 
     if (isArrived.cashOnDelivery) {
+      console.log('Processing Cash on Delivery Payment');
       if (paymentInfo.status !== PAYMENT_INFO.SUCCESS) {
         await PaymentInfoSchema.updateOne(
           { order: value.orderId },
@@ -805,11 +833,11 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         false,
       );
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.WALLET) {
+      console.log('Processing Wallet Payment');
       await Promise.all([
         updateWallet(
           isArrived.totalCharge,
           admin._id.toString(),
-          // assignData.customer.toString(),
           assignData.merchant.toString(),
           TRANSACTION_TYPE.WITHDRAW,
           message,
@@ -824,6 +852,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         ),
       ]);
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.ONLINE) {
+      console.log('Processing Online Payment');
       await updateWallet(
         isArrived.totalCharge - adminCommission,
         admin._id.toString(),
@@ -833,6 +862,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         false,
       );
     } else {
+      console.log('Processing Other Payment Type');
       await updateWallet(
         adminCommission,
         admin._id.toString(),
@@ -849,10 +879,14 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       status: ORDER_HISTORY.DELIVERED,
       merchantID: isArrived.merchant,
     });
+    console.log('Order History Created');
+
     await OrderHistorySchema.deleteOne({
       order: value.orderId,
       status: ORDER_HISTORY.DEPARTED,
     });
+    console.log('Old Order History Deleted');
+
     await createNotification({
       userId: isArrived.merchant,
       orderId: isArrived.orderId,
@@ -860,16 +894,28 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       message: `Your order ${isArrived.orderId} has been delivered`,
       type: 'MERCHANT',
     });
+    console.log('Notification Created');
+
+    console.log('Final Order Details:', {
+      orderId: value.orderId,
+      status: ORDER_HISTORY.DELIVERED,
+      paymentInfo: paymentInfo,
+      adminCommission: adminCommission,
+      totalCharge: isArrived.totalCharge
+    });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error in deliverOrder:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
+      error: error?.message || 'Unknown error'
     });
   }
 };
+
 export const OrderAssigneeSchemaData = async (
   req: RequestParams,
   res: Response,

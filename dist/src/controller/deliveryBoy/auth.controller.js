@@ -363,7 +363,7 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     location: 1,
                     postCode: 1,
                     balance: 1,
-                    earning: 1,
+                    earning: { $ifNull: ['$earning', 0] },
                 },
             },
         ])

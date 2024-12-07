@@ -452,7 +452,7 @@ export const getDeliveryManProfile = async (
             location: 1,
             postCode: 1,
             balance: 1,
-            earning: 1,
+            earning: { $ifNull: ['$earning', 0] },
           },
         },
       ])

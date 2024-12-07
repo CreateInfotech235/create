@@ -6,6 +6,9 @@ const OrderHistorySchema = new mongoose.Schema(
     merchantID: {
       type: mongoose.Schema.Types.ObjectId,
     },
+    deliveryBoy: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
     message: {
       type: String,
     },

@@ -31,6 +31,7 @@ declare const Model: mongoose.Model<{
     status: string;
     message?: string;
     order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
     merchantID?: mongoose.Types.ObjectId;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
@@ -39,6 +40,7 @@ declare const Model: mongoose.Model<{
     status: string;
     message?: string;
     order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
     merchantID?: mongoose.Types.ObjectId;
 }> & {
     createdAt: NativeDate;
@@ -47,6 +49,7 @@ declare const Model: mongoose.Model<{
     status: string;
     message?: string;
     order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
     merchantID?: mongoose.Types.ObjectId;
 } & {
     _id: mongoose.Types.ObjectId;
@@ -62,6 +65,7 @@ declare const Model: mongoose.Model<{
     status: string;
     message?: string;
     order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
     merchantID?: mongoose.Types.ObjectId;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -70,6 +74,7 @@ declare const Model: mongoose.Model<{
     status: string;
     message?: string;
     order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
     merchantID?: mongoose.Types.ObjectId;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -78,6 +83,7 @@ declare const Model: mongoose.Model<{
     status: string;
     message?: string;
     order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
     merchantID?: mongoose.Types.ObjectId;
 }> & {
     _id: mongoose.Types.ObjectId;

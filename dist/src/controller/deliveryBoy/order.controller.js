@@ -35,7 +35,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
         }
         const { value } = validateRequest;
         const query = {
-            deliveryBoy: req.id,
+            deliveryBoy: req.id.toString(),
         };
         // If 'status' is provided, add it to the query, otherwise don't filter by status
         if (value.status) {
@@ -54,8 +54,14 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const pageLimit = value.pageLimit || 10; // default to 10 if not provided
         const pageCount = value.pageCount || 1; // default to 1 if not provided
         const skip = (pageCount - 1) * pageLimit; // Calculate the number of documents to skip
+        // console.log(req.id, 'req.id', typeof req.id);
+        // const demo = await OrderHistorySchema.find({
+        //   status: ORDER_HISTORY.ARRIVED,
+        //   deliveryBoy: req.id.toString() // Convert to string to match schema type
+        // });
+        // console.log(demo, 'demo');
         // Aggregation pipeline with pagination
-        const data = yield orderAssignee_schema_1.default.aggregate([
+        const data = yield orderHistory_schema_1.default.aggregate([
             {
                 $sort: { createdAt: -1 },
             },
@@ -558,10 +564,11 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        console.log('Request Body:', value);
         const isArrived = yield order_schema_1.default.findOne({
             orderId: value.orderId,
-            status: enum_1.ORDER_HISTORY.DEPARTED,
         });
+        console.log('Order Details:', isArrived);
         if (!isArrived) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
@@ -570,11 +577,13 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             customerEmail: isArrived.deliveryDetails.email,
             expiry: { $gte: Date.now() },
         });
+        console.log('OTP Data:', otpData);
         if (!otpData) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
         }
         const signDocs = value.deliveryManSignature.split(',');
         value.deliveryManSignature = yield (0, common_1.uploadFile)(signDocs[0], signDocs[1], 'USER-SIGNATURE');
+        console.log('Signature Upload:', value.deliveryManSignature);
         const [paymentInfo] = yield Promise.all([
             paymentInfo_schema_1.default.findOne({ order: value.orderId }),
             order_schema_1.default.updateOne({ orderId: value.orderId }, {
@@ -585,39 +594,54 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             }),
         ]);
+        console.log('Payment Info:', paymentInfo);
         const admin = yield admin_schema_1.default.findOne();
+        console.log('Admin Details:', admin);
         const assignData = yield orderAssignee_schema_1.default.findOne({
             order: value.orderId,
         });
+        console.log('Order Assignment:', assignData);
+        console.log("Order Assignee details", assignData.deliveryBoy);
+        // Only update delivery boy balance if it's cash on delivery
+        if (isArrived.cashOnDelivery) {
+            const balance = isArrived.paymentCollectionRupees;
+            const deliveryBoy = yield deliveryMan_schema_1.default.findByIdAndUpdate(assignData.deliveryBoy, { $inc: { balance: balance } });
+            console.log("Delivery Boy Details", deliveryBoy);
+        }
+        else {
+            console.log("Delivery Boy Details", "Not updated");
+            console.log("isArrived.cashOnDelivery is false");
+        }
         const city = yield city_schema_1.default.findById(isArrived.city);
+        console.log('City Details:', city);
         const chargeData = yield productCharges_schema_1.default.findOne({
-            // cityId: city._id,
             pickupRequest: isArrived.pickupDetails.request,
             isCustomer: isArrived.isCustomer,
         });
+        console.log('Charge Data:', chargeData);
         const adminCommission = chargeData.adminCommission;
-        // city.commissionType === CHARGE_TYPE.PERCENTAGE
-        //   ? isArrived.totalCharge * (chargeData.adminCommission / 100)
-        //   : chargeData.adminCommission;
+        console.log('Admin Commission:', adminCommission);
         const message = `Order ${value.orderId} Amount`;
         if (isArrived.cashOnDelivery) {
+            console.log('Processing Cash on Delivery Payment');
             if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
                 yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
             }
             yield (0, common_1.updateWallet)(adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Admin Commission`, false);
         }
         else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.WALLET) {
+            console.log('Processing Wallet Payment');
             yield Promise.all([
-                (0, common_1.updateWallet)(isArrived.totalCharge, admin._id.toString(), 
-                // assignData.customer.toString(),
-                assignData.merchant.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, message),
+                (0, common_1.updateWallet)(isArrived.totalCharge, admin._id.toString(), assignData.merchant.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, message),
                 (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false),
             ]);
         }
         else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.ONLINE) {
+            console.log('Processing Online Payment');
             yield (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false);
         }
         else {
+            console.log('Processing Other Payment Type');
             yield (0, common_1.updateWallet)(adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Admin Commission`, false);
         }
         yield orderHistory_schema_1.default.create({
@@ -626,10 +650,12 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             status: enum_1.ORDER_HISTORY.DELIVERED,
             merchantID: isArrived.merchant,
         });
+        console.log('Order History Created');
         yield orderHistory_schema_1.default.deleteOne({
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.DEPARTED,
         });
+        console.log('Old Order History Deleted');
         yield (0, common_1.createNotification)({
             userId: isArrived.merchant,
             orderId: isArrived.orderId,
@@ -637,13 +663,23 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             message: `Your order ${isArrived.orderId} has been delivered`,
             type: 'MERCHANT',
         });
+        console.log('Notification Created');
+        console.log('Final Order Details:', {
+            orderId: value.orderId,
+            status: enum_1.ORDER_HISTORY.DELIVERED,
+            paymentInfo: paymentInfo,
+            adminCommission: adminCommission,
+            totalCharge: isArrived.totalCharge
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
     }
     catch (error) {
+        console.error('Error in deliverOrder:', error);
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+            error: (error === null || error === void 0 ? void 0 : error.message) || 'Unknown error'
         });
     }
 });
