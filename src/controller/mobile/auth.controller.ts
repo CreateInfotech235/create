@@ -13,6 +13,7 @@ import merchantSchema from '../../models/user.schema';
 import OrderHistorySchema from '../../models/orderHistory.schema';
 import SupportTicket from '../../models/SupportTicket';
 import adminSchema from '../../models/admin.schema';
+import Notifications from '../../models/notificatio.schema';
 import {
   createAuthTokens,
   emailOrMobileOtp,
@@ -1259,6 +1260,135 @@ export const deleteSupportTicket = async (
     console.error('Error deleting support ticket:', error);
     return res.status(500).json({
       message: 'There was an error deleting the support ticket',
+    });
+  }
+};
+
+export const getAllNotifications = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const userId = req.params.id;
+
+    // Get all notifications for the user
+    const notifications = await Notifications.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate('orderId')
+      .populate('senderId');
+
+    return res.status(200).json({
+      message: 'Notifications retrieved successfully',
+      data: notifications,
+    });
+  } catch (error) {
+    console.error('Error getting notifications:', error);
+    return res.status(500).json({
+      message: 'There was an error retrieving notifications',
+    });
+  }
+};
+
+export const markNotificationAsRead = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { notificationId } = req.params;
+    const userId = req.params.id;
+
+    const notification = await Notifications.findOneAndUpdate(
+      { _id: notificationId, userId },
+      { isRead: true },
+      { new: true },
+    );
+
+    if (!notification) {
+      return res.status(404).json({
+        message: 'Notification not found',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Notification marked as read',
+      data: notification,
+    });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    return res.status(500).json({
+      message: 'There was an error updating the notification',
+    });
+  }
+};
+
+export const markAllNotificationsAsRead = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const userId = req.params.id;
+
+    await Notifications.updateMany({ userId, isRead: false }, { isRead: true });
+
+    return res.status(200).json({
+      message: 'All notifications marked as read',
+    });
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    return res.status(500).json({
+      message: 'There was an error updating notifications',
+    });
+  }
+};
+
+export const deleteNotification = async (req: RequestParams, res: Response) => {
+  try {
+    const { notificationId } = req.params;
+    const userId = req.params.id;
+
+    const deletedNotification = await Notifications.findOneAndDelete({
+      _id: notificationId,
+      userId,
+    });
+
+    if (!deletedNotification) {
+      return res.status(404).json({
+        message: 'Notification not found',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Notification deleted successfully',
+      data: deletedNotification,
+    });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    return res.status(500).json({
+      message: 'There was an error deleting the notification',
+    });
+  }
+};
+
+export const getUnreadNotificationCount = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const userId = req.params.id;
+
+    const count = await Notifications.countDocuments({
+      userId,
+      isRead: false,
+    });
+
+    return res.status(200).json({
+      message: 'Unread notification count retrieved successfully',
+      data: { count },
+    });
+  } catch (error) {
+    console.error('Error getting unread notification count:', error);
+    return res.status(500).json({
+      message: 'There was an error retrieving unread notification count',
     });
   }
 };

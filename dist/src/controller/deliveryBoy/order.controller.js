@@ -158,6 +158,13 @@ const acceptOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             //   merchantID: isCreated.merchant,
             // });
         }
+        // await createNotification({
+        //   userId: isCreated.merchant,
+        //   orderId: isCreated.orderId,
+        //   title: 'Order Accepted',
+        //   message: `Your order ${isCreated.orderId} has been accepted`,
+        //   type: 'MERCHANT',
+        // });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -206,6 +213,13 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.ASSIGNED,
         });
+        // await createNotification({
+        //   userId: isCreated.merchant,
+        //   orderId: isCreated.orderId,
+        //   title: 'Order Arrived',
+        //   message: `Your order ${isCreated.orderId} has been arrived`,
+        //   type: 'MERCHANT',
+        // });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -285,6 +299,13 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         console.log('Six');
         yield (0, common_1.sendMailService)(existingOrder.pickupDetails.email, 'Cancel Order ', 'Your order is cancelled by deliveryman plz assign order other deliveryman');
         console.log('Seaven');
+        yield (0, common_1.createNotification)({
+            userId: existingOrder.merchant,
+            orderId: existingOrder.orderId,
+            title: 'Order Cancelled',
+            message: `Your order ${existingOrder.orderId} has been cancelled by deliveryman`,
+            type: 'MERCHANT',
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
         });
@@ -337,6 +358,13 @@ const departOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         //   latitude: value.latitude,
         //   longitude: value.longitude,
         //   deliveryManId: req.id,
+        // });
+        // await createNotification({
+        //   userId: isCreated.merchant,
+        //   orderId: isCreated.orderId,
+        //   title: 'Order Departed',
+        //   message: `Your order ${isCreated.orderId} has been departed`,
+        //   type: 'MERCHANT',
         // });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -396,6 +424,13 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.ARRIVED,
         });
+        // await createNotification({
+        //   userId: isArrived.merchant,
+        //   orderId: isArrived.orderId,
+        //   title: 'Order Picked Up',
+        //   message: `Your order ${isArrived.orderId} has been picked up`,
+        //   type: 'MERCHANT',
+        // });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -595,12 +630,18 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.DEPARTED,
         });
+        yield (0, common_1.createNotification)({
+            userId: isArrived.merchant,
+            orderId: isArrived.orderId,
+            title: 'Order Delivered',
+            message: `Your order ${isArrived.orderId} has been delivered`,
+            type: 'MERCHANT',
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
     }
     catch (error) {
-        console.log('🚀 ~ deliverOrder ~ error:', error);
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });
@@ -615,7 +656,6 @@ const OrderAssigneeSchemaData = (req, res) => __awaiter(void 0, void 0, void 0, 
         });
     }
     catch (error) {
-        console.log('🚀 ~ deliverOrder ~ error:', error);
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });

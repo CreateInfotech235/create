@@ -118,7 +118,6 @@ const getAllPaymentInfo = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.getAllPaymentInfo = getAllPaymentInfo;
 const orderUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('in order update route');
         const orderId = req.params.orderId; // Get orderId from request parameters
         const updateData = req.body; // Get the fields to update from request body
         // Validate the incoming data using Joi (if needed)
@@ -132,7 +131,6 @@ const orderUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!existingOrder) {
             return res.badRequest({ message: 'Order not found' });
         }
-        console.log(existingOrder);
         // Update fields in the order
         const updatedOrder = yield order_schema_1.default.findOneAndUpdate({ _id: orderId }, { $set: value }, { new: true });
         if (!updatedOrder) {
@@ -153,14 +151,9 @@ const orderUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 });
             }
             else {
-                yield orderAssignee_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });
+                yield orderAssignee_schema_1.default.updateOne({ order: existingOrder.orderId }, { deliveryBoy: value.deliveryManId });
             }
         }
-        // Log the order history for this update
-        // await OrderHistorySchema.create({
-        //   message: 'Order has been updated',
-        //   order: updatedOrder.orderId,
-        // });
         return res.ok({
             message: 'Order updated successfully',
             data: { orderId: updatedOrder._id },
@@ -537,6 +530,13 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 merchantID: isCreated.merchant,
             }),
         ]);
+        yield (0, common_1.createNotification)({
+            userId: isCreated.merchant,
+            title: 'Order Cancelled',
+            message: `Your order ${value.orderId} has been cancelled`,
+            type: 'MERCHANT',
+            orderId: value.orderId,
+        });
         return res.badRequest({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -874,6 +874,13 @@ const deleteOrderFormMerchant = (req, res) => __awaiter(void 0, void 0, void 0, 
         yield order_schema_1.default.findByIdAndDelete(id);
         yield orderHistory_schema_1.default.deleteMany({ order: OrderData.orderId });
         yield orderAssignee_schema_2.default.deleteMany({ order: OrderData.orderId });
+        yield (0, common_1.createNotification)({
+            userId: OrderData.merchant,
+            orderId: OrderData.orderId,
+            title: 'Order Deleted',
+            message: `Your order ${OrderData.orderId} has been deleted`,
+            type: 'MERCHANT',
+        });
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').orderDeleted });
     }
     catch (error) {
@@ -896,6 +903,13 @@ const moveToTrash = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').orderNotFound });
         }
         yield order_schema_1.default.findByIdAndUpdate(id, { trashed: trash });
+        yield (0, common_1.createNotification)({
+            userId: OrderData.merchant,
+            orderId: OrderData.orderId,
+            title: trash ? 'Order Moved to Trash' : 'Order Undo to Trash',
+            message: trash ? 'Order Moved to Trash' : 'Order Undo to Trash',
+            type: 'MERCHANT',
+        });
         return res.ok({
             message: trash
                 ? (0, languageHelper_1.getLanguage)('en').orderMoveToTrash

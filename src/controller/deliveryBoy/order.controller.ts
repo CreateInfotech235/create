@@ -20,6 +20,7 @@ import otpSchema from '../../models/otp.schema';
 import PaymentInfoSchema from '../../models/paymentInfo.schema';
 import ProductChargesSchema from '../../models/productCharges.schema';
 import {
+  createNotification,
   emailOrMobileOtp,
   generateIntRandomNo,
   getMongoCommonPagination,
@@ -213,6 +214,13 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
       // });
     }
 
+    // await createNotification({
+    //   userId: isCreated.merchant,
+    //   orderId: isCreated.orderId,
+    //   title: 'Order Accepted',
+    //   message: `Your order ${isCreated.orderId} has been accepted`,
+    //   type: 'MERCHANT',
+    // });
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
@@ -275,6 +283,14 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       status: ORDER_HISTORY.ASSIGNED,
     });
+
+    // await createNotification({
+    //   userId: isCreated.merchant,
+    //   orderId: isCreated.orderId,
+    //   title: 'Order Arrived',
+    //   message: `Your order ${isCreated.orderId} has been arrived`,
+    //   type: 'MERCHANT',
+    // });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -381,6 +397,13 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
     );
     console.log('Seaven');
 
+    await createNotification({
+      userId: existingOrder.merchant,
+      orderId: existingOrder.orderId,
+      title: 'Order Cancelled',
+      message: `Your order ${existingOrder.orderId} has been cancelled by deliveryman`,
+      type: 'MERCHANT',
+    });
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
     });
@@ -450,6 +473,13 @@ export const departOrder = async (req: RequestParams, res: Response) => {
     //   deliveryManId: req.id,
     // });
 
+    // await createNotification({
+    //   userId: isCreated.merchant,
+    //   orderId: isCreated.orderId,
+    //   title: 'Order Departed',
+    //   message: `Your order ${isCreated.orderId} has been departed`,
+    //   type: 'MERCHANT',
+    // });
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
@@ -529,6 +559,14 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       status: ORDER_HISTORY.ARRIVED,
     });
+
+    // await createNotification({
+    //   userId: isArrived.merchant,
+    //   orderId: isArrived.orderId,
+    //   title: 'Order Picked Up',
+    //   message: `Your order ${isArrived.orderId} has been picked up`,
+    //   type: 'MERCHANT',
+    // });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -815,12 +853,18 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       status: ORDER_HISTORY.DEPARTED,
     });
+    await createNotification({
+      userId: isArrived.merchant,
+      orderId: isArrived.orderId,
+      title: 'Order Delivered',
+      message: `Your order ${isArrived.orderId} has been delivered`,
+      type: 'MERCHANT',
+    });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
   } catch (error) {
-    console.log('🚀 ~ deliverOrder ~ error:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
@@ -836,7 +880,6 @@ export const OrderAssigneeSchemaData = async (
       data: data,
     });
   } catch (error) {
-    console.log('🚀 ~ deliverOrder ~ error:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

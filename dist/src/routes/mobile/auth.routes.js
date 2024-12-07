@@ -466,4 +466,102 @@ router.get('/getSupportTicket/:id', auth_controller_1.getSupportTicket);
  *         description: Something went wrong
  */
 router.delete('/deleteSupportTicket/:ticketId', auth_controller_1.deleteSupportTicket);
+// /**
+//  * @swagger
+//  * /mobile/auth/getAllNotifications/{id}:
+//  *   get:
+//  *     summary: Get All Notifications
+//  *     tags: [ Mobile - Auth ]
+//  */
+router.get('/getAllNotifications/:id', auth_controller_1.getAllNotifications);
+// /**
+//  * @swagger
+//  * /mobile/auth/markNotificationAsRead/{id}/{notificationId}:
+//  *   patch:
+//  *     summary: Mark a notification as read
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *       - in: path
+//  *         name: notificationId
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: Notification marked as read successfully
+//  *       404:
+//  *         description: Notification not found
+//  *       500:
+//  *         description: Something went wrong
+//  */
+router.patch('/markNotificationAsRead/:id/:notificationId', auth_controller_1.markNotificationAsRead);
+// /**
+//  * @swagger
+//  * /mobile/auth/markAllNotificationsAsRead/{id}:
+//  *   patch:
+//  *     summary: Mark all notifications as read
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: All notifications marked as read
+//  *       500:
+//  *         description: Something went wrong
+//  */
+router.patch('/markAllNotificationsAsRead/:id', auth_controller_1.markAllNotificationsAsRead);
+// /**
+//  * @swagger
+//  * /mobile/auth/deleteNotification/{id}/{notificationId}:
+//  *   delete:
+//  *     summary: Delete a notification
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *       - in: path
+//  *         name: notificationId
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: Notification deleted successfully
+//  *       404:
+//  *         description: Notification not found
+//  *       500:
+//  *         description: Something went wrong
+//  */
+router.delete('/deleteNotification/:id/:notificationId', auth_controller_1.deleteNotification);
+// /**
+//  * @swagger
+//  * /mobile/auth/getUnreadNotificationCount/{id}:
+//  *   get:
+//  *     summary: Get count of unread notifications
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: Unread notification count retrieved successfully
+//  *       500:
+//  *         description: Something went wrong
+//  */
+router.get('/getUnreadNotificationCount/:id', auth_controller_1.getUnreadNotificationCount);
 exports.default = router;

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMongoCommonPagination = exports.updateWallet = exports.emailOrMobileOtp = exports.createAuthTokens = exports.removeUploadedFile = exports.uploadFile = exports.generateIntRandomNo = exports.encryptPassword = exports.passwordValidation = exports.sendMailService = void 0;
+exports.getMongoCommonPagination = exports.updateWallet = exports.emailOrMobileOtp = exports.createAuthTokens = exports.removeUploadedFile = exports.createNotification = exports.uploadFile = exports.generateIntRandomNo = exports.encryptPassword = exports.passwordValidation = exports.sendMailService = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto_1 = require("crypto");
 const fs_1 = __importDefault(require("fs"));
@@ -24,6 +24,7 @@ const adminSettings_schema_1 = __importDefault(require("../models/adminSettings.
 const deliveryMan_schema_1 = __importDefault(require("../models/deliveryMan.schema"));
 const user_schema_1 = __importDefault(require("../models/user.schema"));
 const wallet_schema_1 = __importDefault(require("../models/wallet.schema"));
+const notificatio_schema_1 = __importDefault(require("../models/notificatio.schema"));
 const sendMailService = (to, subject, text) => __awaiter(void 0, void 0, void 0, function* () {
     const transporter = nodemailer_1.default.createTransport({
         service: 'gmail',
@@ -83,6 +84,25 @@ const uploadFile = (fileName, base64FormatImage, fileType) => {
     });
 };
 exports.uploadFile = uploadFile;
+const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ userId, title, message, type, orderId, senderId, }) {
+    try {
+        const notification = yield notificatio_schema_1.default.create({
+            userId,
+            title,
+            message,
+            type,
+            orderId,
+            senderId,
+            isRead: false,
+        });
+        return notification;
+    }
+    catch (error) {
+        console.error('Error creating notification:', error);
+        throw new Error('Failed to create notification');
+    }
+});
+exports.createNotification = createNotification;
 const removeUploadedFile = (fileName) => {
     try {
         fs_1.default.unlinkSync(fileName);

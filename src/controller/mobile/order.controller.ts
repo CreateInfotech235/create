@@ -28,7 +28,7 @@ import PostCodeSchema from '../../models/postCode.schema';
 import ProductChargesSchema from '../../models/productCharges.schema';
 import merchantSchema from '../../models/user.schema';
 import WalletSchema from '../../models/wallet.schema';
-import { updateWallet } from '../../utils/common';
+import { createNotification, updateWallet } from '../../utils/common';
 import { RequestParams } from '../../utils/types/expressTypes';
 import validateParamsWithJoi from '../../utils/validateRequest';
 import {
@@ -147,10 +147,9 @@ export const getAllPaymentInfo = async (req: RequestParams, res: Response) => {
   }
 };
 
+
 export const orderUpdate = async (req: RequestParams, res: Response) => {
   try {
-    console.log('in order update route');
-
     const orderId = req.params.orderId; // Get orderId from request parameters
     const updateData = req.body; // Get the fields to update from request body
 
@@ -171,7 +170,7 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
     if (!existingOrder) {
       return res.badRequest({ message: 'Order not found' });
     }
-    console.log(existingOrder);
+
 
     // Update fields in the order
     const updatedOrder = await orderSchema.findOneAndUpdate(
@@ -186,15 +185,18 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
       });
     }
 
+
     // If deliveryManId is updated, update the assignee table too
 
     if (value.deliveryManId) {
+
       if (existingOrder.status === 'UNASSIGNED') {
         const updatedOrder = await orderSchema.findOneAndUpdate(
           { _id: orderId },
           { status: 'ASSIGNED' },
           // { new: true }, // Return the updated order object
         );
+
         await OrderAssigneeSchema.updateOne(
           { _id: orderId },
           { deliveryBoy: value.deliveryManId },
@@ -207,17 +209,11 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
         });
       } else {
         await OrderAssigneeSchema.updateOne(
-          { _id: orderId },
+          { order: existingOrder.orderId },
           { deliveryBoy: value.deliveryManId },
         );
       }
     }
-
-    // Log the order history for this update
-    // await OrderHistorySchema.create({
-    //   message: 'Order has been updated',
-    //   order: updatedOrder.orderId,
-    // });
 
     return res.ok({
       message: 'Order updated successfully',
@@ -695,6 +691,14 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       }),
     ]);
 
+    await createNotification({
+      userId: isCreated.merchant,
+      title: 'Order Cancelled',
+      message: `Your order ${value.orderId} has been cancelled`,
+      type: 'MERCHANT',
+      orderId: value.orderId,
+    }); 
+
     return res.badRequest({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
@@ -1061,6 +1065,13 @@ export const deleteOrderFormMerchant = async (
     await OrderHistorySchema.deleteMany({ order: OrderData.orderId });
     await orderAssignSchema.deleteMany({ order: OrderData.orderId });
 
+    await createNotification({
+      userId: OrderData.merchant,
+      orderId: OrderData.orderId,
+      title: 'Order Deleted',
+      message: `Your order ${OrderData.orderId} has been deleted`,
+      type: 'MERCHANT',
+    });
     return res.ok({ message: getLanguage('en').orderDeleted });
   } catch (error) {
     console.log('🚀 ~ deleteDeliveryMan ~ error:', error);
@@ -1087,6 +1098,13 @@ export const moveToTrash = async (req: RequestParams, res: Response) => {
 
     await orderSchema.findByIdAndUpdate(id, { trashed: trash });
 
+    await createNotification({
+      userId: OrderData.merchant,
+      orderId: OrderData.orderId,
+      title: trash ? 'Order Moved to Trash' : 'Order Undo to Trash',
+      message: trash ? 'Order Moved to Trash' : 'Order Undo to Trash',
+      type: 'MERCHANT',
+    });
     return res.ok({
       message: trash
         ? getLanguage('en').orderMoveToTrash

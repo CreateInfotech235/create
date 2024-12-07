@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -38,6 +38,7 @@ const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory.schema"));
 const SupportTicket_1 = __importDefault(require("../../models/SupportTicket"));
 const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
+const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
@@ -987,3 +988,109 @@ const deleteSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.deleteSupportTicket = deleteSupportTicket;
+const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.params.id;
+        // Get all notifications for the user
+        const notifications = yield notificatio_schema_1.default.find({ userId })
+            .sort({ createdAt: -1 })
+            .populate('orderId')
+            .populate('senderId');
+        return res.status(200).json({
+            message: 'Notifications retrieved successfully',
+            data: notifications,
+        });
+    }
+    catch (error) {
+        console.error('Error getting notifications:', error);
+        return res.status(500).json({
+            message: 'There was an error retrieving notifications',
+        });
+    }
+});
+exports.getAllNotifications = getAllNotifications;
+const markNotificationAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { notificationId } = req.params;
+        const userId = req.params.id;
+        const notification = yield notificatio_schema_1.default.findOneAndUpdate({ _id: notificationId, userId }, { isRead: true }, { new: true });
+        if (!notification) {
+            return res.status(404).json({
+                message: 'Notification not found',
+            });
+        }
+        return res.status(200).json({
+            message: 'Notification marked as read',
+            data: notification,
+        });
+    }
+    catch (error) {
+        console.error('Error marking notification as read:', error);
+        return res.status(500).json({
+            message: 'There was an error updating the notification',
+        });
+    }
+});
+exports.markNotificationAsRead = markNotificationAsRead;
+const markAllNotificationsAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.params.id;
+        yield notificatio_schema_1.default.updateMany({ userId, isRead: false }, { isRead: true });
+        return res.status(200).json({
+            message: 'All notifications marked as read',
+        });
+    }
+    catch (error) {
+        console.error('Error marking all notifications as read:', error);
+        return res.status(500).json({
+            message: 'There was an error updating notifications',
+        });
+    }
+});
+exports.markAllNotificationsAsRead = markAllNotificationsAsRead;
+const deleteNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { notificationId } = req.params;
+        const userId = req.params.id;
+        const deletedNotification = yield notificatio_schema_1.default.findOneAndDelete({
+            _id: notificationId,
+            userId,
+        });
+        if (!deletedNotification) {
+            return res.status(404).json({
+                message: 'Notification not found',
+            });
+        }
+        return res.status(200).json({
+            message: 'Notification deleted successfully',
+            data: deletedNotification,
+        });
+    }
+    catch (error) {
+        console.error('Error deleting notification:', error);
+        return res.status(500).json({
+            message: 'There was an error deleting the notification',
+        });
+    }
+});
+exports.deleteNotification = deleteNotification;
+const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.params.id;
+        const count = yield notificatio_schema_1.default.countDocuments({
+            userId,
+            isRead: false,
+        });
+        return res.status(200).json({
+            message: 'Unread notification count retrieved successfully',
+            data: { count },
+        });
+    }
+    catch (error) {
+        console.error('Error getting unread notification count:', error);
+        return res.status(500).json({
+            message: 'There was an error retrieving unread notification count',
+        });
+    }
+});
+exports.getUnreadNotificationCount = getUnreadNotificationCount;

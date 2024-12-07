@@ -23,6 +23,7 @@
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
 /// <reference types="mongoose/types/inferrawdoctype" />
+import mongoose from 'mongoose';
 import { Types } from 'mongoose';
 import { TRANSACTION_TYPE } from '../enum';
 import { encryptPasswordParams } from './types/expressTypes';
@@ -31,6 +32,42 @@ export declare const passwordValidation: (password: string, hashPassword: string
 export declare const encryptPassword: ({ password }: encryptPasswordParams) => Promise<string>;
 export declare const generateIntRandomNo: (start?: number, end?: number) => number;
 export declare const uploadFile: (fileName: string, base64FormatImage: string, fileType: string) => Promise<string>;
+export declare const createNotification: ({ userId, title, message, type, orderId, senderId, }: {
+    userId: mongoose.Types.ObjectId;
+    title: string;
+    message: string;
+    type: 'ADMIN' | 'MERCHANT' | 'DELIVERYMAN';
+    orderId?: number;
+    senderId?: mongoose.Types.ObjectId;
+}) => Promise<mongoose.Document<unknown, {}, {
+    createdAt: NativeDate;
+    updatedAt: NativeDate;
+} & {
+    createdAt: NativeDate;
+    type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
+    message: string;
+    title: string;
+    userId: Types.ObjectId;
+    isRead: boolean;
+    orderId?: number;
+    senderId?: Types.ObjectId;
+}> & {
+    createdAt: NativeDate;
+    updatedAt: NativeDate;
+} & {
+    createdAt: NativeDate;
+    type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
+    message: string;
+    title: string;
+    userId: Types.ObjectId;
+    isRead: boolean;
+    orderId?: number;
+    senderId?: Types.ObjectId;
+} & {
+    _id: Types.ObjectId;
+} & {
+    __v: number;
+}>;
 export declare const removeUploadedFile: (fileName: string) => void;
 export declare const createAuthTokens: (id: Types.ObjectId) => {
     accessToken: string;

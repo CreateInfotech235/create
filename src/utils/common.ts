@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
+import mongoose from 'mongoose';
 import fs from 'fs';
 import jwt, { Secret } from 'jsonwebtoken';
 import { Types } from 'mongoose';
@@ -11,6 +12,7 @@ import DeliveryManSchema from '../models/deliveryMan.schema';
 import merchantSchema from '../models/user.schema';
 import WalletSchema from '../models/wallet.schema';
 import { encryptPasswordParams } from './types/expressTypes';
+import Notifications from '../models/notificatio.schema';
 
 export const sendMailService = async (
   to: string,
@@ -79,6 +81,38 @@ export const uploadFile = (
       reject(new Error('Something went wrong with uploading file'));
     }
   });
+};
+
+export const createNotification = async ({
+  userId,
+  title,
+  message,
+  type,
+  orderId,
+  senderId,
+}: {
+  userId: mongoose.Types.ObjectId;
+  title: string;
+  message: string;
+  type: 'ADMIN' | 'MERCHANT' | 'DELIVERYMAN';
+  orderId?: number;
+  senderId?: mongoose.Types.ObjectId;
+}) => {
+  try {
+    const notification = await Notifications.create({
+      userId,
+      title,
+      message,
+      type,
+      orderId,
+      senderId,
+      isRead: false,
+    });
+    return notification;
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    throw new Error('Failed to create notification');
+  }
 };
 
 export const removeUploadedFile = (fileName: string) => {

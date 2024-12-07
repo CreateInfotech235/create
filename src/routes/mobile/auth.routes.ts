@@ -19,6 +19,11 @@ import {
   postSupportTicket,
   getSupportTicket,
   deleteSupportTicket,
+  getAllNotifications,
+  getUnreadNotificationCount,
+  deleteNotification,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
 } from '../../controller/mobile/auth.controller';
 import multer from 'multer';
 import {
@@ -510,5 +515,110 @@ router.get('/getSupportTicket/:id', getSupportTicket);
  *         description: Something went wrong
  */
 router.delete('/deleteSupportTicket/:ticketId', deleteSupportTicket);
+
+// /**
+//  * @swagger
+//  * /mobile/auth/getAllNotifications/{id}:
+//  *   get:
+//  *     summary: Get All Notifications
+//  *     tags: [ Mobile - Auth ]
+//  */
+router.get('/getAllNotifications/:id', getAllNotifications);
+// /**
+//  * @swagger
+//  * /mobile/auth/markNotificationAsRead/{id}/{notificationId}:
+//  *   patch:
+//  *     summary: Mark a notification as read
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *       - in: path
+//  *         name: notificationId
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: Notification marked as read successfully
+//  *       404:
+//  *         description: Notification not found
+//  *       500:
+//  *         description: Something went wrong
+//  */
+router.patch(
+  '/markNotificationAsRead/:id/:notificationId',
+  markNotificationAsRead,
+);
+
+// /**
+//  * @swagger
+//  * /mobile/auth/markAllNotificationsAsRead/{id}:
+//  *   patch:
+//  *     summary: Mark all notifications as read
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: All notifications marked as read
+//  *       500:
+//  *         description: Something went wrong
+//  */
+router.patch('/markAllNotificationsAsRead/:id', markAllNotificationsAsRead);
+
+// /**
+//  * @swagger
+//  * /mobile/auth/deleteNotification/{id}/{notificationId}:
+//  *   delete:
+//  *     summary: Delete a notification
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *       - in: path
+//  *         name: notificationId
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: Notification deleted successfully
+//  *       404:
+//  *         description: Notification not found
+//  *       500:
+//  *         description: Something went wrong
+//  */
+router.delete('/deleteNotification/:id/:notificationId', deleteNotification);
+
+// /**
+//  * @swagger
+//  * /mobile/auth/getUnreadNotificationCount/{id}:
+//  *   get:
+//  *     summary: Get count of unread notifications
+//  *     tags: [ Mobile - Auth ]
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       200:
+//  *         description: Unread notification count retrieved successfully
+//  *       500:
+//  *         description: Something went wrong
+//  */
+router.get('/getUnreadNotificationCount/:id', getUnreadNotificationCount);
 
 export default router;
