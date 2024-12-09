@@ -29,7 +29,9 @@ const orderAssignee_schema_1 = __importDefault(require("./src/models/orderAssign
 const routes_1 = __importDefault(require("./src/routes"));
 const seeders_1 = __importDefault(require("./src/seeders"));
 const responseHandler_1 = __importDefault(require("./src/utils/responseHandler"));
+const path = require('path');
 const app = (0, express_1.default)();
+app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
 // config({ path: `.env.development.${process.env.NODE_ENV}`, debug: false });
 (0, dotenv_1.config)({ path: `.env.development.local` });
 const server = http_1.default.createServer(app);

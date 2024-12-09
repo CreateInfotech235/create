@@ -17,7 +17,7 @@ interface OrderCancelType
 interface OrderPickUpType {
   orderId: number;
   userSignature: string;
-  pickUpTimestamp: number;
+  pickupTimestamp: number;
   otp: number;
 }
 

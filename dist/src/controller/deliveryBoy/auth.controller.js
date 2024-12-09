@@ -360,6 +360,7 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     totalOrderCount: 1,
                     totalAcceptedOrders: 1,
                     totalCancelledOrders: 1,
+                    totalDeliveredOrders: { $ifNull: ['$totalDeliveredOrders', 0] },
                     location: 1,
                     postCode: 1,
                     balance: 1,

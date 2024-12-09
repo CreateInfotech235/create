@@ -716,6 +716,7 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
+    console.log(value, 'value');
 
     const isArrived = await orderSchema.findOne({
       orderId: value.orderId,
@@ -736,20 +737,22 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').otpExpired });
     }
 
-    const signDocs = value.userSignature.split(',');
+    // const signDocs = value.userSignature;
 
-    value.userSignature = await uploadFile(
-      signDocs[0],
-      signDocs[1],
-      'USER-SIGNATURE',
-    );
+    // value.userSignature = await uploadFile(
+    //   signDocs[0],
+    //   signDocs[1],
+    //   'USER-SIGNATURE',
+    // );
+    // console.log(value.userSignature, 'value.userSignature');
+    // console.log(value.pickupTimestamp, 'value.pickupTimestamp');
 
     await orderSchema.findOneAndUpdate(
       { orderId: value.orderId },
       {
         $set: {
           'pickupDetails.userSignature': value.userSignature,
-          'pickupDetails.orderTimestamp': value.pickUpTimestamp,
+          'pickupDetails.orderTimestamp': value.pickupTimestamp,
           status: ORDER_HISTORY.PICKED_UP,
         },
       },
@@ -963,14 +966,14 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').otpExpired });
     }
 
-    const signDocs = value.deliveryManSignature.split(',');
+    // const signDocs = value.deliveryManSignature.split(',');
 
-    value.deliveryManSignature = await uploadFile(
-      signDocs[0],
-      signDocs[1],
-      'USER-SIGNATURE',
-    );
-    console.log('Signature Upload:', value.deliveryManSignature);
+    // value.deliveryManSignature = await uploadFile(
+    //   signDocs[0],
+    //   signDocs[1],
+    //   'USER-SIGNATURE',
+    // );
+    // console.log('Signature Upload:', value.deliveryManSignature);
 
     const [paymentInfo] = await Promise.all([
       PaymentInfoSchema.findOne({ order: value.orderId }),

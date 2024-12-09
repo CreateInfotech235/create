@@ -449,6 +449,7 @@ export const getDeliveryManProfile = async (
             totalOrderCount: 1,
             totalAcceptedOrders: 1,
             totalCancelledOrders: 1,
+            totalDeliveredOrders: { $ifNull: ['$totalDeliveredOrders', 0] },
             location: 1,
             postCode: 1,
             balance: 1,

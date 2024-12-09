@@ -15,8 +15,10 @@ import OrderAssigneeSchema from './src/models/orderAssignee.schema';
 import routes from './src/routes';
 import loadSeeders from './src/seeders';
 import responseHandler from './src/utils/responseHandler';
+const path = require('path');
 
 const app = express();
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // config({ path: `.env.development.${process.env.NODE_ENV}`, debug: false });
 config({ path: `.env.development.local` });

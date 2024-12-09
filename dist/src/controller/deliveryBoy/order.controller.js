@@ -577,6 +577,7 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        console.log(value, 'value');
         const isArrived = yield order_schema_1.default.findOne({
             orderId: value.orderId,
             status: enum_1.ORDER_HISTORY.ARRIVED,
@@ -592,12 +593,18 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!otpData) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
         }
-        const signDocs = value.userSignature.split(',');
-        value.userSignature = yield (0, common_1.uploadFile)(signDocs[0], signDocs[1], 'USER-SIGNATURE');
+        // const signDocs = value.userSignature;
+        // value.userSignature = await uploadFile(
+        //   signDocs[0],
+        //   signDocs[1],
+        //   'USER-SIGNATURE',
+        // );
+        // console.log(value.userSignature, 'value.userSignature');
+        // console.log(value.pickupTimestamp, 'value.pickupTimestamp');
         yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
                 'pickupDetails.userSignature': value.userSignature,
-                'pickupDetails.orderTimestamp': value.pickUpTimestamp,
+                'pickupDetails.orderTimestamp': value.pickupTimestamp,
                 status: enum_1.ORDER_HISTORY.PICKED_UP,
             },
         });
@@ -768,9 +775,13 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!otpData) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
         }
-        const signDocs = value.deliveryManSignature.split(',');
-        value.deliveryManSignature = yield (0, common_1.uploadFile)(signDocs[0], signDocs[1], 'USER-SIGNATURE');
-        console.log('Signature Upload:', value.deliveryManSignature);
+        // const signDocs = value.deliveryManSignature.split(',');
+        // value.deliveryManSignature = await uploadFile(
+        //   signDocs[0],
+        //   signDocs[1],
+        //   'USER-SIGNATURE',
+        // );
+        // console.log('Signature Upload:', value.deliveryManSignature);
         const [paymentInfo] = yield Promise.all([
             paymentInfo_schema_1.default.findOne({ order: value.orderId }),
             order_schema_1.default.updateOne({ orderId: value.orderId }, {
