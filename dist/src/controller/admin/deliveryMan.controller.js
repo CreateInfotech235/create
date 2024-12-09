@@ -449,7 +449,8 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
             },
             {
                 $project: {
-                    name: 1,
+                    firstName: 1,
+                    lastName: 1,
                     countryCode: 1,
                     contactNumber: 1,
                     email: 1,
@@ -514,7 +515,8 @@ const getAllDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, funct
             },
             {
                 $project: {
-                    name: 1,
+                    firstName: 1,
+                    lastName: 1,
                     countryCode: 1,
                     contactNumber: 1,
                     email: 1,

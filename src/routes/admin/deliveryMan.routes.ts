@@ -12,7 +12,7 @@ import {
   getDeliveryManWalletHistory,
   updateVerificationStatus,
   addDeliveryMan,
-  deleteDeliveryMan
+  deleteDeliveryMan,
 } from '../../controller/admin/deliveryMan.controller';
 
 const router = Router();

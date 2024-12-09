@@ -309,7 +309,9 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 $project: {
                     _id: 0,
                     userId: '$_id',
-                    userName: '$name',
+                    // userName: '$name',
+                    firstName: '$firstName',
+                    lastName: '$lastName',
                     registerDate: '$createdAt',
                     contactNumber: 1,
                     countryCode: 1,
@@ -344,7 +346,9 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             {
                 $project: {
                     _id: 1,
-                    userName: '$name',
+                    // userName: '$name',
+                    firstName: '$firstName',
+                    lastName: '$lastName',
                     registerDate: '$createdAt',
                     contactNumber: 1,
                     countryCode: 1,
@@ -357,6 +361,7 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 },
             },
         ]);
+        console.log(data);
         return res.ok({ data });
     }
     catch (error) {
@@ -378,7 +383,9 @@ const getAllUsersFromAdmin = (req, res) => __awaiter(void 0, void 0, void 0, fun
             {
                 $project: {
                     _id: 1,
-                    userName: '$name',
+                    // userName: '$name',
+                    firstName: '$firstName',
+                    lastName: '$lastName',
                     registerDate: '$createdAt',
                     contactNumber: 1,
                     countryCode: 1,

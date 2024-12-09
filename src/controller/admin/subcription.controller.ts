@@ -384,7 +384,9 @@ export const getUsers = async (req: RequestParams, res: Response) => {
         $project: {
           _id: 0,
           userId: '$_id',
-          userName: '$name',
+          // userName: '$name',
+          firstName: '$firstName',
+          lastName: '$lastName',
           registerDate: '$createdAt',
           contactNumber: 1,
           countryCode: 1,
@@ -419,7 +421,9 @@ export const getAllUsers = async (req: RequestParams, res: Response) => {
       {
         $project: {
           _id: 1,
-          userName: '$name',
+          // userName: '$name',
+          firstName: '$firstName',
+          lastName: '$lastName',
           registerDate: '$createdAt',
           contactNumber: 1,
           countryCode: 1,
@@ -432,6 +436,8 @@ export const getAllUsers = async (req: RequestParams, res: Response) => {
         },
       },
     ]);
+
+    console.log(data);
 
     return res.ok({ data });
   } catch (error) {
@@ -456,7 +462,9 @@ export const getAllUsersFromAdmin = async (
       {
         $project: {
           _id: 1,
-          userName: '$name',
+          // userName: '$name',
+          firstName: '$firstName',
+          lastName: '$lastName',
           registerDate: '$createdAt',
           contactNumber: 1,
           countryCode: 1,
@@ -481,7 +489,8 @@ export const getAllUsersFromAdmin = async (
 export const addUser = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
-      name: string;
+      firstName: string;
+      lastName: string;
       email: string;
       password: string;
       contactNumber: number;

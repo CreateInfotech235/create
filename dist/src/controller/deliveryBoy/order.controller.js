@@ -135,7 +135,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
             end.setUTCHours(23, 59, 59, 999); // Set endDate to 23:59:59 UTC
             // Add date range filter
             dateFilter = {
-                dateTime: {
+                'order.dateTime': {
                     $gte: start, // Greater than or equal to start date
                     $lte: end, // Less than or equal to end date
                 },
@@ -148,7 +148,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
             statusFilter = { status };
         }
         // Build match condition for count
-        const matchCondition = Object.assign(Object.assign({ deliveryManId: new mongoose_1.default.Types.ObjectId(req.id) }, statusFilter), dateFilter);
+        const matchCondition = Object.assign(Object.assign({ 'order.deliveryManId': new mongoose_1.default.Types.ObjectId(req.id) }, statusFilter), dateFilter);
         const data = yield order_schema_1.default.aggregate([
             {
                 $sort: {
@@ -177,29 +177,29 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                     preserveNullAndEmptyArrays: true,
                 },
             },
-            {
-                $lookup: {
-                    from: 'users',
-                    // localField: 'customer',
-                    localField: 'merchant',
-                    foreignField: '_id',
-                    as: 'userData',
-                    pipeline: [
-                        {
-                            $project: {
-                                _id: 0,
-                                name: 1,
-                            },
-                        },
-                    ],
-                },
-            },
-            {
-                $unwind: {
-                    path: '$userData',
-                    preserveNullAndEmptyArrays: true,
-                },
-            },
+            // {
+            //   $lookup: {
+            //     from: 'users',
+            //     // localField: 'customer',
+            //     localField: 'merchant',
+            //     foreignField: '_id',
+            //     as: 'userData',
+            //     pipeline: [
+            //       {
+            //         $project: {
+            //           _id: 0,
+            //           name: 1,
+            //         },
+            //       },
+            //     ],
+            //   },
+            // },
+            // {
+            //   $unwind: {
+            //     path: '$userData',
+            //     preserveNullAndEmptyArrays: true,
+            //   },
+            // },
             {
                 $lookup: {
                     from: 'deliveryMan',
@@ -225,49 +225,53 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
             },
             {
                 $project: {
-                    _id: 1,
-                    orderId: 1,
-                    parcelsCount: 1,
-                    customerName: '$deliveryDetails.name',
-                    cutomerEmail: '$deliveryDetails.email',
-                    pickupAddress: '$pickupDetails',
-                    deliveryAddress: '$deliveryDetails',
-                    deliveryMan: {
-                        $concat: [
-                            '$deliveryManData.firstName',
-                            ' ',
-                            '$deliveryManData.lastName',
-                        ],
-                    },
-                    deliveryManId: '$deliveryManData._id',
-                    pickupDate: {
-                        $dateToString: {
-                            format: '%d-%m-%Y , %H:%M',
-                            date: '$pickupDetails.dateTime',
-                        },
-                    },
-                    merchantId: '$pickupDetails.merchantId',
-                    deliveryDate: {
-                        $dateToString: {
-                            format: '%d-%m-%Y , %H:%M',
-                            date: '$deliveryDetails.orderTimestamp',
-                        },
-                    },
-                    createdDate: {
-                        $dateToString: {
-                            format: '%d-%m-%Y , %H:%M',
-                            date: '$createdAt',
-                        },
-                    },
-                    pickupRequest: '$pickupDetails.request',
-                    postCode: '$pickupDetails.postCode',
-                    cashOnDelivery: 1,
+                    deliveryBoy: '$deliveryManData._id',
                     status: 1,
-                    dateTime: 1,
-                    trashed: {
-                        $ifNull: ['$trashed', false],
+                    createdAt: 1,
+                    order: {
+                        orderId: '$orderId',
+                        _id: '$_id',
+                        parcelsCount: '$parcelsCount',
+                        customerName: '$deliveryDetails.name',
+                        cutomerEmail: '$deliveryDetails.email',
+                        pickupDetails: '$pickupDetails',
+                        deliveryDetails: '$deliveryDetails',
+                        deliveryMan: {
+                            $concat: [
+                                '$deliveryManData.firstName',
+                                ' ',
+                                '$deliveryManData.lastName',
+                            ],
+                        },
+                        deliveryManId: '$deliveryManData._id',
+                        pickupDate: {
+                            $dateToString: {
+                                format: '%d-%m-%Y , %H:%M',
+                                date: '$pickupDetails.dateTime',
+                            },
+                        },
+                        deliveryDate: {
+                            $dateToString: {
+                                format: '%d-%m-%Y , %H:%M',
+                                date: '$deliveryDetails.orderTimestamp',
+                            },
+                        },
+                        createdDate: {
+                            $dateToString: {
+                                format: '%d-%m-%Y , %H:%M',
+                                date: '$createdAt',
+                            },
+                        },
+                        pickupRequest: '$pickupDetails.request',
+                        postCode: '$pickupDetails.postCode',
+                        cashOnDelivery: '$cashOnDelivery',
+                        status: '$status',
+                        dateTime: '$dateTime',
+                        trashed: {
+                            $ifNull: ['$trashed', false],
+                        },
+                        paymentCollectionRupees: '$paymentCollectionRupees',
                     },
-                    paymentCollectionRupees: 1,
                 },
             },
             {

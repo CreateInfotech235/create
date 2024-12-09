@@ -527,7 +527,8 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
       },
       {
         $project: {
-          name: 1,
+          firstName: 1,
+          lastName: 1,
           countryCode: 1,
           contactNumber: 1,
           email: 1,
@@ -592,7 +593,8 @@ export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
       },
       {
         $project: {
-          name: 1,
+          firstName: 1,
+          lastName: 1,
           countryCode: 1,
           contactNumber: 1,
           email: 1,
