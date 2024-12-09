@@ -473,25 +473,38 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<
       {
+        createdByAdmin?: boolean;
+        createdByMerchant?: boolean;
         searchValue?: string;
-        isVerified?: string;
+        isVerified?: boolean;
       } & IPagination
     >(req.query, deliveryManListValidation);
+    console.log(req.id, 'req.query');
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
     }
 
     const { value } = validateRequest;
+    console.log(value, 'value');
 
     const Query: FilterQuery<{ name: string }> = {
-      isVerified: value.isVerified,
       isCustomer: false,
+      isVerified: value.isVerified,
     };
+
+    if (value.createdByAdmin) {
+      Query.createdByAdmin = value.createdByAdmin;
+    }
+
+    if (value.createdByMerchant) {
+      Query.createdByMerchant = value.createdByMerchant;
+    }
 
     if (value.searchValue) {
       Query.name = { $regex: new RegExp(value.searchValue, 'i') };
     }
+    console.log(Query, 'Query');
 
     const data = await deliveryManSchema.aggregate([
       {
@@ -537,6 +550,8 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
           city: '$cityData.cityName',
           registerDate: '$createdAt',
           isVerified: 1,
+          createdByAdmin: 1,
+          createdByMerchant: 1,
           location: {
             latitude: { $arrayElemAt: ['$location.coordinates', 0] },
             longitude: { $arrayElemAt: ['$location.coordinates', 1] },

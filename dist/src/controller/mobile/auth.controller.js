@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -1094,3 +1094,73 @@ const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 
     }
 });
 exports.getUnreadNotificationCount = getUnreadNotificationCount;
+const getAllDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield deliveryMan_schema_1.default.aggregate([
+            {
+                $match: {
+                    status: "ENABLE",
+                },
+            },
+            {
+                $lookup: {
+                    from: 'country',
+                    localField: 'countryId',
+                    foreignField: '_id',
+                    as: 'countryData',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$countryData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'city',
+                    localField: 'cityId',
+                    foreignField: '_id',
+                    as: 'cityData',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$cityData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $sort: { createdAt: -1 },
+            },
+            {
+                $project: {
+                    firstName: { $concat: ["Admin - ", "$firstName"] },
+                    lastName: 1,
+                    countryCode: 1,
+                    contactNumber: 1,
+                    email: 1,
+                    status: 1,
+                    country: '$countryData.countryName',
+                    city: '$cityData.cityName',
+                    merchantId: 1,
+                    createdByMerchant: 1,
+                    createdByAdmin: 1,
+                    registerDate: '$createdAt',
+                    isVerified: 1,
+                    location: {
+                        latitude: { $arrayElemAt: ['$location.coordinates', 0] },
+                        longitude: { $arrayElemAt: ['$location.coordinates', 1] },
+                    },
+                },
+            },
+        ]);
+        return res.ok({ data: data == null ? [] : data });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getAllDeliveryMans = getAllDeliveryMans;

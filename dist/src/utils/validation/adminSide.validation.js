@@ -30,6 +30,8 @@ exports.adminSignInValidation = joi_1.default.object({
         .required(),
 });
 exports.deliveryManListValidation = joi_1.default.object({
+    createdByAdmin: joi_1.default.boolean(),
+    createdByMerchant: joi_1.default.boolean(),
     pageCount: joi_1.default.number().required(),
     pageLimit: joi_1.default.number().required(),
     searchValue: joi_1.default.string(),

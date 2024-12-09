@@ -35,6 +35,8 @@ export const adminSignInValidation = Joi.object({
 });
 
 export const deliveryManListValidation = Joi.object({
+  createdByAdmin: Joi.boolean(),
+  createdByMerchant: Joi.boolean(),
   pageCount: Joi.number().required(),
   pageLimit: Joi.number().required(),
   searchValue: Joi.string(),
@@ -45,7 +47,6 @@ export const paginationValidation = Joi.object({
   pageCount: Joi.number().required(),
   pageLimit: Joi.number().required(),
 });
-
 
 export const orderCount = Joi.object({
   startDate: Joi.string(),

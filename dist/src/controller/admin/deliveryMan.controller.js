@@ -404,17 +404,26 @@ exports.getDeliveryManProfileById = getDeliveryManProfileById;
 const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.query, adminSide_validation_1.deliveryManListValidation);
+        console.log(req.id, 'req.query');
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        console.log(value, 'value');
         const Query = {
-            isVerified: value.isVerified,
             isCustomer: false,
+            isVerified: value.isVerified,
         };
+        if (value.createdByAdmin) {
+            Query.createdByAdmin = value.createdByAdmin;
+        }
+        if (value.createdByMerchant) {
+            Query.createdByMerchant = value.createdByMerchant;
+        }
         if (value.searchValue) {
             Query.name = { $regex: new RegExp(value.searchValue, 'i') };
         }
+        console.log(Query, 'Query');
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
                 $match: Query,
@@ -459,6 +468,8 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                     city: '$cityData.cityName',
                     registerDate: '$createdAt',
                     isVerified: 1,
+                    createdByAdmin: 1,
+                    createdByMerchant: 1,
                     location: {
                         latitude: { $arrayElemAt: ['$location.coordinates', 0] },
                         longitude: { $arrayElemAt: ['$location.coordinates', 1] },

@@ -1392,3 +1392,76 @@ export const getUnreadNotificationCount = async (
     });
   }
 };
+
+
+
+export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
+  try {
+    const data = await deliveryManSchema.aggregate([
+      {
+        $match: {
+          status: "ENABLE",
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'country',
+          localField: 'countryId',
+          foreignField: '_id',
+          as: 'countryData',
+        },
+      },
+      {
+        $unwind: {
+          path: '$countryData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'city',
+          localField: 'cityId',
+          foreignField: '_id',
+          as: 'cityData',
+        },
+      },
+      {
+        $unwind: {
+          path: '$cityData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $project: {
+          firstName: { $concat: ["Admin - ", "$firstName"] },
+          lastName: 1,
+          countryCode: 1,
+          contactNumber: 1,
+          email: 1,
+          status: 1,
+          country: '$countryData.countryName',
+          city: '$cityData.cityName',
+          merchantId: 1,
+          createdByMerchant: 1,
+          createdByAdmin: 1,
+          registerDate: '$createdAt',
+          isVerified: 1,
+          location: {
+            latitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            longitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+        },
+      },
+    ]);
+
+    return res.ok({ data: data == null ? [] : data });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};

@@ -564,4 +564,5 @@ router.delete('/deleteNotification/:id/:notificationId', auth_controller_1.delet
 //  *         description: Something went wrong
 //  */
 router.get('/getUnreadNotificationCount/:id', auth_controller_1.getUnreadNotificationCount);
+router.get('/getAllDeliveryMans', auth_controller_1.getAllDeliveryMans);
 exports.default = router;

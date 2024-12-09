@@ -56,7 +56,9 @@ const assignOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         yield orderAssignee_schema_1.default.create({
             // order: value.orderId, deliveryBoy:value.deliveryManId, customer: isCreated.customer
-            order: value.orderId, deliveryBoy: value.deliveryManId, merchant: isCreated.merchant
+            order: value.orderId,
+            deliveryBoy: value.deliveryManId,
+            merchant: isCreated.merchant,
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderAssignedSuccessfully,
@@ -214,6 +216,8 @@ const getOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getOrders = getOrders;
 const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const { exists } = req.query;
+        console.log(exists, 'exists');
         const data = yield order_schema_1.default.aggregate([
             {
                 $sort: {
@@ -223,8 +227,8 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             {
                 $match: {
                     // customer: { $exists: false }
-                    merchant: { $exists: false }
-                }
+                    merchant: { $exists: exists },
+                },
             },
             {
                 $lookup: {
@@ -311,7 +315,7 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     createdDate: '$createdAt',
                     pickupRequest: '$pickupDetails.request',
                     postCode: '$pickupDetails.postCode',
-                    status: 1
+                    status: 1,
                 },
             },
         ]);

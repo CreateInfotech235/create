@@ -41,7 +41,9 @@ export const assignOrder = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
 
-    const checkDeliveryBoyExist = await DeliveryManSchema.findById(value.deliveryManId)
+    const checkDeliveryBoyExist = await DeliveryManSchema.findById(
+      value.deliveryManId,
+    );
 
     if (!checkDeliveryBoyExist) {
       return res.badRequest({
@@ -62,7 +64,9 @@ export const assignOrder = async (req: RequestParams, res: Response) => {
 
     await OrderAssigneeSchema.create({
       // order: value.orderId, deliveryBoy:value.deliveryManId, customer: isCreated.customer
-      order: value.orderId, deliveryBoy:value.deliveryManId, merchant: isCreated.merchant
+      order: value.orderId,
+      deliveryBoy: value.deliveryManId,
+      merchant: isCreated.merchant,
     });
 
     return res.ok({
@@ -226,7 +230,7 @@ export const getOrders = async (req: RequestParams, res: Response) => {
       }),
     ]);
 
-    return res.ok({ data:data[0] });
+    return res.ok({ data: data[0] });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -236,6 +240,8 @@ export const getOrders = async (req: RequestParams, res: Response) => {
 
 export const getAllOrders = async (req: RequestParams, res: Response) => {
   try {
+    const { exists } = req.query;
+    console.log(exists, 'exists');
 
     const data = await orderSchema.aggregate([
       {
@@ -246,8 +252,8 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
       {
         $match: {
           // customer: { $exists: false }
-          merchant: { $exists: false }
-        }
+          merchant: { $exists: exists },
+        },
       },
       {
         $lookup: {
@@ -334,12 +340,12 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
           createdDate: '$createdAt',
           pickupRequest: '$pickupDetails.request',
           postCode: '$pickupDetails.postCode',
-          status : 1
+          status: 1,
         },
       },
     ]);
 
-    return res.ok({ data:data });
+    return res.ok({ data: data });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
