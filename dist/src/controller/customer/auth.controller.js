@@ -94,6 +94,9 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const merchantId = yield req.query.merchantId;
         console.log(merchantId);
+        if (merchantId === undefined) {
+            console.log(merchantId, 'merchantId');
+        }
         const data = yield customer_schema_1.default.aggregate([
             {
                 $match: {

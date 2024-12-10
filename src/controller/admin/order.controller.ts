@@ -240,9 +240,6 @@ export const getOrders = async (req: RequestParams, res: Response) => {
 
 export const getAllOrders = async (req: RequestParams, res: Response) => {
   try {
-    const { exists } = req.query;
-    console.log(exists, 'exists');
-
     const data = await orderSchema.aggregate([
       {
         $sort: {
@@ -250,10 +247,12 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        $match: {
-          // customer: { $exists: false }
-          merchant: { $exists: exists },
-        },
+        $match:
+          req.query.existss === null || req.query.existss === undefined
+            ? {}
+            : {
+                merchant: { $exists: req.query.existss === 'true' },
+              },
       },
       {
         $lookup: {

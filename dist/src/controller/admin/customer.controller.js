@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addCustomer = void 0;
+exports.getAllCustomer = exports.addCustomer = void 0;
 const customer_schema_1 = __importDefault(require("../../models/customer.schema"));
 const languageHelper_1 = require("../../language/languageHelper");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
@@ -44,3 +44,36 @@ const addCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.addCustomer = addCustomer;
+const getAllCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const createdBy = req.params.createdBy === 'true';
+        console.log(createdBy);
+        const customers = yield customer_schema_1.default.aggregate([
+            {
+                $match: {
+                    createdByAdmin: createdBy,
+                },
+            },
+            {
+                $project: {
+                    name: { $concat: ['$firstName', ' ', '$lastName'] },
+                    address: 1,
+                    email: 1,
+                    postCode: 1,
+                    country: 1,
+                    city: 1,
+                    mobileNumber: 1,
+                    customerId: 1,
+                    location: 1,
+                },
+            },
+        ]);
+        console.log('🚀 ~ getAllCustomer ~ customers:', customers);
+        res.status(200).json({ data: customers });
+    }
+    catch (error) {
+        console.log('🚀 ~ getAllCustomer ~ error:', error);
+        res.status(500).json({ message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong });
+    }
+});
+exports.getAllCustomer = getAllCustomer;

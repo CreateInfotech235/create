@@ -132,6 +132,9 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
     const merchantId = await req.query.merchantId;
     console.log(merchantId);
 
+    if (merchantId === undefined) {
+      console.log(merchantId, 'merchantId');
+    }
     const data = await customerSchema.aggregate([
       {
         $match: {

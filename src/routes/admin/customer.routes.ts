@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import { addCustomer } from '../../controller/admin/customer.controller';
+import {
+  addCustomer,
+  getAllCustomer,
+} from '../../controller/admin/customer.controller';
 
 const router = Router();
 
@@ -44,5 +47,6 @@ const router = Router();
 //  *         description: Something went wrong
 //  */
 router.post('/addCustomer', addCustomer);
+router.get('/getAllCustomer/:createdBy', getAllCustomer);
 
 export default router;

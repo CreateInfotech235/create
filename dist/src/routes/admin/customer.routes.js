@@ -44,4 +44,5 @@ const router = (0, express_1.Router)();
 //  *         description: Something went wrong
 //  */
 router.post('/addCustomer', customer_controller_1.addCustomer);
+router.get('/getAllCustomer/:createdBy', customer_controller_1.getAllCustomer);
 exports.default = router;

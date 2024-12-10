@@ -216,8 +216,6 @@ const getOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getOrders = getOrders;
 const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { exists } = req.query;
-        console.log(exists, 'exists');
         const data = yield order_schema_1.default.aggregate([
             {
                 $sort: {
@@ -225,10 +223,11 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
             {
-                $match: {
-                    // customer: { $exists: false }
-                    merchant: { $exists: exists },
-                },
+                $match: req.query.existss === null || req.query.existss === undefined
+                    ? {}
+                    : {
+                        merchant: { $exists: req.query.existss === 'true' },
+                    },
             },
             {
                 $lookup: {
