@@ -87,7 +87,7 @@ exports.newOrderCreation = joi_1.default.object({
         pickupRequest: joi_1.default.string()
             .valid(enum_1.PICKUP_REQUEST.REGULAR, enum_1.PICKUP_REQUEST.EXPRESS)
             .default(enum_1.PICKUP_REQUEST.REGULAR),
-        description: joi_1.default.string(),
+        description: joi_1.default.string().allow(''),
         postCode: joi_1.default.string()
             .regex(/^[A-Za-z0-9\s-]+$/)
             .required(),

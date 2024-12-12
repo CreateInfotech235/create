@@ -93,7 +93,7 @@ export const newOrderCreation = Joi.object({
     pickupRequest: Joi.string()
       .valid(PICKUP_REQUEST.REGULAR, PICKUP_REQUEST.EXPRESS)
       .default(PICKUP_REQUEST.REGULAR),
-    description: Joi.string(),
+    description: Joi.string().allow(''),
     postCode: Joi.string()
       .regex(/^[A-Za-z0-9\s-]+$/)
       .required(),

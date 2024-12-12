@@ -14,7 +14,7 @@ const messages = {
   orderNotAssignedToYou: 'order Not Assigned To You.',
   invoiceCreatedSuccessfully: 'Invoice created successfully',
   invoiceAlreadyExists: 'Invoice already exists',
-  invoiceNotFound: 'Invoice not found',
+  invoiceNotFound: 'Click on edit invoice button to create invoice',
   invoiceUpdatedSuccessfully: 'Invoice updated successfully',
   invoiceDeletedSuccessfully: 'Invoice deleted successfully',
   invoiceDataFetchedSuccessfully: 'Invoice data fetched successfully',
