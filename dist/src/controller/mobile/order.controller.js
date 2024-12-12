@@ -33,6 +33,9 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         console.log('in order route');
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.newOrderCreation);
+        console.log(req.body, 'req.body');
+        const datamarcent = yield user_schema_1.default.findById(req.id);
+        yield user_schema_1.default.updateOne({ _id: req.id }, { $set: { showOrderNumber: datamarcent.showOrderNumber + 1 } });
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
@@ -55,7 +58,7 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         value.orderId = checkLastOrder.orderId;
         // value.customer = req.id.toString();
         value.merchant = req.id.toString();
-        const newOrder = yield order_schema_1.default.create(value);
+        const newOrder = yield order_schema_1.default.create(Object.assign(Object.assign({}, value), { showOrderNumber: datamarcent.showOrderNumber }));
         if (value.deliveryManId) {
             value.isCustomer = true;
             yield orderAssignee_schema_1.default.create({
@@ -691,6 +694,7 @@ const getAllOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0,
                     trashed: {
                         $ifNull: ['$trashed', false],
                     },
+                    showOrderNumber: 1,
                     paymentCollectionRupees: 1,
                 },
             },

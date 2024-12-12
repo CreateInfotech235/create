@@ -84,16 +84,16 @@ export const signUp = async (req: RequestParams, res: Response) => {
       });
     }
 
-    if (!value.image) {
-      value.image = process.env.DEFAULT_PROFILE_IMAGE;
-    } else {
-      const Image = value.image.split(',');
-      value.image = await uploadFile(
-        Image[0],
-        Image[1],
-        'MERCHANT(USER)-PROFILE',
-      );
-    }
+    // if (!value.image) {
+    //   value.image = process.env.DEFAULT_PROFILE_IMAGE;
+    // } else {
+    //   const Image = value.image.split(',');
+    //   value.image = await uploadFile(
+    //     Image[0],
+    //     Image[1],
+    //     'MERCHANT(USER)-PROFILE',
+    //   );
+    // }
 
     const otpData = await otpSchema.findOne({
       value: value.otp,
@@ -1393,14 +1393,12 @@ export const getUnreadNotificationCount = async (
   }
 };
 
-
-
 export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
   try {
     const data = await deliveryManSchema.aggregate([
       {
         $match: {
-          status: "ENABLE",
+          status: 'ENABLE',
         },
       },
 
@@ -1437,7 +1435,7 @@ export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
       },
       {
         $project: {
-          firstName: { $concat: ["Admin - ", "$firstName"] },
+          firstName: { $concat: ['Admin - ', '$firstName'] },
           lastName: 1,
           countryCode: 1,
           contactNumber: 1,
@@ -1465,3 +1463,41 @@ export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
+export const getSubscriptions = async (req: RequestParams, res: Response) => {
+  try {
+    const validateRequest = req.query;
+    return res.ok({
+      data: await subcriptionSchema.find().sort({ seconds: 1, amount: 1 }),
+    });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
+export const SupportTicketUpdate = async (req: RequestParams, res: Response) => {
+  try {
+    const { id, userId } = req.query;
+    const data = await SupportTicket.findById(id);
+    console.log(data.userid , "User", userId);
+    if (data.userid == userId) {
+      const updateData = await SupportTicket.updateOne({ _id: id }, req.body, { new: true });
+      return res.status(200).json({
+        message: 'Support ticket updated successfully',
+        data: updateData,
+      });
+    } else {
+      return res.status(400).json({
+        message: 'You are not allowed to update this ticket',
+      });
+    }
+  } catch (error) {
+    console.error('Error updating support ticket:', error);
+    return res.status(500).json({
+      message: 'There was an error updating the support ticket',
+    });
+  }
+}

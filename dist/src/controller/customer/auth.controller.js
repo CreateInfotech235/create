@@ -20,6 +20,7 @@ const country_schema_1 = __importDefault(require("../../models/country.schema"))
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
 const mongoose_1 = __importDefault(require("mongoose"));
+const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.customerSignUpValidation);
@@ -33,7 +34,9 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 message: (0, languageHelper_1.getLanguage)('en').emailRegisteredAlready,
             });
         }
-        const data = yield customer_schema_1.default.create(Object.assign({}, value));
+        const datamarcent = yield user_schema_1.default.findById(req.body.merchantId);
+        yield user_schema_1.default.updateOne({ _id: req.body.merchantId }, { $set: { showCustomerNumber: datamarcent.showCustomerNumber + 1 } });
+        const data = yield customer_schema_1.default.create(Object.assign(Object.assign({}, value), { showCustomerNumber: datamarcent.showCustomerNumber }));
         console.log(data);
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').userRegistered, data });
     }
@@ -153,6 +156,7 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     createdDate: '$createdAt',
                     customerId: 1,
                     merchantId: 1,
+                    showCustomerNumber: '$showCustomerNumber',
                     trashed: {
                         $ifNull: ['$trashed', false],
                     },

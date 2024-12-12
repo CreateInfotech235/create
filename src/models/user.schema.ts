@@ -39,6 +39,18 @@ const merchantSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    showOrderNumber: {
+      type: Number,
+      default: 1,
+    },
+    showCustomerNumber: {
+      type: Number,
+      default: 1,
+    },
+    showDeliveryManNumber: {
+      type: Number,
+      default: 1,
+    },
     bankData: {
       type: {
         name: { type: String },

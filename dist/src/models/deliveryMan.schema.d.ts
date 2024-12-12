@@ -73,6 +73,7 @@ declare const Model: mongoose.Model<{
         number?: number;
         name?: string;
     };
+    showDeliveryManNumber?: number;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -122,6 +123,7 @@ declare const Model: mongoose.Model<{
         number?: number;
         name?: string;
     };
+    showDeliveryManNumber?: number;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -171,6 +173,7 @@ declare const Model: mongoose.Model<{
         number?: number;
         name?: string;
     };
+    showDeliveryManNumber?: number;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -227,6 +230,7 @@ declare const Model: mongoose.Model<{
         number?: number;
         name?: string;
     };
+    showDeliveryManNumber?: number;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -276,6 +280,7 @@ declare const Model: mongoose.Model<{
         number?: number;
         name?: string;
     };
+    showDeliveryManNumber?: number;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -325,6 +330,7 @@ declare const Model: mongoose.Model<{
         number?: number;
         name?: string;
     };
+    showDeliveryManNumber?: number;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

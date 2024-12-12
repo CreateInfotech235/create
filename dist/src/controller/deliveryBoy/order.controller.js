@@ -228,6 +228,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                     deliveryBoy: '$deliveryManData._id',
                     status: 1,
                     createdAt: 1,
+                    showDeliveryManNumber: 1,
                     order: {
                         orderId: '$orderId',
                         _id: '$_id',

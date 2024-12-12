@@ -565,4 +565,6 @@ router.delete('/deleteNotification/:id/:notificationId', auth_controller_1.delet
 //  */
 router.get('/getUnreadNotificationCount/:id', auth_controller_1.getUnreadNotificationCount);
 router.get('/getAllDeliveryMans', auth_controller_1.getAllDeliveryMans);
+router.get('/subscriptions', auth_controller_1.getSubscriptions);
+router.patch('/SupportTicketUpdate', auth_controller_1.SupportTicketUpdate);
 exports.default = router;

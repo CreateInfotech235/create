@@ -10,6 +10,7 @@ import {
   customerUpdateValidation,
 } from '../../utils/validation/auth.validation';
 import mongoose from 'mongoose';
+import merchantSchema from '../../models/user.schema';
 
 export const createCustomer = async (req: RequestParams, res: Response) => {
   try {
@@ -42,9 +43,15 @@ export const createCustomer = async (req: RequestParams, res: Response) => {
         message: getLanguage('en').emailRegisteredAlready,
       });
     }
+    const datamarcent = await merchantSchema.findById(req.body.merchantId);
+    await merchantSchema.updateOne(
+      { _id: req.body.merchantId },
+      { $set: { showCustomerNumber: datamarcent.showCustomerNumber + 1 } },
+    );
 
     const data = await customerSchema.create({
       ...value,
+      showCustomerNumber: datamarcent.showCustomerNumber,
       //   location: {
       //     type: 'Point',
       //     coordinates: [value.location.longitude, value.location.latitude],
@@ -191,6 +198,7 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
           createdDate: '$createdAt',
           customerId: 1,
           merchantId: 1,
+          showCustomerNumber: '$showCustomerNumber',
           trashed: {
             $ifNull: ['$trashed', false],
           },

@@ -11,6 +11,10 @@ const OrderSchema = new mongoose.Schema(
     parcelType: {
       type: String,
     },
+    showOrderNumber: {
+      type: Number,
+      required: false,
+    },
     parcel: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'parcel',

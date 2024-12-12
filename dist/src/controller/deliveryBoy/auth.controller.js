@@ -26,6 +26,7 @@ const auth_validation_1 = require("../../utils/validation/auth.validation");
 const auth_validation_2 = require("../../utils/validation/auth.validation");
 const deliveryMan_validation_1 = require("../../utils/validation/deliveryMan.validation");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const verifyPassword = (_a) => __awaiter(void 0, [_a], void 0, function* ({ password, hash, }) {
     return bcrypt_1.default.compare(password, hash);
 });
@@ -83,7 +84,11 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
         value.password = yield (0, common_1.encryptPassword)({ password: value.password });
-        const data = yield deliveryMan_schema_1.default.create(Object.assign(Object.assign({}, value), { createdByMerchant: isFromMerchantPanel, isVerified: isFromMerchantPanel ? true : false }));
+        const datamarcent = yield user_schema_1.default.findById(value.merchantId);
+        yield user_schema_1.default.updateOne({ _id: value.merchantId }, {
+            $set: { showDeliveryManNumber: datamarcent.showDeliveryManNumber + 1 },
+        });
+        const data = yield deliveryMan_schema_1.default.create(Object.assign(Object.assign({}, value), { createdByMerchant: isFromMerchantPanel, isVerified: isFromMerchantPanel ? true : false, showDeliveryManNumber: datamarcent.showDeliveryManNumber }));
         if (((_b = value.documents) === null || _b === void 0 ? void 0 : _b.length) > 0) {
             const documentNames = yield Promise.all(value.documents.map((i, j) => __awaiter(void 0, void 0, void 0, function* () {
                 const document = i.image.split(',');
@@ -255,6 +260,8 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
         if (!mongoose_1.default.Types.ObjectId.isValid(req.params.id)) {
             return res.badRequest({ message: 'Invalid delivery man ID' });
         }
+        // const allOrders = await OrderAssigneeSchema.find({ deliveryBoy: req.params.id });
+        // const order = await OrderSchema.findOne({ orderId: allOrders?.order });
         const result = yield deliveryMan_schema_1.default
             .aggregate([
             {
@@ -276,6 +283,19 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         },
                     ],
                     as: 'allOrders',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'orders',
+                    localField: 'allOrders.order',
+                    foreignField: 'orderId',
+                    as: 'orderDetails',
+                },
+            },
+            {
+                $match: {
+                    'orderDetails.status': 'DELIVERED',
                 },
             },
             {
@@ -360,7 +380,7 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     totalOrderCount: 1,
                     totalAcceptedOrders: 1,
                     totalCancelledOrders: 1,
-                    totalDeliveredOrders: { $ifNull: ['$totalDeliveredOrders', 0] },
+                    totalDeliveredOrders: { $size: '$orderDetails' },
                     location: 1,
                     postCode: 1,
                     balance: 1,

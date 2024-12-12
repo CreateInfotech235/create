@@ -55,6 +55,12 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
       req.body,
       newOrderCreation,
     );
+    console.log(req.body, 'req.body');
+    const datamarcent = await merchantSchema.findById(req.id);
+    await merchantSchema.updateOne(
+      { _id: req.id },
+      { $set: { showOrderNumber: datamarcent.showOrderNumber + 1 } },
+    );
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -82,7 +88,10 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
     value.orderId = checkLastOrder.orderId;
     // value.customer = req.id.toString();
     value.merchant = req.id.toString();
-    const newOrder = await orderSchema.create(value);
+    const newOrder = await orderSchema.create({
+      ...value,
+      showOrderNumber: datamarcent.showOrderNumber,
+    });
 
     if (value.deliveryManId) {
       value.isCustomer = true;
@@ -147,7 +156,6 @@ export const getAllPaymentInfo = async (req: RequestParams, res: Response) => {
   }
 };
 
-
 export const orderUpdate = async (req: RequestParams, res: Response) => {
   try {
     const orderId = req.params.orderId; // Get orderId from request parameters
@@ -171,7 +179,6 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: 'Order not found' });
     }
 
-
     // Update fields in the order
     const updatedOrder = await orderSchema.findOneAndUpdate(
       { _id: orderId },
@@ -185,11 +192,9 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
       });
     }
 
-
     // If deliveryManId is updated, update the assignee table too
 
     if (value.deliveryManId) {
-
       if (existingOrder.status === 'UNASSIGNED') {
         const updatedOrder = await orderSchema.findOneAndUpdate(
           { _id: orderId },
@@ -697,7 +702,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       message: `Your order ${value.orderId} has been cancelled`,
       type: 'MERCHANT',
       orderId: value.orderId,
-    }); 
+    });
 
     return res.badRequest({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -862,7 +867,7 @@ export const getAllOrdersFromMerchant = async (
           trashed: {
             $ifNull: ['$trashed', false],
           },
-
+          showOrderNumber: 1,
           paymentCollectionRupees: 1,
         },
       },

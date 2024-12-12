@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -61,13 +61,16 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: (0, languageHelper_1.getLanguage)('en').emailRegisteredAlready,
             });
         }
-        if (!value.image) {
-            value.image = process.env.DEFAULT_PROFILE_IMAGE;
-        }
-        else {
-            const Image = value.image.split(',');
-            value.image = yield (0, common_1.uploadFile)(Image[0], Image[1], 'MERCHANT(USER)-PROFILE');
-        }
+        // if (!value.image) {
+        //   value.image = process.env.DEFAULT_PROFILE_IMAGE;
+        // } else {
+        //   const Image = value.image.split(',');
+        //   value.image = await uploadFile(
+        //     Image[0],
+        //     Image[1],
+        //     'MERCHANT(USER)-PROFILE',
+        //   );
+        // }
         const otpData = yield otp_schema_1.default.findOne({
             value: value.otp,
             customerEmail: value.email,
@@ -1099,7 +1102,7 @@ const getAllDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
                 $match: {
-                    status: "ENABLE",
+                    status: 'ENABLE',
                 },
             },
             {
@@ -1135,7 +1138,7 @@ const getAllDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, funct
             },
             {
                 $project: {
-                    firstName: { $concat: ["Admin - ", "$firstName"] },
+                    firstName: { $concat: ['Admin - ', '$firstName'] },
                     lastName: 1,
                     countryCode: 1,
                     contactNumber: 1,
@@ -1164,3 +1167,43 @@ const getAllDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.getAllDeliveryMans = getAllDeliveryMans;
+const getSubscriptions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = req.query;
+        return res.ok({
+            data: yield subcription_schema_1.default.find().sort({ seconds: 1, amount: 1 }),
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getSubscriptions = getSubscriptions;
+const SupportTicketUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id, userId } = req.query;
+        const data = yield SupportTicket_1.default.findById(id);
+        console.log(data.userid, "User", userId);
+        if (data.userid == userId) {
+            const updateData = yield SupportTicket_1.default.updateOne({ _id: id }, req.body, { new: true });
+            return res.status(200).json({
+                message: 'Support ticket updated successfully',
+                data: updateData,
+            });
+        }
+        else {
+            return res.status(400).json({
+                message: 'You are not allowed to update this ticket',
+            });
+        }
+    }
+    catch (error) {
+        console.error('Error updating support ticket:', error);
+        return res.status(500).json({
+            message: 'There was an error updating the support ticket',
+        });
+    }
+});
+exports.SupportTicketUpdate = SupportTicketUpdate;

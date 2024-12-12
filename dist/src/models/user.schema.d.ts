@@ -28,11 +28,14 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
     provider: string;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
@@ -63,11 +66,14 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
     provider: string;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
@@ -98,11 +104,14 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
     provider: string;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
@@ -140,11 +149,14 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
     provider: string;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
@@ -175,11 +187,14 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
     provider: string;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
@@ -210,11 +225,14 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
     provider: string;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;

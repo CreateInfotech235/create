@@ -21,6 +21,10 @@ const CustomerSchema = new Schema(
     country: { type: String, required: true },
     // city: { type: Schema.Types.ObjectId, ref: 'City', required: true },
     city: { type: String, required: true },
+    showCustomerNumber: {
+      type: Number,
+      required: false,
+    },
     address: {
       type: String,
       required: true,

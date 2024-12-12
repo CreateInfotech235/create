@@ -286,6 +286,7 @@ export const getOederForDeliveryMan = async (
           deliveryBoy: '$deliveryManData._id',
           status: 1,
           createdAt: 1,
+          showDeliveryManNumber: 1,
           order: {
             orderId: '$orderId',
             _id: '$_id',

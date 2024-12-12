@@ -25,6 +25,8 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
   getAllDeliveryMans,
+  getSubscriptions,
+  SupportTicketUpdate,
 } from '../../controller/mobile/auth.controller';
 import multer from 'multer';
 import {
@@ -623,4 +625,8 @@ router.delete('/deleteNotification/:id/:notificationId', deleteNotification);
 router.get('/getUnreadNotificationCount/:id', getUnreadNotificationCount);
 
 router.get('/getAllDeliveryMans', getAllDeliveryMans);
+router.get('/subscriptions', getSubscriptions);
+
+router.patch('/SupportTicketUpdate', SupportTicketUpdate);
+
 export default router;

@@ -103,6 +103,10 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
             number: { type: Number },
         },
     },
+    showDeliveryManNumber: {
+        type: Number,
+        required: false,
+    },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('deliveryMan', DeliveryManSchema, 'deliveryMan');
 exports.default = Model;

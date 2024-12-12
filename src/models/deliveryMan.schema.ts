@@ -100,6 +100,10 @@ const DeliveryManSchema = new mongoose.Schema(
         number: { type: Number },
       },
     },
+    showDeliveryManNumber: {
+      type: Number,
+      required: false,
+    },
   },
   { timestamps: true, versionKey: false },
 );

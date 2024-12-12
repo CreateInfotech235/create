@@ -13,6 +13,10 @@ const OrderSchema = new mongoose_1.default.Schema({
     parcelType: {
         type: String,
     },
+    showOrderNumber: {
+        type: Number,
+        required: false,
+    },
     parcel: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: 'parcel',

@@ -44,6 +44,7 @@ declare const Model: mongoose.Model<{
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
     parcelType?: string;
+    showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
     startPickupDate?: NativeDate;
@@ -108,6 +109,7 @@ declare const Model: mongoose.Model<{
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
     parcelType?: string;
+    showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
     startPickupDate?: NativeDate;
@@ -172,6 +174,7 @@ declare const Model: mongoose.Model<{
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
     parcelType?: string;
+    showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
     startPickupDate?: NativeDate;
@@ -243,6 +246,7 @@ declare const Model: mongoose.Model<{
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
     parcelType?: string;
+    showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
     startPickupDate?: NativeDate;
@@ -307,6 +311,7 @@ declare const Model: mongoose.Model<{
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
     parcelType?: string;
+    showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
     startPickupDate?: NativeDate;
@@ -371,6 +376,7 @@ declare const Model: mongoose.Model<{
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
     parcelType?: string;
+    showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
     startPickupDate?: NativeDate;

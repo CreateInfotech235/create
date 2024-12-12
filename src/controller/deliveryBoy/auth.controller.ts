@@ -18,6 +18,9 @@ import { updatePasswordValidation } from '../../utils/validation/auth.validation
 import { updateLocationValidation } from '../../utils/validation/deliveryMan.validation';
 import { IUpdateLocation } from './types/auth';
 import bcrypt from 'bcrypt';
+import OrderAssigneeSchema from '../../models/orderAssignee.schema';
+import OrderSchema from '../../models/order.schema';
+import merchantSchema from '../../models/user.schema';
 export const verifyPassword = async ({
   password,
   hash,
@@ -110,10 +113,19 @@ export const signUp = async (req: RequestParams, res: Response) => {
 
     value.password = await encryptPassword({ password: value.password });
 
+    const datamarcent = await merchantSchema.findById(value.merchantId);
+    await merchantSchema.updateOne(
+      { _id: value.merchantId },
+      {
+        $set: { showDeliveryManNumber: datamarcent.showDeliveryManNumber + 1 },
+      },
+    );
+
     const data = await deliveryManSchema.create({
       ...value,
       createdByMerchant: isFromMerchantPanel,
       isVerified: isFromMerchantPanel ? true : false,
+      showDeliveryManNumber: datamarcent.showDeliveryManNumber,
     });
 
     if (value.documents?.length > 0) {
@@ -343,6 +355,10 @@ export const getDeliveryManProfile = async (
       return res.badRequest({ message: 'Invalid delivery man ID' });
     }
 
+    // const allOrders = await OrderAssigneeSchema.find({ deliveryBoy: req.params.id });
+
+    // const order = await OrderSchema.findOne({ orderId: allOrders?.order });
+
     const result = await deliveryManSchema
       .aggregate([
         {
@@ -366,7 +382,19 @@ export const getDeliveryManProfile = async (
             as: 'allOrders',
           },
         },
-
+        {
+          $lookup: {
+            from: 'orders',
+            localField: 'allOrders.order',
+            foreignField: 'orderId',
+            as: 'orderDetails',
+          },
+        },
+        {
+          $match: {
+            'orderDetails.status': 'DELIVERED',
+          },
+        },
         {
           $lookup: {
             from: 'orderAssign',
@@ -405,6 +433,7 @@ export const getDeliveryManProfile = async (
             as: 'rejectedOrders',
           },
         },
+
         {
           $addFields: {
             totalOrderCount: { $size: '$allOrders' },
@@ -449,7 +478,7 @@ export const getDeliveryManProfile = async (
             totalOrderCount: 1,
             totalAcceptedOrders: 1,
             totalCancelledOrders: 1,
-            totalDeliveredOrders: { $ifNull: ['$totalDeliveredOrders', 0] },
+            totalDeliveredOrders: { $size: '$orderDetails' },
             location: 1,
             postCode: 1,
             balance: 1,
