@@ -251,11 +251,6 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     preserveNullAndEmptyArrays: true,
                 },
             },
-            // {
-            //   $match: {
-            //     orderAssignData: { $exists: true },
-            //   },
-            // },
             {
                 $lookup: {
                     from: 'users',
@@ -288,8 +283,9 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     pipeline: [
                         {
                             $project: {
-                                _id: 0,
-                                name: 1,
+                                _id: 1,
+                                firstName: 1,
+                                lastName: 1,
                             },
                         },
                     ],
@@ -305,20 +301,52 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 $project: {
                     _id: 1,
                     orderId: 1,
-                    customerName: '$userData.name',
+                    parcelsCount: 1,
+                    customerName: '$deliveryDetails.name',
+                    cutomerEmail: '$deliveryDetails.email',
                     pickupAddress: '$pickupDetails',
                     deliveryAddress: '$deliveryDetails',
-                    deliveryMan: '$deliveryManData.name',
-                    pickupDate: '$pickupDetails.orderTimestamp',
-                    deliveryDate: '$deliveryDetails.orderTimestamp',
-                    createdDate: '$createdAt',
+                    deliveryMan: {
+                        $concat: [
+                            '$deliveryManData.firstName',
+                            ' ',
+                            '$deliveryManData.lastName',
+                        ],
+                    },
+                    deliveryManId: '$deliveryManData._id',
+                    pickupDate: {
+                        $dateToString: {
+                            format: '%d-%m-%Y , %H:%M',
+                            date: '$pickupDetails.dateTime',
+                        },
+                    },
+                    merchantId: '$pickupDetails.merchantId',
+                    deliveryDate: {
+                        $dateToString: {
+                            format: '%d-%m-%Y , %H:%M',
+                            date: '$deliveryDetails.orderTimestamp',
+                        },
+                    },
+                    createdDate: {
+                        $dateToString: {
+                            format: '%d-%m-%Y , %H:%M',
+                            date: '$createdAt',
+                        },
+                    },
                     pickupRequest: '$pickupDetails.request',
                     postCode: '$pickupDetails.postCode',
+                    cashOnDelivery: 1,
                     status: 1,
+                    dateTime: 1,
+                    trashed: {
+                        $ifNull: ['$trashed', false],
+                    },
+                    showOrderNumber: 1,
+                    paymentCollectionRupees: 1,
                 },
             },
         ]);
-        return res.ok({ data: data });
+        return res.ok({ data });
     }
     catch (error) {
         return res.failureResponse({

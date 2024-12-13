@@ -615,12 +615,18 @@ export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
           email: 1,
           status: 1,
           country: '$countryData.countryName',
-          city: '$cityData.cityName',
+          // city: '$cityData.cityName',
           merchantId: 1,
           createdByMerchant: 1,
           createdByAdmin: 1,
-          registerDate: '$createdAt',
+          registerDate: {
+            $dateToString : {
+              format : '%d-%m-%Y | %H:%M',
+              date : '$createdAt'
+            }
+          },
           isVerified: 1,
+          city:1,
           location: {
             latitude: { $arrayElemAt: ['$location.coordinates', 0] },
             longitude: { $arrayElemAt: ['$location.coordinates', 1] },

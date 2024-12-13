@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addUser = exports.getAllUsersFromAdmin = exports.getAllUsers = exports.getUsers = exports.getPendingSubscription = exports.acceptSubscription = exports.getApproveSubscription = exports.deletePurchaseSubscription = exports.deleteSubscription = exports.getSubscriptions = exports.manageSubscriptions = void 0;
+exports.exportFreeSubscription = exports.addUser = exports.getAllUsersFromAdmin = exports.getAllUsers = exports.getUsers = exports.getPendingSubscription = exports.acceptSubscription = exports.getApproveSubscription = exports.deletePurchaseSubscription = exports.deleteSubscription = exports.getSubscriptions = exports.manageSubscriptions = void 0;
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
 const subcription_schema_1 = __importDefault(require("../../models/subcription.schema"));
@@ -349,7 +349,12 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     // userName: '$name',
                     firstName: '$firstName',
                     lastName: '$lastName',
-                    registerDate: '$createdAt',
+                    registerDate: {
+                        $dateToString: {
+                            format: '%d-%m-%Y | %H:%M',
+                            date: '$createdAt'
+                        }
+                    },
                     contactNumber: 1,
                     countryCode: 1,
                     address: 1,
@@ -439,3 +444,67 @@ const addUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.addUser = addUser;
+const exportFreeSubscription = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield subcriptionPurchase_schema_1.default.aggregate([
+            {
+                $lookup: {
+                    from: 'subcriptions',
+                    localField: 'subcriptionId',
+                    foreignField: '_id',
+                    as: 'subcriptionData'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'merchants',
+                    localField: 'merchant',
+                    foreignField: '_id',
+                    as: 'merchantData'
+                }
+            },
+            {
+                $match: {
+                    'subcriptionData.type': '1 Month Free Trial',
+                    expiry: { $lt: new Date() }
+                }
+            },
+            {
+                $unwind: '$subcriptionData'
+            },
+            {
+                $unwind: '$merchantData'
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: { $concat: ['$merchantData.firstName', ' ', '$merchantData.lastName'] },
+                    contactNumber: { $toString: '$merchantData.contactNumber' },
+                    email: '$merchantData.email',
+                    country: '$merchantData.address.country',
+                    city: '$merchantData.address.city',
+                    registerDate: {
+                        $dateToString: {
+                            format: '%d-%m-%Y , %H:%M',
+                            date: '$merchantData.createdAt',
+                        },
+                    },
+                    status: "Disable",
+                    expiry: {
+                        $dateToString: {
+                            format: '%d-%m-%Y , %H:%M',
+                            date: '$expiry'
+                        }
+                    }
+                }
+            }
+        ]);
+        res.status(200).json({ data });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.exportFreeSubscription = exportFreeSubscription;

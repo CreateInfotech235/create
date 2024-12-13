@@ -101,4 +101,5 @@ router.get('/pending', subcription_controller_1.getPendingSubscription);
 router.patch('/status', subcription_controller_1.acceptSubscription);
 router.delete('/removeSubscription/:id', subcription_controller_1.deleteSubscription);
 router.delete('/deletePurchaseSubscription/:id', subcription_controller_1.deletePurchaseSubscription);
+router.get('/getexportFreeSubscription', subcription_controller_1.exportFreeSubscription);
 exports.default = router;

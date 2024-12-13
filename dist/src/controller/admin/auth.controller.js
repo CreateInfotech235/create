@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
+exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const languageHelper_1 = require("../../language/languageHelper");
 const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
@@ -27,6 +27,7 @@ const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
 const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.schema"));
 const subcription_schema_1 = __importDefault(require("../../models/subcription.schema"));
+const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
 const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, adminSide_validation_1.adminSignInValidation);
@@ -123,18 +124,19 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
 exports.sendEmailOrMobileOtp = sendEmailOrMobileOtp;
 const profileUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.adminProfileValidation);
-        if (!validateRequest.isValid) {
-            return res.badRequest({ message: validateRequest.message });
+        const adminData = yield admin_schema_1.default.findOne({ _id: req.id });
+        if (adminData) {
+            const id = adminData._id;
+            req.body.email = req.body.email.trim();
+            req.body.name = req.body.name.trim();
+            req.body.countryCode = req.body.countryCode.trim();
+            yield admin_schema_1.default.updateOne({ _id: id }, { $set: req.body });
         }
-        const { value } = validateRequest;
-        const image = value.profileImage.split(',');
-        const adminData = yield admin_schema_1.default.findOne({ _id: value.adminId }, { profileImage: 1 });
-        if (adminData === null || adminData === void 0 ? void 0 : adminData.profileImage) {
-            (0, common_1.removeUploadedFile)(adminData.profileImage);
+        else {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').invalidToken,
+            });
         }
-        value.profileImage = yield (0, common_1.uploadFile)(image[0], image[1], 'ADMIN-PROFILE');
-        yield admin_schema_1.default.updateOne({ _id: value.adminId }, { $set: value });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').dataUpdatedSuccessfully,
         });
@@ -283,3 +285,128 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getOrderCounts = getOrderCounts;
+const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.id;
+        console.log(req.id);
+        // Get all notifications for the user
+        const notifications = yield notificatio_schema_1.default.find({ userId })
+            .sort({ createdAt: -1 })
+            .populate('orderId')
+            .populate('senderId');
+        return res.status(200).json({
+            message: 'Notifications retrieved successfully',
+            data: notifications,
+        });
+    }
+    catch (error) {
+        console.error('Error getting notifications:', error);
+        return res.status(500).json({
+            message: 'There was an error retrieving notifications',
+        });
+    }
+});
+exports.getAllNotifications = getAllNotifications;
+const markNotificationAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { notificationId } = req.params;
+        const userId = req.id;
+        const notification = yield notificatio_schema_1.default.findOneAndUpdate({ _id: notificationId, userId }, { isRead: true }, { new: true });
+        if (!notification) {
+            return res.status(404).json({
+                message: 'Notification not found',
+            });
+        }
+        return res.status(200).json({
+            message: 'Notification marked as read',
+            data: notification,
+        });
+    }
+    catch (error) {
+        console.error('Error marking notification as read:', error);
+        return res.status(500).json({
+            message: 'There was an error updating the notification',
+        });
+    }
+});
+exports.markNotificationAsRead = markNotificationAsRead;
+const markAllNotificationsAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.id;
+        yield notificatio_schema_1.default.updateMany({ userId, isRead: false }, { isRead: true });
+        return res.status(200).json({
+            message: 'All notifications marked as read',
+        });
+    }
+    catch (error) {
+        console.error('Error marking all notifications as read:', error);
+        return res.status(500).json({
+            message: 'There was an error updating notifications',
+        });
+    }
+});
+exports.markAllNotificationsAsRead = markAllNotificationsAsRead;
+const deleteNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { notificationId } = req.params;
+        const userId = req.id;
+        console.log(req.id);
+        const deletedNotification = yield notificatio_schema_1.default.findOneAndDelete({
+            _id: notificationId,
+            userId,
+        });
+        console.log(deletedNotification);
+        if (!deletedNotification) {
+            return res.status(404).json({
+                message: 'Notification not found',
+            });
+        }
+        return res.status(200).json({
+            message: 'Notification deleted successfully',
+            data: deletedNotification,
+        });
+    }
+    catch (error) {
+        console.error('Error deleting notification:', error);
+        return res.status(500).json({
+            message: 'There was an error deleting the notification',
+        });
+    }
+});
+exports.deleteNotification = deleteNotification;
+const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.id;
+        const count = yield notificatio_schema_1.default.countDocuments({
+            userId,
+            isRead: false,
+        });
+        return res.status(200).json({
+            message: 'Unread notification count retrieved successfully',
+            data: { count },
+        });
+    }
+    catch (error) {
+        console.error('Error getting unread notification count:', error);
+        return res.status(500).json({
+            message: 'There was an error retrieving unread notification count',
+        });
+    }
+});
+exports.getUnreadNotificationCount = getUnreadNotificationCount;
+const getAdminProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("req", req.id);
+    try {
+        const adminData = yield admin_schema_1.default.findOne({ _id: req.id });
+        return res.ok({
+            data: adminData
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getAdminProfile = getAdminProfile;

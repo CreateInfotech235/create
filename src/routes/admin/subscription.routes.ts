@@ -3,6 +3,7 @@ import {
   acceptSubscription,
   deletePurchaseSubscription,
   deleteSubscription,
+  exportFreeSubscription,
   getApproveSubscription,
   getPendingSubscription,
   getSubscriptions,
@@ -109,5 +110,6 @@ router.get('/pending', getPendingSubscription);
 router.patch('/status', acceptSubscription);
 router.delete('/removeSubscription/:id', deleteSubscription);
 router.delete('/deletePurchaseSubscription/:id', deletePurchaseSubscription);
+router.get('/getexportFreeSubscription', exportFreeSubscription);
 
 export default router;

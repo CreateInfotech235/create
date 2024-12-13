@@ -204,4 +204,10 @@ router.patch('/logout', auth_controller_1.logout);
  */
 router.get('/count', admin_auth_1.default, auth_controller_1.getOrderCounts);
 router.get('/count1', admin_auth_1.default, auth_controller_1.getOrderCounts);
+router.get('/getAllNotifications', admin_auth_1.default, auth_controller_1.getAllNotifications);
+router.patch('/markNotificationAsRead/:notificationId', admin_auth_1.default, auth_controller_1.markNotificationAsRead);
+router.patch('/markAllNotificationsAsRead', admin_auth_1.default, auth_controller_1.markAllNotificationsAsRead);
+router.delete('/deleteNotification/:notificationId', admin_auth_1.default, auth_controller_1.deleteNotification);
+router.get('/getUnreadNotificationCount', admin_auth_1.default, auth_controller_1.getUnreadNotificationCount);
+router.get('/getAdminProfile', admin_auth_1.default, auth_controller_1.getAdminProfile);
 exports.default = router;

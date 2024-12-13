@@ -7,6 +7,7 @@ import authTokenSchema from '../../models/authToken.schema';
 import otpSchema from '../../models/otp.schema';
 import {
   createAuthTokens,
+  createNotification,
   emailOrMobileOtp,
   generateIntRandomNo,
   passwordValidation,
@@ -27,6 +28,7 @@ import orderSchema from '../../models/order.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
 import deliveryManSchema from '../../models/deliveryMan.schema';
 import subscribedSchema from '../../models/subcription.schema';
+import Notifications from '../../models/notificatio.schema'
 
 export const signIn = async (req: RequestParams, res: Response) => {
   try {
@@ -164,34 +166,24 @@ export const sendEmailOrMobileOtp = async (
   }
 };
 
+
 export const profileUpdate = async (req: RequestParams, res: Response) => {
   try {
-    const validateRequest = validateParamsWithJoi<{
-      adminId: string;
-      name: string;
-      profileImage: string;
-    }>(req.body, adminProfileValidation);
+    const adminData = await adminSchema.findOne({ _id: req.id });
+    if (adminData) {
+      const id = adminData._id;
+      req.body.email = req.body.email.trim();
+      req.body.name = req.body.name.trim();
+      req.body.countryCode = req.body.countryCode.trim();
 
-    if (!validateRequest.isValid) {
-      return res.badRequest({ message: validateRequest.message });
+
+      await adminSchema.updateOne({ _id: id }, { $set: req.body });
     }
-    const { value } = validateRequest;
-
-    const image = value.profileImage.split(',');
-
-    const adminData = await adminSchema.findOne(
-      { _id: value.adminId },
-      { profileImage: 1 },
-    );
-
-    if (adminData?.profileImage) {
-      removeUploadedFile(adminData.profileImage);
+    else {
+      return res.badRequest({
+        message: getLanguage('en').invalidToken,
+      });
     }
-
-    value.profileImage = await uploadFile(image[0], image[1], 'ADMIN-PROFILE');
-
-    await adminSchema.updateOne({ _id: value.adminId }, { $set: value });
-
     return res.ok({
       message: getLanguage('en').dataUpdatedSuccessfully,
     });
@@ -354,6 +346,7 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       subscribedMerchants,
       unsubscribedMerchants,
     };
+    
     // return res.status(200).json({
     //   success: true,
     //   data: totalCounts
@@ -361,6 +354,156 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
     return res.ok({
       message: getLanguage('en').countedData,
       data: totalCounts,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
+export const getAllNotifications = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const userId = req.id;
+    console.log(req.id);
+    
+    // Get all notifications for the user
+    const notifications = await Notifications.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate('orderId')
+      .populate('senderId');
+
+    return res.status(200).json({
+      message: 'Notifications retrieved successfully',
+      data: notifications,
+    });
+  } catch (error) {
+    console.error('Error getting notifications:', error);
+    return res.status(500).json({
+      message: 'There was an error retrieving notifications',
+    });
+  }
+};
+
+export const markNotificationAsRead = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { notificationId } = req.params;
+    const userId = req.id;
+
+    const notification = await Notifications.findOneAndUpdate(
+      { _id: notificationId, userId },
+      { isRead: true },
+      { new: true },
+    );
+
+    if (!notification) {
+      return res.status(404).json({
+        message: 'Notification not found',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Notification marked as read',
+      data: notification,
+    });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    return res.status(500).json({
+      message: 'There was an error updating the notification',
+    });
+  }
+};
+
+export const markAllNotificationsAsRead = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const userId = req.id;
+
+    await Notifications.updateMany({ userId, isRead: false }, { isRead: true });
+
+    return res.status(200).json({
+      message: 'All notifications marked as read',
+    });
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    return res.status(500).json({
+      message: 'There was an error updating notifications',
+    });
+  }
+};
+
+export const deleteNotification = async (req: RequestParams, res: Response) => {
+  try {
+    const { notificationId } = req.params;
+    const userId = req.id;
+    console.log(req.id);
+    
+
+    const deletedNotification = await Notifications.findOneAndDelete({
+      _id: notificationId,
+      userId,
+    });
+    console.log(deletedNotification);
+    
+
+    if (!deletedNotification) {
+      return res.status(404).json({
+        message: 'Notification not found',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Notification deleted successfully',
+      data: deletedNotification,
+    });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    return res.status(500).json({
+      message: 'There was an error deleting the notification',
+    });
+  }
+};
+
+export const getUnreadNotificationCount = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const userId = req.id;
+
+    const count = await Notifications.countDocuments({
+      userId,
+      isRead: false,
+    });
+
+    return res.status(200).json({
+      message: 'Unread notification count retrieved successfully',
+      data: { count },
+    });
+  } catch (error) {
+    console.error('Error getting unread notification count:', error);
+    return res.status(500).json({
+      message: 'There was an error retrieving unread notification count',
+    });
+  }
+};
+
+export const getAdminProfile = async (req: RequestParams, res: Response) => {
+  console.log("req", req.id);
+  try {
+    const adminData = await adminSchema.findOne({ _id: req.id });
+    return res.ok({
+      data: adminData
     });
   } catch (error) {
     console.log(error);

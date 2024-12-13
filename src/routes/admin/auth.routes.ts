@@ -7,6 +7,12 @@ import {
   sendEmailOrMobileOtp,
   signIn,
   getOrderCounts,
+  getAllNotifications,
+  getUnreadNotificationCount,
+  deleteNotification,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+  getAdminProfile,
 } from '../../controller/admin/auth.controller';
 import adminAuth from '../../middleware/admin.auth';
 
@@ -217,4 +223,14 @@ router.patch('/logout', logout);
 router.get('/count', adminAuth, getOrderCounts);
 router.get('/count1', adminAuth, getOrderCounts);
 
+router.get('/getAllNotifications',adminAuth, getAllNotifications);
+router.patch(
+  '/markNotificationAsRead/:notificationId',
+  adminAuth,
+  markNotificationAsRead,
+);
+router.patch('/markAllNotificationsAsRead',adminAuth, markAllNotificationsAsRead);
+router.delete('/deleteNotification/:notificationId',adminAuth, deleteNotification);
+router.get('/getUnreadNotificationCount',adminAuth, getUnreadNotificationCount);
+router.get('/getAdminProfile', adminAuth, getAdminProfile);
 export default router;

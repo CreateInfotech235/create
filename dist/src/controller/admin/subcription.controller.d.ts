@@ -11,3 +11,4 @@ export declare const getUsers: (req: RequestParams, res: Response) => Promise<vo
 export declare const getAllUsers: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getAllUsersFromAdmin: (req: RequestParams, res: Response) => Promise<void>;
 export declare const addUser: (req: RequestParams, res: Response) => Promise<void>;
+export declare const exportFreeSubscription: (req: RequestParams, res: Response) => Promise<void>;

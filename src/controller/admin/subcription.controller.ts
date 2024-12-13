@@ -424,7 +424,12 @@ export const getAllUsers = async (req: RequestParams, res: Response) => {
           // userName: '$name',
           firstName: '$firstName',
           lastName: '$lastName',
-          registerDate: '$createdAt',
+          registerDate: {
+            $dateToString : {
+              format : '%d-%m-%Y | %H:%M',
+              date : '$createdAt'
+            }
+          },
           contactNumber: 1,
           countryCode: 1,
           address: 1,
@@ -540,6 +545,70 @@ export const addUser = async (req: RequestParams, res: Response) => {
     return res.ok({ message: getLanguage('en').userRegistered });
   } catch (error) {
     console.log('🚀 ~ merchant ~ error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const exportFreeSubscription = async (req: RequestParams, res: Response) => {
+  try {
+    const data = await subcriptionPurchaseSchema.aggregate([
+      {
+        $lookup: {
+          from: 'subcriptions',
+          localField: 'subcriptionId',
+          foreignField: '_id',
+          as: 'subcriptionData'
+        }
+      },
+      {
+        $lookup: {
+          from: 'merchants',
+          localField: 'merchant',
+          foreignField: '_id',
+          as: 'merchantData'
+        }
+      },
+      {
+        $match: {
+          'subcriptionData.type': '1 Month Free Trial',
+          expiry: { $lt: new Date() }
+        }
+      },
+      {
+        $unwind: '$subcriptionData'
+      },
+      {
+        $unwind: '$merchantData'
+      },
+      {
+        $project: {
+          _id: 1,
+          name: { $concat: ['$merchantData.firstName', ' ', '$merchantData.lastName'] },
+          contactNumber: { $toString: '$merchantData.contactNumber' },
+          email: '$merchantData.email',
+          country: '$merchantData.address.country',
+          city: '$merchantData.address.city',
+          registerDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$merchantData.createdAt',
+            },
+          },
+          status: "Disable",
+          expiry: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$expiry'
+            }
+          }
+        }
+      }
+    ]);
+
+    res.status(200).json({ data });
+  } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
