@@ -1171,7 +1171,8 @@ export const getUserWithdrawHistory = async (
 export const addDeliveryMan = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
-      name: string;
+      firstName: string;
+      lastName: string;
       email: string;
       password: string;
       contactNumber: number;
@@ -1205,7 +1206,7 @@ export const addDeliveryMan = async (req: RequestParams, res: Response) => {
       isVerified: true,
     });
 
-    if (value.documents?.length > 0) {
+    if (value?.documents?.length > 0) {
       const documentNames = await Promise.all(
         value.documents.map(async (i, j) => {
           const document = i.image.split(',');

@@ -113,7 +113,7 @@ exports.customerUpdateValidation = joi_1.default.object({
 });
 exports.customerSignUpValidation = joi_1.default.object().keys({
     firstName: joi_1.default.string().required(),
-    merchantId: joi_1.default.string().required(),
+    merchantId: joi_1.default.string(),
     lastName: joi_1.default.string().required(),
     email: joi_1.default.string()
         .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)

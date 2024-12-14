@@ -852,6 +852,7 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                     trashed: {
                         $ifNull: ['$trashed', false],
                     },
+                    showOrderNumber: 1,
                     paymentCollectionRupees: 1,
                 },
             },

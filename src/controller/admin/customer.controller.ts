@@ -8,7 +8,8 @@ import { customerSignUpValidation } from '../../utils/validation/auth.validation
 export const addCustomer = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
-      name: string;
+      firstName: string;
+      lastName: string;
       country: string;
       city: string;
       address: String;
@@ -20,12 +21,14 @@ export const addCustomer = async (req: RequestParams, res: Response) => {
         longitude: number;
       };
     }>(req.body, customerSignUpValidation);
-
+    
+    
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
     }
-
+    
     const { value } = validateRequest;
+    console.log(value);
 
     const userExist = await customerSchema.findOne({ email: value.email });
     if (userExist) {
@@ -39,7 +42,7 @@ export const addCustomer = async (req: RequestParams, res: Response) => {
       createdByAdmin: true,
       location: {
         type: 'Point',
-        coordinates: [value.location.longitude, value.location.latitude],
+        coordinates: [value?.location?.longitude, value?.location?.latitude],
       },
     });
 
@@ -66,6 +69,8 @@ export const getAllCustomer = async (req: RequestParams, res: Response) => {
       {
         $project: {
           name: { $concat: ['$firstName', ' ', '$lastName'] },
+          firstName : '$firstName',
+          lastName: '$lastName',
           address: 1,
           email: 1,
           postCode: 1,
@@ -77,7 +82,7 @@ export const getAllCustomer = async (req: RequestParams, res: Response) => {
         },
       },
     ]);
-    console.log('🚀 ~ getAllCustomer ~ customers:', customers);
+    // console.log('🚀 ~ getAllCustomer ~ customers:', customers);
     res.status(200).json({ data: customers });
   } catch (error) {
     console.log('🚀 ~ getAllCustomer ~ error:', error);

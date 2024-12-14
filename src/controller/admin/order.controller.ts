@@ -247,12 +247,15 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        $match:
-          req.query.existss === null || req.query.existss === undefined
-            ? {}
-            : {
-                merchant: { $exists: req.query.existss === 'true' },
-              },
+        $match: (() => {
+          if (req.query.existss === 'true') {
+            return { merchant: { $exists: true } };
+          }
+          if (req.query.existss === 'false') {
+            return { merchant: { $exists: false } };
+          }
+          return {};
+        })(),
       },
       {
         $lookup: {

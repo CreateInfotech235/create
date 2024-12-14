@@ -18,12 +18,14 @@ const languageHelper_1 = require("../../language/languageHelper");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
 const addCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.customerSignUpValidation);
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        console.log(value);
         const userExist = yield customer_schema_1.default.findOne({ email: value.email });
         if (userExist) {
             return res.badRequest({
@@ -32,7 +34,7 @@ const addCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         const data = yield customer_schema_1.default.create(Object.assign(Object.assign({}, value), { createdByAdmin: true, location: {
                 type: 'Point',
-                coordinates: [value.location.longitude, value.location.latitude],
+                coordinates: [(_a = value === null || value === void 0 ? void 0 : value.location) === null || _a === void 0 ? void 0 : _a.longitude, (_b = value === null || value === void 0 ? void 0 : value.location) === null || _b === void 0 ? void 0 : _b.latitude],
             } }));
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').userRegistered, data });
     }
@@ -57,6 +59,8 @@ const getAllCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
             {
                 $project: {
                     name: { $concat: ['$firstName', ' ', '$lastName'] },
+                    firstName: '$firstName',
+                    lastName: '$lastName',
                     address: 1,
                     email: 1,
                     postCode: 1,
@@ -68,7 +72,7 @@ const getAllCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 },
             },
         ]);
-        console.log('🚀 ~ getAllCustomer ~ customers:', customers);
+        // console.log('🚀 ~ getAllCustomer ~ customers:', customers);
         res.status(200).json({ data: customers });
     }
     catch (error) {

@@ -126,7 +126,7 @@ export const customerUpdateValidation = Joi.object({
 
 export const customerSignUpValidation = Joi.object().keys({
   firstName: Joi.string().required(),
-  merchantId: Joi.string().required(),
+  merchantId: Joi.string(),
   lastName: Joi.string().required(),
   email: Joi.string()
     .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)

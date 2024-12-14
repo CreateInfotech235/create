@@ -223,11 +223,15 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
             {
-                $match: req.query.existss === null || req.query.existss === undefined
-                    ? {}
-                    : {
-                        merchant: { $exists: req.query.existss === 'true' },
-                    },
+                $match: (() => {
+                    if (req.query.existss === 'true') {
+                        return { merchant: { $exists: true } };
+                    }
+                    if (req.query.existss === 'false') {
+                        return { merchant: { $exists: false } };
+                    }
+                    return {};
+                })(),
             },
             {
                 $lookup: {

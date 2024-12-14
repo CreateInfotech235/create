@@ -1035,7 +1035,7 @@ export const getAllRecentOrdersFromMerchant = async (
           trashed: {
             $ifNull: ['$trashed', false],
           },
-
+          showOrderNumber: 1,
           paymentCollectionRupees: 1,
         },
       },
