@@ -270,10 +270,13 @@ export const getDeliveryManLocations = async (
       {
         $project: {
           deliveryManId: '$_id',
-          location: {
-            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
-            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
-          },
+          location: 1,
+          firstName : 1,
+          lastName : 1,
+          // location: {
+          //   latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          //   longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+          // },
           // country: '$countryData.countryName',
           // city: '$cityData.cityName',
         },
@@ -508,6 +511,11 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
 
     const data = await deliveryManSchema.aggregate([
       {
+        $sort : {
+          createdAt: -1
+        }
+      },
+      {
         $match: Query,
       },
       {
@@ -546,6 +554,9 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
           contactNumber: 1,
           email: 1,
           status: 1,
+          address : 1,
+          postCode : 1,
+          showDeliveryManNumber : 1,
           country: '$countryData.countryName',
           city: '$cityData.cityName',
           registerDate: '$createdAt',
@@ -613,7 +624,11 @@ export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
           countryCode: 1,
           contactNumber: 1,
           email: 1,
+          address : 1,
           status: 1,
+          postCode : 1,
+
+          showDeliveryManNumber:1 ,
           country: '$countryData.countryName',
           // city: '$cityData.cityName',
           merchantId: 1,
@@ -649,6 +664,11 @@ export const getAllDeliveryMansFromAdmin = async (
 ) => {
   try {
     const data = await deliveryManSchema.aggregate([
+      {
+        $sort : {
+          createdAt: -1
+        }
+      },
       {
         $match: { createdByAdmin: true },
       },
@@ -689,6 +709,10 @@ export const getAllDeliveryMansFromAdmin = async (
           countryCode: 1,
           contactNumber: 1,
           email: 1,
+          showDeliveryManNumber : 1 ,
+          address : 1,
+          postCode : 1,
+
           status: 1,
           country: '$countryData.countryName',
           city: '$cityData.cityName',

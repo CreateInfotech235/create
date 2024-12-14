@@ -359,137 +359,137 @@ export const getDeliveryManProfile = async (
 
     // const order = await OrderSchema.findOne({ orderId: allOrders?.order });
 
-    const result = await deliveryManSchema
-      .aggregate([
-        {
-          $match: {
-            _id: new mongoose.Types.ObjectId(req.params.id),
-          },
+    const result = await deliveryManSchema.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(req.params.id),
         },
-        {
-          $lookup: {
-            from: 'orderAssign',
-            let: { deliveryBoyId: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$deliveryBoy', '$$deliveryBoyId'],
-                  },
+      },
+      {
+        $lookup: {
+          from: 'orderAssign',
+          let: { deliveryBoyId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ['$deliveryBoy', '$$deliveryBoyId'],
                 },
               },
-            ],
-            as: 'allOrders',
-          },
+            },
+          ],
+          as: 'allOrders',
         },
-        {
-          $lookup: {
-            from: 'orders',
-            localField: 'allOrders.order',
-            foreignField: 'orderId',
-            as: 'orderDetails',
-          },
+      },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'allOrders.order',
+          foreignField: 'orderId',
+          as: 'orderDetails',
         },
-        {
-          $match: {
-            'orderDetails.status': 'DELIVERED',
-          },
+      },
+      {
+        $match: {
+          'orderDetails.status': 'DELIVERED',
         },
-        {
-          $lookup: {
-            from: 'orderAssign',
-            let: { deliveryBoyId: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$deliveryBoy', '$$deliveryBoyId'] },
-                      { $eq: ['$status', ORDER_REQUEST.ACCEPTED] },
-                    ],
-                  },
+      },
+      {
+        $lookup: {
+          from: 'orderAssign',
+          let: { deliveryBoyId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$deliveryBoy', '$$deliveryBoyId'] },
+                    { $eq: ['$status', ORDER_REQUEST.ACCEPTED] },
+                  ],
                 },
               },
-            ],
-            as: 'acceptedOrders',
-          },
+            },
+          ],
+          as: 'acceptedOrders',
         },
-        {
-          $lookup: {
-            from: 'orderAssign',
-            let: { deliveryBoyId: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$deliveryBoy', '$$deliveryBoyId'] },
-                      { $eq: ['$status', ORDER_REQUEST.REJECT] },
-                    ],
-                  },
+      },
+      {
+        $lookup: {
+          from: 'orderAssign',
+          let: { deliveryBoyId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$deliveryBoy', '$$deliveryBoyId'] },
+                    { $eq: ['$status', ORDER_REQUEST.REJECT] },
+                  ],
                 },
               },
-            ],
-            as: 'rejectedOrders',
-          },
+            },
+          ],
+          as: 'rejectedOrders',
         },
+      },
 
-        {
-          $addFields: {
-            totalOrderCount: { $size: '$allOrders' },
-            totalAcceptedOrders: { $size: '$acceptedOrders' },
-            totalCancelledOrders: { $size: '$rejectedOrders' },
-          },
+      {
+        $addFields: {
+          totalOrderCount: { $size: '$allOrders' },
+          totalAcceptedOrders: { $size: '$acceptedOrders' },
+          totalCancelledOrders: { $size: '$rejectedOrders' },
         },
-        {
-          $project: {
-            _id: 1,
-            cityId: 1,
-            countryId: 1,
-            address: 1,
-            firstName: {
-              $ifNull: [
-                '$firstName',
-                {
-                  $ifNull: [
-                    { $arrayElemAt: [{ $split: ['$name', ' '] }, 0] },
-                    '',
-                  ],
-                },
-              ],
-            },
-            lastName: {
-              $ifNull: [
-                '$lastName',
-                {
-                  $ifNull: [
-                    { $arrayElemAt: [{ $split: ['$name', ' '] }, 1] },
-                    '',
-                  ],
-                },
-              ],
-            },
-            email: 1,
-            contactNumber: 1,
-            image: 1,
-            status: 1,
-            isVerified: 1,
-            createdDate: '$createdAt',
-            totalOrderCount: 1,
-            totalAcceptedOrders: 1,
-            totalCancelledOrders: 1,
-            totalDeliveredOrders: { $size: '$orderDetails' },
-            location: 1,
-            postCode: 1,
-            balance: 1,
-            earning: { $ifNull: ['$earning', 0] },
+      },
+      {
+        $project: {
+          _id: 1,
+          cityId: 1,
+          countryId: 1,
+          address: 1,
+          firstName: {
+            $ifNull: [
+              '$firstName',
+              {
+                $ifNull: [
+                  { $arrayElemAt: [{ $split: ['$name', ' '] }, 0] },
+                  '',
+                ],
+              },
+            ],
           },
+          lastName: {
+            $ifNull: [
+              '$lastName',
+              {
+                $ifNull: [
+                  { $arrayElemAt: [{ $split: ['$name', ' '] }, 1] },
+                  '',
+                ],
+              },
+            ],
+          },
+          email: 1,
+          contactNumber: 1,
+          image: 1,
+          status: 1,
+          isVerified: 1,
+          createdDate: '$createdAt',
+          totalOrderCount: 1,
+          totalAcceptedOrders: 1,
+          totalCancelledOrders: 1,
+          totalDeliveredOrders: { $size: '$orderDetails' },
+          location: 1,
+          postCode: 1,
+          balance: 1,
+          earning: { $ifNull: ['$earning', 0] },
         },
-      ])
-      .catch((err) => {
-        console.error('Aggregation error:', err);
-        return [];
-      });
+      },
+    ]);
+
+    // .catch((err) => {
+    //   console.error('Aggregation error:', err);
+    //   return [];
+    // });
 
     if (!result || !result.length) {
       return res.badRequest({ message: getLanguage('en').deliveryManNotFound });

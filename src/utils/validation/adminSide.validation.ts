@@ -47,6 +47,10 @@ export const paginationValidation = Joi.object({
   pageCount: Joi.number().required(),
   pageLimit: Joi.number().required(),
 });
+export const paginationValidationOp = Joi.object({
+  pageCount: Joi.number().optional(),
+  pageLimit: Joi.number().optional(),
+});
 
 export const orderCount = Joi.object({
   startDate: Joi.string(),

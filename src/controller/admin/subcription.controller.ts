@@ -385,8 +385,8 @@ export const getUsers = async (req: RequestParams, res: Response) => {
           _id: 0,
           userId: '$_id',
           // userName: '$name',
-          firstName: '$firstName',
-          lastName: '$lastName',
+          firstName: 1,
+          lastName: 1,
           registerDate: '$createdAt',
           contactNumber: 1,
           countryCode: 1,
@@ -422,14 +422,14 @@ export const getAllUsers = async (req: RequestParams, res: Response) => {
         $project: {
           _id: 1,
           // userName: '$name',
-          firstName: '$firstName',
-          lastName: '$lastName',
+          firstName: 1,
+          lastName: 1,
           registerDate: {
             $dateToString : {
               format : '%d-%m-%Y | %H:%M',
               date : '$createdAt'
             }
-          },
+          }, 
           contactNumber: 1,
           countryCode: 1,
           address: 1,
@@ -585,7 +585,9 @@ export const exportFreeSubscription = async (req: RequestParams, res: Response) 
       {
         $project: {
           _id: 1,
-          name: { $concat: ['$merchantData.firstName', ' ', '$merchantData.lastName'] },
+          // name: { $concat: ['$merchantData.firstName', ' ', '$merchantData.lastName'] },
+          firstName : '$merchantData.firstName',
+          lastName: '$merchantData.lastName',
           contactNumber: { $toString: '$merchantData.contactNumber' },
           email: '$merchantData.email',
           country: '$merchantData.address.country',

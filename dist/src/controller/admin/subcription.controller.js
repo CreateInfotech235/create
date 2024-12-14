@@ -310,8 +310,8 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     _id: 0,
                     userId: '$_id',
                     // userName: '$name',
-                    firstName: '$firstName',
-                    lastName: '$lastName',
+                    firstName: 1,
+                    lastName: 1,
                     registerDate: '$createdAt',
                     contactNumber: 1,
                     countryCode: 1,
@@ -347,8 +347,8 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 $project: {
                     _id: 1,
                     // userName: '$name',
-                    firstName: '$firstName',
-                    lastName: '$lastName',
+                    firstName: 1,
+                    lastName: 1,
                     registerDate: {
                         $dateToString: {
                             format: '%d-%m-%Y | %H:%M',
@@ -478,7 +478,9 @@ const exportFreeSubscription = (req, res) => __awaiter(void 0, void 0, void 0, f
             {
                 $project: {
                     _id: 1,
-                    name: { $concat: ['$merchantData.firstName', ' ', '$merchantData.lastName'] },
+                    // name: { $concat: ['$merchantData.firstName', ' ', '$merchantData.lastName'] },
+                    firstName: '$merchantData.firstName',
+                    lastName: '$merchantData.lastName',
                     contactNumber: { $toString: '$merchantData.contactNumber' },
                     email: '$merchantData.email',
                     country: '$merchantData.address.country',

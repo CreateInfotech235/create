@@ -220,10 +220,13 @@ const getDeliveryManLocations = (req, res) => __awaiter(void 0, void 0, void 0, 
             {
                 $project: {
                     deliveryManId: '$_id',
-                    location: {
-                        latitude: { $arrayElemAt: ['$location.coordinates', 1] },
-                        longitude: { $arrayElemAt: ['$location.coordinates', 0] },
-                    },
+                    location: 1,
+                    firstName: 1,
+                    lastName: 1,
+                    // location: {
+                    //   latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+                    //   longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+                    // },
                     // country: '$countryData.countryName',
                     // city: '$cityData.cityName',
                 },
@@ -426,6 +429,11 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
         console.log(Query, 'Query');
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
+                $sort: {
+                    createdAt: -1
+                }
+            },
+            {
                 $match: Query,
             },
             {
@@ -464,6 +472,9 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                     contactNumber: 1,
                     email: 1,
                     status: 1,
+                    address: 1,
+                    postCode: 1,
+                    showDeliveryManNumber: 1,
                     country: '$countryData.countryName',
                     city: '$cityData.cityName',
                     registerDate: '$createdAt',
@@ -531,7 +542,10 @@ const getAllDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, funct
                     countryCode: 1,
                     contactNumber: 1,
                     email: 1,
+                    address: 1,
                     status: 1,
+                    postCode: 1,
+                    showDeliveryManNumber: 1,
                     country: '$countryData.countryName',
                     // city: '$cityData.cityName',
                     merchantId: 1,
@@ -564,6 +578,11 @@ exports.getAllDeliveryMans = getAllDeliveryMans;
 const getAllDeliveryMansFromAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield deliveryMan_schema_1.default.aggregate([
+            {
+                $sort: {
+                    createdAt: -1
+                }
+            },
             {
                 $match: { createdByAdmin: true },
             },
@@ -604,6 +623,9 @@ const getAllDeliveryMansFromAdmin = (req, res) => __awaiter(void 0, void 0, void
                     countryCode: 1,
                     contactNumber: 1,
                     email: 1,
+                    showDeliveryManNumber: 1,
+                    address: 1,
+                    postCode: 1,
                     status: 1,
                     country: '$countryData.countryName',
                     city: '$cityData.cityName',

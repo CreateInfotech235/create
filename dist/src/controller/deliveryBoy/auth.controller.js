@@ -262,8 +262,7 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
         // const allOrders = await OrderAssigneeSchema.find({ deliveryBoy: req.params.id });
         // const order = await OrderSchema.findOne({ orderId: allOrders?.order });
-        const result = yield deliveryMan_schema_1.default
-            .aggregate([
+        const result = yield deliveryMan_schema_1.default.aggregate([
             {
                 $match: {
                     _id: new mongoose_1.default.Types.ObjectId(req.params.id),
@@ -387,11 +386,11 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     earning: { $ifNull: ['$earning', 0] },
                 },
             },
-        ])
-            .catch((err) => {
-            console.error('Aggregation error:', err);
-            return [];
-        });
+        ]);
+        // .catch((err) => {
+        //   console.error('Aggregation error:', err);
+        //   return [];
+        // });
         if (!result || !result.length) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
         }
