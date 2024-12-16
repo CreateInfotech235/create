@@ -28,29 +28,29 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
+    adminId: mongoose.Types.ObjectId;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
+    adminId: mongoose.Types.ObjectId;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
+    adminId: mongoose.Types.ObjectId;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -62,29 +62,29 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
+    adminId: mongoose.Types.ObjectId;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
+    adminId: mongoose.Types.ObjectId;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
+    adminId: mongoose.Types.ObjectId;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

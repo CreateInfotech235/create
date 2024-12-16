@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMongoCommonPagination = exports.updateWallet = exports.emailOrMobileOtp = exports.createAuthTokens = exports.removeUploadedFile = exports.createNotification = exports.uploadFile = exports.generateIntRandomNo = exports.encryptPassword = exports.passwordValidation = exports.sendMailService = void 0;
+exports.getMongoCommonPagination = exports.updateWallet = exports.emailSend = exports.emailOrMobileOtp = exports.createAuthTokens = exports.removeUploadedFile = exports.createNotification = exports.uploadFile = exports.generateIntRandomNo = exports.encryptPassword = exports.passwordValidation = exports.sendMailService = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto_1 = require("crypto");
 const fs_1 = __importDefault(require("fs"));
@@ -130,6 +130,18 @@ const emailOrMobileOtp = (email, message) => __awaiter(void 0, void 0, void 0, f
     // }
 });
 exports.emailOrMobileOtp = emailOrMobileOtp;
+const emailSend = (email, subject, message) => __awaiter(void 0, void 0, void 0, function* () {
+    // if (process.env.ENV !== 'DEV') {
+    const adminEmailOptionCheck = yield adminSettings_schema_1.default.findOne();
+    if (adminEmailOptionCheck.emailVerify) {
+        yield (0, exports.sendMailService)(email, subject, message);
+    }
+    if (adminEmailOptionCheck.mobileNumberVerify) {
+        // TODO: Third party integration sms service for otp sent to mobile
+    }
+    // }
+});
+exports.emailSend = emailSend;
 const updateWallet = (amount_1, adminId_1, personId_1, transactionType_1, transactionMessage_1, ...args_1) => __awaiter(void 0, [amount_1, adminId_1, personId_1, transactionType_1, transactionMessage_1, ...args_1], void 0, function* (amount, adminId, personId, transactionType, transactionMessage, isCustomer = true) {
     const isDeposit = transactionType === enum_1.TRANSACTION_TYPE.DEPOSIT;
     const userBalance = isDeposit ? amount : -amount;

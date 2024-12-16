@@ -26,6 +26,7 @@ declare const _default: {
         logoutSuccessfully: string;
         renewTokenSuccessfully: string;
         otpSentSuccess: string;
+        EmailSentSuccess: string;
         accountActiveSuccessfully: string;
         certificateNumberRegistered: string;
         userNotRegistered: string;

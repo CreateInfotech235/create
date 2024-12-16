@@ -75,6 +75,8 @@ export const signUp = async (req: RequestParams, res: Response) => {
     // const assetsFile = req.file;
 
     const { value } = validateRequest;
+    console.log(value);
+    
 
     const userExist = await merchantSchema.findOne({ email: value.email });
 

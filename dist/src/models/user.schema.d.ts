@@ -39,8 +39,6 @@ declare const Model: mongoose.Model<{
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
-    country?: string;
-    city?: string;
     address?: {
         country?: string;
         city?: string;
@@ -77,8 +75,6 @@ declare const Model: mongoose.Model<{
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
-    country?: string;
-    city?: string;
     address?: {
         country?: string;
         city?: string;
@@ -115,8 +111,6 @@ declare const Model: mongoose.Model<{
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
-    country?: string;
-    city?: string;
     address?: {
         country?: string;
         city?: string;
@@ -160,8 +154,6 @@ declare const Model: mongoose.Model<{
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
-    country?: string;
-    city?: string;
     address?: {
         country?: string;
         city?: string;
@@ -198,8 +190,6 @@ declare const Model: mongoose.Model<{
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
-    country?: string;
-    city?: string;
     address?: {
         country?: string;
         city?: string;
@@ -236,8 +226,6 @@ declare const Model: mongoose.Model<{
     freeSubscription: boolean;
     firstName?: string;
     lastName?: string;
-    country?: string;
-    city?: string;
     address?: {
         country?: string;
         city?: string;

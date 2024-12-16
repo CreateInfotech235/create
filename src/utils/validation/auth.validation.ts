@@ -175,7 +175,9 @@ export const otpVerifyValidation = Joi.object().keys({
     .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
     .required(),
   contactNumber: Joi.number().required(),
-  countryCode: Joi.string().required(),
+  // countryCode: Joi.string().required(),
+  messageSend:Joi.string().required(),
+  subject:Joi.string().required(),
   personType: Joi.string()
     .valid(PERSON_TYPE.CUSTOMER, PERSON_TYPE.DELIVERY_BOY, PERSON_TYPE.ADMIN)
     .required(),

@@ -74,6 +74,7 @@ export declare const createAuthTokens: (id: Types.ObjectId) => {
     refreshToken: string;
 };
 export declare const emailOrMobileOtp: (email: string, message: string) => Promise<void>;
+export declare const emailSend: (email: string, subject: string, message: string) => Promise<void>;
 export declare const updateWallet: (amount: number, adminId: string, personId: string, transactionType: TRANSACTION_TYPE, transactionMessage: string, isCustomer?: boolean) => Promise<void>;
 export declare const getMongoCommonPagination: ({ pageCount, pageLimit, }: IPagination) => ({
     $facet: {

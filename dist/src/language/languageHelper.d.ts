@@ -26,6 +26,7 @@ export declare const getLanguage: (lang: language) => {
     logoutSuccessfully: string;
     renewTokenSuccessfully: string;
     otpSentSuccess: string;
+    EmailSentSuccess: string;
     accountActiveSuccessfully: string;
     certificateNumberRegistered: string;
     userNotRegistered: string;

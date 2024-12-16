@@ -13,3 +13,5 @@ export declare const markAllNotificationsAsRead: (req: RequestParams, res: Respo
 export declare const deleteNotification: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const getUnreadNotificationCount: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const getAdminProfile: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getSupportTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const sendEmailFor: (req: RequestParams, res: Response) => Promise<void>;

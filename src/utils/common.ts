@@ -152,6 +152,19 @@ export const emailOrMobileOtp = async (email: string, message: string) => {
   }
   // }
 };
+export const emailSend = async (email: string,subject:string, message: string) => {
+  // if (process.env.ENV !== 'DEV') {
+  const adminEmailOptionCheck = await adminSettingsSchema.findOne();
+
+  if (adminEmailOptionCheck.emailVerify) {
+    await sendMailService(email, subject, message);
+  }
+
+  if (adminEmailOptionCheck.mobileNumberVerify) {
+    // TODO: Third party integration sms service for otp sent to mobile
+  }
+  // }
+};
 
 export const updateWallet = async (
   amount: number,

@@ -25,14 +25,14 @@ const merchantSchema = new mongoose_1.default.Schema({
     countryCode: {
         type: String,
     },
-    country: {
-        type: String,
-        unique: true,
-    },
-    city: {
-        type: String,
-        unique: true,
-    },
+    // country: {
+    //   type: String,
+    //   unique: true,
+    // },
+    // city: {
+    //   type: String,
+    //   unique: true,
+    // },
     status: {
         type: String,
         default: enum_1.SWITCH.ENABLE,

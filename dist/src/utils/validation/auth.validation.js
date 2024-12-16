@@ -159,7 +159,9 @@ exports.otpVerifyValidation = joi_1.default.object().keys({
         .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
         .required(),
     contactNumber: joi_1.default.number().required(),
-    countryCode: joi_1.default.string().required(),
+    // countryCode: Joi.string().required(),
+    messageSend: joi_1.default.string().required(),
+    subject: joi_1.default.string().required(),
     personType: joi_1.default.string()
         .valid(enum_1.PERSON_TYPE.CUSTOMER, enum_1.PERSON_TYPE.DELIVERY_BOY, enum_1.PERSON_TYPE.ADMIN)
         .required(),

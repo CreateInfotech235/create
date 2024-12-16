@@ -210,4 +210,6 @@ router.patch('/markAllNotificationsAsRead', admin_auth_1.default, auth_controlle
 router.delete('/deleteNotification/:notificationId', admin_auth_1.default, auth_controller_1.deleteNotification);
 router.get('/getUnreadNotificationCount', admin_auth_1.default, auth_controller_1.getUnreadNotificationCount);
 router.get('/getAdminProfile', admin_auth_1.default, auth_controller_1.getAdminProfile);
+router.get('/getAdminSupportTicket', admin_auth_1.default, auth_controller_1.getSupportTicket);
+router.post('/Email', admin_auth_1.default, auth_controller_1.sendEmailFor);
 exports.default = router;

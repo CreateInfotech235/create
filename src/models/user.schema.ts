@@ -22,14 +22,14 @@ const merchantSchema = new mongoose.Schema(
     countryCode: {
       type: String,
     },
-    country: {
-      type: String,
-      unique: true,
-    },
-    city: {
-      type: String,
-      unique: true,
-    },
+    // country: {
+    //   type: String,
+    //   unique: true,
+    // },
+    // city: {
+    //   type: String,
+    //   unique: true,
+    // },
     status: {
       type: String,
       default: SWITCH.ENABLE,

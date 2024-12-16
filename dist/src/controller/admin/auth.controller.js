@@ -12,12 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
+exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
+const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
 const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
 const authToken_schema_1 = __importDefault(require("../../models/authToken.schema"));
 const otp_schema_1 = __importDefault(require("../../models/otp.schema"));
+const SupportTicket_1 = __importDefault(require("../../models/SupportTicket"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
@@ -28,6 +30,7 @@ const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssign
 const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.schema"));
 const subcription_schema_1 = __importDefault(require("../../models/subcription.schema"));
 const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
+const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, adminSide_validation_1.adminSignInValidation);
@@ -395,11 +398,11 @@ const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 
 });
 exports.getUnreadNotificationCount = getUnreadNotificationCount;
 const getAdminProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("req", req.id);
+    console.log('req', req.id);
     try {
         const adminData = yield admin_schema_1.default.findOne({ _id: req.id });
         return res.ok({
-            data: adminData
+            data: adminData,
         });
     }
     catch (error) {
@@ -410,3 +413,86 @@ const getAdminProfile = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getAdminProfile = getAdminProfile;
+const getSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Request body:', req.body);
+        const id = req.id;
+        const data = yield SupportTicket_1.default.find({ adminId: id }).populate('userid', 'firstName lastName email -_id');
+        console.log('data', data);
+        return res.status(200).json({
+            message: 'Support ticket get successfully',
+            data: data,
+        });
+    }
+    catch (error) {
+        console.error('Error get support ticket:', error);
+        return res.status(500).json({
+            message: 'There was an error get the support ticket',
+        });
+    }
+});
+exports.getSupportTicket = getSupportTicket;
+const sendEmailFor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('FDksdjgdfgsdjsgb');
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.otpVerifyValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        let userExist;
+        const isCustomer = value.personType === enum_1.PERSON_TYPE.CUSTOMER;
+        if (isCustomer) {
+            userExist = yield user_schema_1.default.findOne({
+                email: value.email,
+                contactNumber: value.contactNumber,
+                countryCode: value.countryCode,
+            });
+        }
+        else {
+            userExist = yield deliveryMan_schema_1.default.findOne({
+                email: value.email,
+                contactNumber: value.contactNumber,
+                countryCode: value.countryCode,
+            });
+        }
+        if (userExist) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').emailRegisteredAlready,
+            });
+        }
+        // const otp = generateIntRandomNo(111111, 999999);
+        yield (0, common_1.emailSend)(value.email, value.subject, `${value.messageSend}`);
+        // const data = await otpSchema.updateOne(
+        //   {
+        //     // value: otp,
+        //     customerEmail: value.email,
+        //     customerMobile: value.contactNumber,
+        //     action: value.personType,
+        //   },
+        //   {
+        //     value: otp,
+        //     customerEmail: value.email,
+        //     customerMobile: value.contactNumber,
+        //     expiry: Date.now() + 600000,
+        //     action: value.personType,
+        //   },
+        //   { upsert: true },
+        // );
+        // if (!data.upsertedCount && !data.modifiedCount) {
+        //   return res.badRequest({ message: getLanguage('en').invalidData });
+        // }
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').EmailSentSuccess,
+            // data: { otp },
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.failureResponse({
+            error: error,
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendEmailFor = sendEmailFor;

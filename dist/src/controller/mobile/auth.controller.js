@@ -55,6 +55,7 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         // const assetsFile = req.file;
         const { value } = validateRequest;
+        console.log(value);
         const userExist = yield user_schema_1.default.findOne({ email: value.email });
         if (userExist) {
             return res.badRequest({

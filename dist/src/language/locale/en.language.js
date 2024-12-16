@@ -27,6 +27,7 @@ const messages = {
     logoutSuccessfully: 'Logout successfully',
     renewTokenSuccessfully: 'Renew token successfully',
     otpSentSuccess: 'Email or mobile otp sent successfully',
+    EmailSentSuccess: 'Email sent successfully',
     accountActiveSuccessfully: 'Your request sent for confirmation successfully',
     certificateNumberRegistered: 'Medical Certificate Number Invalid',
     userNotRegistered: 'User Not Registered',

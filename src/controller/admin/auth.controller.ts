@@ -5,10 +5,12 @@ import { getLanguage } from '../../language/languageHelper';
 import adminSchema from '../../models/admin.schema';
 import authTokenSchema from '../../models/authToken.schema';
 import otpSchema from '../../models/otp.schema';
+import SupportTicket from '../../models/SupportTicket';
 import {
   createAuthTokens,
   createNotification,
   emailOrMobileOtp,
+  emailSend,
   generateIntRandomNo,
   passwordValidation,
   removeUploadedFile,
@@ -28,7 +30,8 @@ import orderSchema from '../../models/order.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
 import deliveryManSchema from '../../models/deliveryMan.schema';
 import subscribedSchema from '../../models/subcription.schema';
-import Notifications from '../../models/notificatio.schema'
+import Notifications from '../../models/notificatio.schema';
+import merchantSchema from '../../models/user.schema';
 
 export const signIn = async (req: RequestParams, res: Response) => {
   try {
@@ -166,7 +169,6 @@ export const sendEmailOrMobileOtp = async (
   }
 };
 
-
 export const profileUpdate = async (req: RequestParams, res: Response) => {
   try {
     const adminData = await adminSchema.findOne({ _id: req.id });
@@ -176,10 +178,8 @@ export const profileUpdate = async (req: RequestParams, res: Response) => {
       req.body.name = req.body.name.trim();
       req.body.countryCode = req.body.countryCode.trim();
 
-
       await adminSchema.updateOne({ _id: id }, { $set: req.body });
-    }
-    else {
+    } else {
       return res.badRequest({
         message: getLanguage('en').invalidToken,
       });
@@ -346,7 +346,7 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       subscribedMerchants,
       unsubscribedMerchants,
     };
-    
+
     // return res.status(200).json({
     //   success: true,
     //   data: totalCounts
@@ -363,7 +363,6 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
   }
 };
 
-
 export const getAllNotifications = async (
   req: RequestParams,
   res: Response,
@@ -371,7 +370,7 @@ export const getAllNotifications = async (
   try {
     const userId = req.id;
     console.log(req.id);
-    
+
     // Get all notifications for the user
     const notifications = await Notifications.find({ userId })
       .sort({ createdAt: -1 })
@@ -447,14 +446,12 @@ export const deleteNotification = async (req: RequestParams, res: Response) => {
     const { notificationId } = req.params;
     const userId = req.id;
     console.log(req.id);
-    
 
     const deletedNotification = await Notifications.findOneAndDelete({
       _id: notificationId,
       userId,
     });
     console.log(deletedNotification);
-    
 
     if (!deletedNotification) {
       return res.status(404).json({
@@ -499,15 +496,117 @@ export const getUnreadNotificationCount = async (
 };
 
 export const getAdminProfile = async (req: RequestParams, res: Response) => {
-  console.log("req", req.id);
+  console.log('req', req.id);
   try {
     const adminData = await adminSchema.findOne({ _id: req.id });
     return res.ok({
-      data: adminData
+      data: adminData,
     });
   } catch (error) {
     console.log(error);
     return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const getSupportTicket = async (req: RequestParams, res: Response) => {
+  try {
+    console.log('Request body:', req.body);
+    const id = req.id;
+    const data = await SupportTicket.find({ adminId: id }).populate(
+      'userid',
+      'firstName lastName email -_id',
+    );
+
+    console.log('data', data);
+    return res.status(200).json({
+      message: 'Support ticket get successfully',
+      data: data,
+    });
+  } catch (error) {
+    console.error('Error get support ticket:', error);
+    return res.status(500).json({
+      message: 'There was an error get the support ticket',
+    });
+  }
+};
+
+export const sendEmailFor = async (req: RequestParams, res: Response) => {
+  try {
+    console.log('FDksdjgdfgsdjsgb');
+
+    const validateRequest = validateParamsWithJoi<{
+      email: string;
+      contactNumber: number;
+      countryCode: string;
+      subject : string;
+      messageSend: string;
+      personType: PERSON_TYPE;
+    }>(req.body, otpVerifyValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+    const { value } = validateRequest;
+
+    let userExist;
+
+    const isCustomer = value.personType === PERSON_TYPE.CUSTOMER;
+
+    if (isCustomer) {
+      userExist = await merchantSchema.findOne({
+        email: value.email,
+        contactNumber: value.contactNumber,
+        countryCode: value.countryCode,
+      });
+    } else {
+      userExist = await deliveryManSchema.findOne({
+        email: value.email,
+        contactNumber: value.contactNumber,
+        countryCode: value.countryCode,
+      });
+    }
+
+    if (userExist) {
+      return res.badRequest({
+        message: getLanguage('en').emailRegisteredAlready,
+      });
+    }
+
+    // const otp = generateIntRandomNo(111111, 999999);
+
+    await emailSend(value.email, value.subject , `${value.messageSend}`);
+
+    // const data = await otpSchema.updateOne(
+    //   {
+    //     // value: otp,
+    //     customerEmail: value.email,
+    //     customerMobile: value.contactNumber,
+    //     action: value.personType,
+    //   },
+    //   {
+    //     value: otp,
+    //     customerEmail: value.email,
+    //     customerMobile: value.contactNumber,
+    //     expiry: Date.now() + 600000,
+    //     action: value.personType,
+    //   },
+    //   { upsert: true },
+    // );
+
+    // if (!data.upsertedCount && !data.modifiedCount) {
+    //   return res.badRequest({ message: getLanguage('en').invalidData });
+    // }
+
+    return res.ok({
+      message: getLanguage('en').EmailSentSuccess,
+      // data: { otp },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.failureResponse({
+      error: error,
       message: getLanguage('en').somethingWentWrong,
     });
   }
