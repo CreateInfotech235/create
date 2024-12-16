@@ -329,7 +329,7 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       isActive: true,
     });
     const unsubscribedMerchants = await subscribedSchema.countDocuments({
-      isActive: { $ne: true },
+      isActive: { $ne: false },
     });
 
     let totalCounts = {

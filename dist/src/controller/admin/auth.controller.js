@@ -255,7 +255,7 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
             isActive: true,
         });
         const unsubscribedMerchants = yield subcription_schema_1.default.countDocuments({
-            isActive: { $ne: true },
+            isActive: { $ne: false },
         });
         let totalCounts = {
             totalOrders,
