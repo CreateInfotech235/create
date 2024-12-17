@@ -15,3 +15,7 @@ export declare const getUnreadNotificationCount: (req: RequestParams, res: Respo
 export declare const getAdminProfile: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getSupportTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const sendEmailFor: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getAllTickets: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getMessagesByTicketId: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const addMessageToTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const deleteMessageFromTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;

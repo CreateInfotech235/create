@@ -212,4 +212,10 @@ router.get('/getUnreadNotificationCount', admin_auth_1.default, auth_controller_
 router.get('/getAdminProfile', admin_auth_1.default, auth_controller_1.getAdminProfile);
 router.get('/getAdminSupportTicket', admin_auth_1.default, auth_controller_1.getSupportTicket);
 router.post('/Email', admin_auth_1.default, auth_controller_1.sendEmailFor);
+router.get('/support-tickets', auth_controller_1.getAllTickets);
+// Route: GET /api/support-tickets/:id/messages -> Fetch messages for a specific ticket
+router.get('/support-tickets/:id/messages', auth_controller_1.getMessagesByTicketId);
+// Route: POST /api/support-tickets/:id/messages -> Add a new message to a ticket
+router.post('/support-tickets/:id/messages', auth_controller_1.addMessageToTicket);
+router.delete('/support-tickets/:ticketId/messages/:messageId', auth_controller_1.deleteMessageFromTicket);
 exports.default = router;

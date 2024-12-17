@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.io = void 0;
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = require("dotenv");
@@ -32,32 +33,47 @@ const responseHandler_1 = __importDefault(require("./src/utils/responseHandler")
 const path = require('path');
 const app = (0, express_1.default)();
 app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
-// config({ path: `.env.development.${process.env.NODE_ENV}`, debug: false });
+// Load environment variables
 (0, dotenv_1.config)({ path: `.env.development.local` });
+// Set up server
 const server = http_1.default.createServer(app);
+// Database connection and seeders
 (0, conn_1.default)(process.env.DB_URI);
 (0, seeders_1.default)();
+// Set server port
 const PORT = process.env.PORT || 1000;
+// Logger middleware
 app.use((0, morgan_1.default)('dev'));
-const corsOptions = { origin: process.env.ALLOW_ORIGIN };
+// CORS Configuration
+const corsOptions = { origin: process.env.ALLOW_ORIGIN }; // Ensure this points to your frontend's URL (e.g., http://localhost:5173)
 app.use((0, cors_1.default)(corsOptions));
+// Body parser middleware
 app.use(body_parser_1.default.json({ limit: '50mb' }));
 app.use(body_parser_1.default.urlencoded({
     limit: '50mb',
     extended: true,
     parameterLimit: 50000,
 }));
+// Response handler middleware
 app.use(responseHandler_1.default);
-// const { startCrone } = require('./src/utils/taskSchedule')
-// const { startSocketServer } = require('./src/controller/socketController')
-app.use(routes_1.default);
+// Swagger Documentation (Optional)
 const { ENV } = process.env;
 if (ENV === 'DEV') {
     app.use('/docs-for-api', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(SwaggerDocs_1.default));
 }
-const io = new socket_io_1.Server(server);
+// API routes
+app.use(routes_1.default);
+// Socket.IO Setup
+const io = new socket_io_1.Server(server, {
+    cors: {
+        origin: process.env.ALLOW_ORIGIN, // CORS for Socket.IO
+        methods: ['GET', 'POST'],
+    },
+});
+exports.io = io;
 io.on('connection', (socket) => {
     console.log('🚀 ~ io.on ~ socket:', 'socket connected');
+    // Order tracking event
     socket.on('orderTracking', (deliveryManId, lat, long) => __awaiter(void 0, void 0, void 0, function* () {
         if (!(long && lat)) {
             return socket.emit('orderTracking', {
@@ -89,16 +105,32 @@ io.on('connection', (socket) => {
             });
         }
     }));
+    // Join a specific socket room (e.g., for order tracking)
     socket.on('socketJoin', (orderId) => {
         socket.join(orderId.toString());
     });
+    // Leave a specific socket room
     socket.on('socketLeave', (orderId) => {
         socket.leave(orderId.toString());
     });
+    // Send a message to a specific ticket
+    socket.on('sendMessage', (ticketId, message) => {
+        io.to(ticketId).emit('newMessage', message);
+    });
+    // Join ticket room
+    socket.on('joinTicket', (ticketId) => {
+        socket.join(ticketId);
+    });
+    socket.on('deleteMessage', (ticketId, messageId) => {
+        // Emit the deletion to all clients in the ticket's room
+        io.to(ticketId).emit('messageDeleted', { messageId });
+    });
+    // Socket disconnection
     socket.on('disconnect', () => {
         console.log('🚀 ~ socket.on ~ disconnect:', 'socket disconnected');
     });
 });
+// Start the server
 server.listen(PORT, () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`Server Running At Port : ${PORT}`);
 }));

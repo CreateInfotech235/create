@@ -1,6 +1,7 @@
 import { query, Response } from 'express';
 import mongoose, { PipelineStage } from 'mongoose';
 import {
+  CHARGE_METHOD,
   CHARGE_TYPE,
   ORDER_HISTORY,
   ORDER_REQUEST,
@@ -408,7 +409,10 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
       await orderSchema.findOneAndUpdate(
         { orderId: value.orderId },
         {
-          $set: { status: ORDER_HISTORY.ASSIGNED },
+          $set: {
+            status: ORDER_HISTORY.ASSIGNED,
+
+          },
         },
       );
 
@@ -449,6 +453,8 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
       req.body,
       orderArriveValidation,
     );
+    // TODO: get distance from google map api
+    const tampdestens = 3.2;
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -477,11 +483,17 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
         message: getLanguage('en').invalidDeliveryMan,
       });
     }
-
+    // TODO: add distance to the order
     await orderSchema.findOneAndUpdate(
       { orderId: value.orderId },
       {
-        $set: { status: ORDER_HISTORY.ARRIVED },
+        $set: {
+          status: ORDER_HISTORY.ARRIVED,
+          time: {
+            start: Date.now(),
+          },
+        },
+        $inc: { distance: tampdestens },
       },
     );
 
@@ -559,7 +571,14 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
     // Update the order status to canceled
     await orderSchema.findOneAndUpdate(
       { orderId: value.orderId },
-      { $set: { status: ORDER_HISTORY.UNASSIGNED } },
+      {
+        $set: {
+          status: ORDER_HISTORY.UNASSIGNED,
+          time: {
+            end: Date.now(),
+          },
+        },
+      },
     );
     console.log('Third');
     // Update the assignee status (if needed)
@@ -634,6 +653,8 @@ export const departOrder = async (req: RequestParams, res: Response) => {
       req.body,
       orderArriveValidation,
     );
+    // TODO: get distance from google map api
+    const tampdestens = 3.1;
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -667,6 +688,7 @@ export const departOrder = async (req: RequestParams, res: Response) => {
       { orderId: value.orderId },
       {
         $set: { status: ORDER_HISTORY.DEPARTED },
+        $inc: { distance: tampdestens },
       },
     );
 
@@ -715,6 +737,8 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
     }
+    // TODO: get distance from google map api
+    const tampdestens = 1.2;
 
     const { value } = validateRequest;
     console.log(value, 'value');
@@ -756,6 +780,7 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
           status: ORDER_HISTORY.PICKED_UP,
         },
+        $inc: { distance: tampdestens },
       },
     );
 
@@ -956,6 +981,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
 
+    // otp verification START
     const otpData = await otpSchema.findOne({
       value: value.otp,
       customerEmail: isArrived.deliveryDetails.email,
@@ -967,14 +993,23 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').otpExpired });
     }
 
-    // const signDocs = value.deliveryManSignature.split(',');
+    // otp verification END
 
-    // value.deliveryManSignature = await uploadFile(
-    //   signDocs[0],
-    //   signDocs[1],
-    //   'USER-SIGNATURE',
-    // );
-    // console.log('Signature Upload:', value.deliveryManSignature);
+    // total amount to be paid
+
+    const endTime = Date.now(); // Current time in milliseconds
+    const startTime = new Date(isArrived.time.start).getTime();
+
+
+    var totalAmount = isArrived.paymentCollectionRupees;
+    // delivery boy charge
+    var chargeofDeliveryBoy = 0;
+
+    // admin balance
+    var adminBalance = 0;
+    // if delivery boy is created by admin
+    // then totalamount - adminCommission
+    // 
 
     const [paymentInfo] = await Promise.all([
       PaymentInfoSchema.findOne({ order: value.orderId }),
@@ -985,8 +1020,10 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
             'deliveryDetails.deliveryBoySignature': value.deliveryManSignature,
             'deliveryDetails.orderTimestamp': value.deliverTimestamp,
             status: ORDER_HISTORY.DELIVERED,
+            'time.end': endTime, // Use dot notation to set only the 'end' field
           },
         },
+        { new: true }
       ),
     ]);
     console.log('Payment Info:', paymentInfo);
@@ -994,24 +1031,79 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const admin = await AdminSchema.findOne();
     console.log('Admin Details:', admin);
 
+
     const assignData = await OrderAssigneeSchema.findOne({
       order: value.orderId,
     });
     console.log('Order Assignment:', assignData);
     console.log('Order Assignee details', assignData.deliveryBoy);
 
+
+    // delivery boy details
+    const DeliveryMan = await DeliveryManSchema.findById(assignData.deliveryBoy);
+    // charge of delivery boy
+
+    if (DeliveryMan.chargeMethod === CHARGE_METHOD.TIME) {
+      // time in hours
+      const timeTaken = endTime - startTime;
+      const hour = timeTaken / 3600000;
+      // charge per hour
+      chargeofDeliveryBoy = hour * DeliveryMan.charge;
+      console.log(`Charge: ${chargeofDeliveryBoy}`);
+      console.log(`Time taken: ${timeTaken} ms`);
+
+    } else if (DeliveryMan.chargeMethod === CHARGE_METHOD.DISTANCE) {
+      //  distance in miles
+      const distance = isArrived.distance;
+      chargeofDeliveryBoy = distance * DeliveryMan.charge;
+      console.log(`Charge: ${chargeofDeliveryBoy}`);
+      console.log(`Distance: ${distance} miles`);
+
+    }
+
+
+
+
+    // if delivery boy is created by admin
+    if (DeliveryMan.createdByAdmin) {
+      console.log('Processing Cash on Delivery Payment');
+      if (paymentInfo.status !== PAYMENT_INFO.SUCCESS) {
+        await PaymentInfoSchema.updateOne(
+          { order: value.orderId },
+          { $set: { status: PAYMENT_INFO.SUCCESS } },
+        );
+      }
+      console.log('chargeofDeliveryBoy', chargeofDeliveryBoy);
+      console.log(value.orderId);
+
+      await updateWallet(
+        chargeofDeliveryBoy,
+        admin._id.toString(),
+        req.id.toString(),
+        TRANSACTION_TYPE.WITHDRAW,
+        `Order ${value.orderId} Delivery Boy Commission`,
+        false,
+      );
+    }
+
+
+
+
     // Only update delivery boy balance if it's cash on delivery
     if (isArrived.cashOnDelivery) {
-      const balance = isArrived.paymentCollectionRupees;
+      const balance = totalAmount;
       const deliveryBoy = await DeliveryManSchema.findByIdAndUpdate(
         assignData.deliveryBoy,
         { $inc: { balance: balance } },
+        { $inc: { earning: chargeofDeliveryBoy } },
       );
       console.log('Delivery Boy Details', deliveryBoy);
     } else {
       console.log('Delivery Boy Details', 'Not updated');
       console.log('isArrived.cashOnDelivery is false');
     }
+
+
 
     const city = await CitySchema.findById(isArrived.city);
     console.log('City Details:', city);
@@ -1027,7 +1119,12 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
 
     const message = `Order ${value.orderId} Amount`;
 
+    console.log('isArrived.cashOnDelivery', isArrived.cashOnDelivery);
+
+
     if (isArrived.cashOnDelivery) {
+      // if cash on delivery
+
       console.log('Processing Cash on Delivery Payment');
       if (paymentInfo.status !== PAYMENT_INFO.SUCCESS) {
         await PaymentInfoSchema.updateOne(
@@ -1035,6 +1132,8 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
           { $set: { status: PAYMENT_INFO.SUCCESS } },
         );
       }
+      console.log('adminCommission', adminCommission);
+      console.log(value.orderId);
 
       await updateWallet(
         adminCommission,
@@ -1044,6 +1143,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         `Order ${value.orderId} Admin Commission`,
         false,
       );
+
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.WALLET) {
       console.log('Processing Wallet Payment');
       await Promise.all([
@@ -1065,6 +1165,11 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       ]);
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.ONLINE) {
       console.log('Processing Online Payment');
+
+      const admin = await AdminSchema.findOneAndUpdate({}, {
+        $inc: { balance: adminCommission }
+      })
+
       await updateWallet(
         isArrived.totalCharge - adminCommission,
         admin._id.toString(),
@@ -1084,6 +1189,8 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         false,
       );
     }
+
+
 
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been successfully delivered`,

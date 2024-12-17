@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { PROVIDER, SWITCH } from '../enum';
+import { CHARGE_METHOD, PROVIDER, SWITCH } from '../enum';
 
 const DeliveryManSchema = new mongoose.Schema(
   {
@@ -59,9 +59,11 @@ const DeliveryManSchema = new mongoose.Schema(
     },
     balance: {
       type: Number,
+      default: 0,
     },
     earning: {
       type: Number,
+      default: 0,
     },
     image: {
       type: String,
@@ -103,6 +105,17 @@ const DeliveryManSchema = new mongoose.Schema(
     showDeliveryManNumber: {
       type: Number,
       required: false,
+    },
+    // charge method delivery boy
+    chargeMethod: {
+      type: String,
+      enum: CHARGE_METHOD,
+      default: CHARGE_METHOD.DISTANCE,
+    },
+    // charge method delivery boy
+    charge: {
+      type: Number,
+      default: 10,
     },
   },
   { timestamps: true, versionKey: false },

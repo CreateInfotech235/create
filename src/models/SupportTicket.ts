@@ -25,6 +25,13 @@ const SupportTicket = new mongoose.Schema(
       ref: 'admin',
       required: true,
     },
+    messages: [
+      {
+        text: { type: String, required: true },
+        sender: { type: String, enum: ['merchant', 'admin'], required: true }, // 'merchant' or 'admin'
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true, versionKey: false },
 );

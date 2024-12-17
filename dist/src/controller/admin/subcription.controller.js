@@ -317,6 +317,7 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     countryCode: 1,
                     country: 1,
                     city: 1,
+                    address: 1,
                     email: 1,
                     medicalCertificateNumber: 1,
                     status: 1,

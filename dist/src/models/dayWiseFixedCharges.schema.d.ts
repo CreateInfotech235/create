@@ -28,8 +28,8 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    title?: string;
     charge?: number;
+    title?: string;
     productChargeId?: mongoose.Types.ObjectId;
     dayInMs?: number;
     dayNumber?: number;
@@ -37,8 +37,8 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    title?: string;
     charge?: number;
+    title?: string;
     productChargeId?: mongoose.Types.ObjectId;
     dayInMs?: number;
     dayNumber?: number;
@@ -46,8 +46,8 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    title?: string;
     charge?: number;
+    title?: string;
     productChargeId?: mongoose.Types.ObjectId;
     dayInMs?: number;
     dayNumber?: number;
@@ -62,8 +62,8 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    title?: string;
     charge?: number;
+    title?: string;
     productChargeId?: mongoose.Types.ObjectId;
     dayInMs?: number;
     dayNumber?: number;
@@ -71,8 +71,8 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    title?: string;
     charge?: number;
+    title?: string;
     productChargeId?: mongoose.Types.ObjectId;
     dayInMs?: number;
     dayNumber?: number;
@@ -80,8 +80,8 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    title?: string;
     charge?: number;
+    title?: string;
     productChargeId?: mongoose.Types.ObjectId;
     dayInMs?: number;
     dayNumber?: number;

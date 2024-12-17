@@ -33,11 +33,12 @@ declare const Model: mongoose.Model<{
     isCustomer: boolean;
     cashOnDelivery: boolean;
     charges: mongoose.Types.DocumentArray<{
-        title?: string;
         charge?: number;
+        title?: string;
         chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
+    distance: number;
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -51,6 +52,10 @@ declare const Model: mongoose.Model<{
     endPickupDate?: NativeDate;
     startDeliveryDate?: NativeDate;
     endDeliveryDate?: NativeDate;
+    time?: {
+        end?: NativeDate;
+        start?: NativeDate;
+    };
     parcelsCount?: number;
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
@@ -85,7 +90,6 @@ declare const Model: mongoose.Model<{
     vehicle?: mongoose.Types.ObjectId;
     totalCharge?: number;
     reason?: string;
-    distance?: number;
     duration?: string;
     pickupExpress?: boolean;
     cashCollection?: number;
@@ -98,11 +102,12 @@ declare const Model: mongoose.Model<{
     isCustomer: boolean;
     cashOnDelivery: boolean;
     charges: mongoose.Types.DocumentArray<{
-        title?: string;
         charge?: number;
+        title?: string;
         chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
+    distance: number;
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -116,6 +121,10 @@ declare const Model: mongoose.Model<{
     endPickupDate?: NativeDate;
     startDeliveryDate?: NativeDate;
     endDeliveryDate?: NativeDate;
+    time?: {
+        end?: NativeDate;
+        start?: NativeDate;
+    };
     parcelsCount?: number;
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
@@ -150,7 +159,6 @@ declare const Model: mongoose.Model<{
     vehicle?: mongoose.Types.ObjectId;
     totalCharge?: number;
     reason?: string;
-    distance?: number;
     duration?: string;
     pickupExpress?: boolean;
     cashCollection?: number;
@@ -163,11 +171,12 @@ declare const Model: mongoose.Model<{
     isCustomer: boolean;
     cashOnDelivery: boolean;
     charges: mongoose.Types.DocumentArray<{
-        title?: string;
         charge?: number;
+        title?: string;
         chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
+    distance: number;
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -181,6 +190,10 @@ declare const Model: mongoose.Model<{
     endPickupDate?: NativeDate;
     startDeliveryDate?: NativeDate;
     endDeliveryDate?: NativeDate;
+    time?: {
+        end?: NativeDate;
+        start?: NativeDate;
+    };
     parcelsCount?: number;
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
@@ -215,7 +228,6 @@ declare const Model: mongoose.Model<{
     vehicle?: mongoose.Types.ObjectId;
     totalCharge?: number;
     reason?: string;
-    distance?: number;
     duration?: string;
     pickupExpress?: boolean;
     cashCollection?: number;
@@ -235,11 +247,12 @@ declare const Model: mongoose.Model<{
     isCustomer: boolean;
     cashOnDelivery: boolean;
     charges: mongoose.Types.DocumentArray<{
-        title?: string;
         charge?: number;
+        title?: string;
         chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
+    distance: number;
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -253,6 +266,10 @@ declare const Model: mongoose.Model<{
     endPickupDate?: NativeDate;
     startDeliveryDate?: NativeDate;
     endDeliveryDate?: NativeDate;
+    time?: {
+        end?: NativeDate;
+        start?: NativeDate;
+    };
     parcelsCount?: number;
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
@@ -287,7 +304,6 @@ declare const Model: mongoose.Model<{
     vehicle?: mongoose.Types.ObjectId;
     totalCharge?: number;
     reason?: string;
-    distance?: number;
     duration?: string;
     pickupExpress?: boolean;
     cashCollection?: number;
@@ -300,11 +316,12 @@ declare const Model: mongoose.Model<{
     isCustomer: boolean;
     cashOnDelivery: boolean;
     charges: mongoose.Types.DocumentArray<{
-        title?: string;
         charge?: number;
+        title?: string;
         chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
+    distance: number;
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -318,6 +335,10 @@ declare const Model: mongoose.Model<{
     endPickupDate?: NativeDate;
     startDeliveryDate?: NativeDate;
     endDeliveryDate?: NativeDate;
+    time?: {
+        end?: NativeDate;
+        start?: NativeDate;
+    };
     parcelsCount?: number;
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
@@ -352,7 +373,6 @@ declare const Model: mongoose.Model<{
     vehicle?: mongoose.Types.ObjectId;
     totalCharge?: number;
     reason?: string;
-    distance?: number;
     duration?: string;
     pickupExpress?: boolean;
     cashCollection?: number;
@@ -365,11 +385,12 @@ declare const Model: mongoose.Model<{
     isCustomer: boolean;
     cashOnDelivery: boolean;
     charges: mongoose.Types.DocumentArray<{
-        title?: string;
         charge?: number;
+        title?: string;
         chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
+    distance: number;
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -383,6 +404,10 @@ declare const Model: mongoose.Model<{
     endPickupDate?: NativeDate;
     startDeliveryDate?: NativeDate;
     endDeliveryDate?: NativeDate;
+    time?: {
+        end?: NativeDate;
+        start?: NativeDate;
+    };
     parcelsCount?: number;
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
@@ -417,7 +442,6 @@ declare const Model: mongoose.Model<{
     vehicle?: mongoose.Types.ObjectId;
     totalCharge?: number;
     reason?: string;
-    distance?: number;
     duration?: string;
     pickupExpress?: boolean;
     cashCollection?: number;

@@ -23,11 +23,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
+const index_1 = require("../../../index");
 const authToken_schema_1 = __importDefault(require("../../models/authToken.schema"));
 const currency_schema_1 = __importDefault(require("../../models/currency.schema"));
 const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.schema"));
@@ -1208,3 +1209,78 @@ const SupportTicketUpdate = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.SupportTicketUpdate = SupportTicketUpdate;
+const getAllTickets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tickets = yield SupportTicket_1.default.find({}, 'userid'); // Return only merchantName and _id
+        res.json(tickets);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to fetch tickets' });
+    }
+});
+exports.getAllTickets = getAllTickets;
+// Fetch messages for a specific ticket
+const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const ticket = yield SupportTicket_1.default.findById(req.params.id);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        res.json(ticket.messages);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to fetch messages' });
+    }
+});
+exports.getMessagesByTicketId = getMessagesByTicketId;
+// Add a new message to a specific ticket
+const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { text, sender } = req.body;
+        if (!text || !['merchant', 'admin'].includes(sender)) {
+            return res.status(400).json({ message: 'Invalid message data' });
+        }
+        const ticket = yield SupportTicket_1.default.findById(req.params.id);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        // Add the new message
+        ticket.messages.push({ text, sender });
+        yield ticket.save();
+        // Emit the new message to the ticket room
+        index_1.io.to(req.params.id).emit('newMessage', { text, sender });
+        res.json(ticket.messages);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to add message' });
+    }
+});
+exports.addMessageToTicket = addMessageToTicket;
+// Delete a message from a specific ticket
+const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("Gfgeguefg");
+        const { ticketId, messageId } = req.params;
+        // Find the ticket by ID
+        const ticket = yield SupportTicket_1.default.findById(ticketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        // Find the index of the message to delete
+        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId);
+        if (messageIndex === -1) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        // Remove the message from the messages array
+        ticket.messages.splice(messageIndex, 1);
+        // Save the updated ticket
+        yield ticket.save();
+        // Emit the message deletion event via socket
+        index_1.io.to(ticketId).emit('messageDeleted', { messageId });
+        res.status(200).json({ message: 'Message deleted successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to delete message' });
+    }
+});
+exports.deleteMessageFromTicket = deleteMessageFromTicket;

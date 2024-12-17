@@ -49,6 +49,10 @@ export declare enum ORDER_LIST {
     PENDING = "PENDING",
     COMPLETED = "COMPLETED"
 }
+export declare enum CHARGE_METHOD {
+    TIME = "TIME",
+    DISTANCE = "DISTANCE"
+}
 export declare enum ORDER_REQUEST {
     ACCEPTED = "ACCEPTED",
     REJECT = "REJECT",

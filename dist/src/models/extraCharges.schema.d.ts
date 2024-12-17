@@ -34,8 +34,8 @@ declare const Model: mongoose.Model<{
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
-    title?: string;
     charge?: number;
+    title?: string;
     chargeType?: string;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
@@ -47,8 +47,8 @@ declare const Model: mongoose.Model<{
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
-    title?: string;
     charge?: number;
+    title?: string;
     chargeType?: string;
 }> & {
     createdAt: NativeDate;
@@ -60,8 +60,8 @@ declare const Model: mongoose.Model<{
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
-    title?: string;
     charge?: number;
+    title?: string;
     chargeType?: string;
 } & {
     _id: mongoose.Types.ObjectId;
@@ -80,8 +80,8 @@ declare const Model: mongoose.Model<{
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
-    title?: string;
     charge?: number;
+    title?: string;
     chargeType?: string;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -93,8 +93,8 @@ declare const Model: mongoose.Model<{
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
-    title?: string;
     charge?: number;
+    title?: string;
     chargeType?: string;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -106,8 +106,8 @@ declare const Model: mongoose.Model<{
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
-    title?: string;
     charge?: number;
+    title?: string;
     chargeType?: string;
 }> & {
     _id: mongoose.Types.ObjectId;

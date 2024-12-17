@@ -27,6 +27,10 @@ import {
   getAllDeliveryMans,
   getSubscriptions,
   SupportTicketUpdate,
+  getAllTickets,
+  getMessagesByTicketId,
+  addMessageToTicket,
+  deleteMessageFromTicket,
 } from '../../controller/mobile/auth.controller';
 import multer from 'multer';
 import {
@@ -628,5 +632,19 @@ router.get('/getAllDeliveryMans', getAllDeliveryMans);
 router.get('/subscriptions', getSubscriptions);
 
 router.patch('/SupportTicketUpdate', SupportTicketUpdate);
+
+
+router.get('/support-tickets', getAllTickets);
+
+// Route: GET /api/support-tickets/:id/messages -> Fetch messages for a specific ticket
+router.get('/support-tickets/:id/messages', getMessagesByTicketId);
+
+// Route: POST /api/support-tickets/:id/messages -> Add a new message to a ticket
+router.post('/support-tickets/:id/messages', addMessageToTicket);
+
+router.delete(
+  '/support-tickets/:ticketId/messages/:messageId',
+  deleteMessageFromTicket
+);
 
 export default router;

@@ -62,9 +62,11 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
     },
     balance: {
         type: Number,
+        default: 0,
     },
     earning: {
         type: Number,
+        default: 0,
     },
     image: {
         type: String,
@@ -106,6 +108,17 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
     showDeliveryManNumber: {
         type: Number,
         required: false,
+    },
+    // charge method delivery boy
+    chargeMethod: {
+        type: String,
+        enum: enum_1.CHARGE_METHOD,
+        default: enum_1.CHARGE_METHOD.DISTANCE,
+    },
+    // charge method delivery boy
+    charge: {
+        type: Number,
+        default: 10,
     },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('deliveryMan', DeliveryManSchema, 'deliveryMan');

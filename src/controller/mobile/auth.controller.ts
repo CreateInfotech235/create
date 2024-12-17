@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import { JwtPayload, verify } from 'jsonwebtoken';
 import { PERSON_TYPE } from '../../enum';
 import { getLanguage } from '../../language/languageHelper';
+import { io } from '../../../index'
+
 import authTokenSchema from '../../models/authToken.schema';
 import CurrencySchema from '../../models/currency.schema';
 import deliveryManSchema from '../../models/deliveryMan.schema';
@@ -1503,3 +1505,86 @@ export const SupportTicketUpdate = async (req: RequestParams, res: Response) => 
     });
   }
 }
+
+
+export const getAllTickets = async (req: RequestParams, res: Response) => {
+  try {
+    const tickets = await SupportTicket.find({}, 'userid'); // Return only merchantName and _id
+    res.json(tickets);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch tickets' });
+  }
+};
+
+// Fetch messages for a specific ticket
+export const getMessagesByTicketId = async (req: RequestParams, res: Response) => {
+  try {
+    const ticket = await SupportTicket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    res.json(ticket.messages);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch messages' });
+  }
+};
+
+// Add a new message to a specific ticket
+export const addMessageToTicket = async (req: RequestParams, res: Response) => {
+  try {
+    const { text, sender } = req.body;
+    if (!text || !['merchant', 'admin'].includes(sender)) {
+      return res.status(400).json({ message: 'Invalid message data' });
+    }
+
+    const ticket = await SupportTicket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Add the new message
+    ticket.messages.push({ text, sender });
+    await ticket.save();
+
+    // Emit the new message to the ticket room
+    io.to(req.params.id).emit('newMessage', { text, sender });
+
+    res.json(ticket.messages);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to add message' });
+  }
+};
+
+// Delete a message from a specific ticket
+export const deleteMessageFromTicket = async (req: RequestParams, res: Response) => {
+  try {
+    console.log("Gfgeguefg");
+    
+    const { ticketId, messageId } = req.params;
+
+    // Find the ticket by ID
+    const ticket = await SupportTicket.findById(ticketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Find the index of the message to delete
+    const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId);
+    if (messageIndex === -1) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    // Remove the message from the messages array
+    ticket.messages.splice(messageIndex, 1);
+
+    // Save the updated ticket
+    await ticket.save();
+
+    // Emit the message deletion event via socket
+    io.to(ticketId).emit('messageDeleted', { messageId });
+
+    res.status(200).json({ message: 'Message deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete message' });
+  }
+};

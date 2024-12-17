@@ -32,10 +32,14 @@ declare const Model: mongoose.Model<{
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
+    balance: number;
+    earning: number;
     provider: string;
     isCustomer: boolean;
     language: string;
     createdByMerchant: boolean;
+    chargeMethod: string;
+    charge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -65,8 +69,6 @@ declare const Model: mongoose.Model<{
         permanentBankName?: string;
         ifscCode?: string;
     };
-    balance?: number;
-    earning?: number;
     image?: string;
     providerId?: string;
     emergencyContact?: {
@@ -82,10 +84,14 @@ declare const Model: mongoose.Model<{
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
+    balance: number;
+    earning: number;
     provider: string;
     isCustomer: boolean;
     language: string;
     createdByMerchant: boolean;
+    chargeMethod: string;
+    charge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -115,8 +121,6 @@ declare const Model: mongoose.Model<{
         permanentBankName?: string;
         ifscCode?: string;
     };
-    balance?: number;
-    earning?: number;
     image?: string;
     providerId?: string;
     emergencyContact?: {
@@ -132,10 +136,14 @@ declare const Model: mongoose.Model<{
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
+    balance: number;
+    earning: number;
     provider: string;
     isCustomer: boolean;
     language: string;
     createdByMerchant: boolean;
+    chargeMethod: string;
+    charge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -165,8 +173,6 @@ declare const Model: mongoose.Model<{
         permanentBankName?: string;
         ifscCode?: string;
     };
-    balance?: number;
-    earning?: number;
     image?: string;
     providerId?: string;
     emergencyContact?: {
@@ -189,10 +195,14 @@ declare const Model: mongoose.Model<{
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
+    balance: number;
+    earning: number;
     provider: string;
     isCustomer: boolean;
     language: string;
     createdByMerchant: boolean;
+    chargeMethod: string;
+    charge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -222,8 +232,6 @@ declare const Model: mongoose.Model<{
         permanentBankName?: string;
         ifscCode?: string;
     };
-    balance?: number;
-    earning?: number;
     image?: string;
     providerId?: string;
     emergencyContact?: {
@@ -239,10 +247,14 @@ declare const Model: mongoose.Model<{
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
+    balance: number;
+    earning: number;
     provider: string;
     isCustomer: boolean;
     language: string;
     createdByMerchant: boolean;
+    chargeMethod: string;
+    charge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -272,8 +284,6 @@ declare const Model: mongoose.Model<{
         permanentBankName?: string;
         ifscCode?: string;
     };
-    balance?: number;
-    earning?: number;
     image?: string;
     providerId?: string;
     emergencyContact?: {
@@ -289,10 +299,14 @@ declare const Model: mongoose.Model<{
     createdByAdmin: boolean;
     isVerified: boolean;
     status: string;
+    balance: number;
+    earning: number;
     provider: string;
     isCustomer: boolean;
     language: string;
     createdByMerchant: boolean;
+    chargeMethod: string;
+    charge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -322,8 +336,6 @@ declare const Model: mongoose.Model<{
         permanentBankName?: string;
         ifscCode?: string;
     };
-    balance?: number;
-    earning?: number;
     image?: string;
     providerId?: string;
     emergencyContact?: {

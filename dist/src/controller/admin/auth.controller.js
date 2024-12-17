@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
+exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -20,6 +20,7 @@ const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
 const authToken_schema_1 = __importDefault(require("../../models/authToken.schema"));
 const otp_schema_1 = __importDefault(require("../../models/otp.schema"));
 const SupportTicket_1 = __importDefault(require("../../models/SupportTicket"));
+const index_1 = require("../../../index");
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
@@ -28,7 +29,6 @@ const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory
 const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
 const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.schema"));
-const subcription_schema_1 = __importDefault(require("../../models/subcription.schema"));
 const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
 const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -251,12 +251,64 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
             status: 'CANCELLED',
         });
         const deliveryMan = yield deliveryMan_schema_1.default.countDocuments();
-        const subscribedMerchants = yield subcription_schema_1.default.countDocuments({
-            isActive: true,
-        });
-        const unsubscribedMerchants = yield subcription_schema_1.default.countDocuments({
-            isActive: { $ne: false },
-        });
+        const merchantCount = yield user_schema_1.default.aggregate([
+            {
+                $lookup: {
+                    from: "subcriptionPurchase",
+                    localField: "_id",
+                    foreignField: "merchant",
+                    as: "subcriptionPurchase",
+                },
+            },
+            {
+                $unwind: {
+                    path: "$subcriptionPurchase",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: "subcriptions",
+                    localField: "subcriptionPurchase.subcriptionId",
+                    foreignField: "_id",
+                    as: "subcription",
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    subcription: 1,
+                    expiry: "$subcriptionPurchase.expiry",
+                },
+            },
+            {
+                $addFields: {
+                    isActive: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ne: ["$subcription", []] }, // Not empty subcription
+                                    { $gte: ["$expiry", new Date()] } // Expiry is valid
+                                ]
+                            },
+                            then: true,
+                            else: false
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    subscribedMerchants: {
+                        $sum: { $cond: [{ $eq: ["$isActive", true] }, 1, 0] }
+                    },
+                    unsubscribedMerchants: {
+                        $sum: { $cond: [{ $eq: ["$isActive", false] }, 1, 0] }
+                    }
+                }
+            }
+        ]);
         let totalCounts = {
             totalOrders,
             createdOrders,
@@ -268,13 +320,9 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
             deliveredOrders,
             cancelledOrders,
             deliveryMan,
-            subscribedMerchants,
-            unsubscribedMerchants,
+            subscribedMerchants: merchantCount[0].subscribedMerchants,
+            unsubscribedMerchants: merchantCount[0].unsubscribedMerchants,
         };
-        // return res.status(200).json({
-        //   success: true,
-        //   data: totalCounts
-        // });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').countedData,
             data: totalCounts,
@@ -496,3 +544,77 @@ const sendEmailFor = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.sendEmailFor = sendEmailFor;
+const getAllTickets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tickets = yield SupportTicket_1.default.find({}, 'userid'); // Return only merchantName and _id
+        res.json(tickets);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to fetch tickets' });
+    }
+});
+exports.getAllTickets = getAllTickets;
+// Fetch messages for a specific ticket
+const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const ticket = yield SupportTicket_1.default.findById(req.params.id);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        res.json(ticket.messages);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to fetch messages' });
+    }
+});
+exports.getMessagesByTicketId = getMessagesByTicketId;
+// Add a new message to a specific ticket
+const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { text, sender } = req.body;
+        if (!text || !['merchant', 'admin'].includes(sender)) {
+            return res.status(400).json({ message: 'Invalid message data' });
+        }
+        const ticket = yield SupportTicket_1.default.findById(req.params.id);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        // Add the new message
+        ticket.messages.push({ text, sender });
+        yield ticket.save();
+        // Emit the new message to the ticket room
+        index_1.io.to(req.params.id).emit('newMessage', { text, sender });
+        res.json(ticket.messages);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to add message' });
+    }
+});
+exports.addMessageToTicket = addMessageToTicket;
+const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("Gfgeguefg");
+        const { ticketId, messageId } = req.params;
+        // Find the ticket by ID
+        const ticket = yield SupportTicket_1.default.findById(ticketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        // Find the index of the message to delete
+        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId);
+        if (messageIndex === -1) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        // Remove the message from the messages array
+        ticket.messages.splice(messageIndex, 1);
+        // Save the updated ticket
+        yield ticket.save();
+        // Emit the message deletion event via socket
+        index_1.io.to(ticketId).emit('messageDeleted', { messageId });
+        res.status(200).json({ message: 'Message deleted successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to delete message' });
+    }
+});
+exports.deleteMessageFromTicket = deleteMessageFromTicket;

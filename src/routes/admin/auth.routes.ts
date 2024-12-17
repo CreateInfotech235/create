@@ -15,6 +15,10 @@ import {
   getAdminProfile,
   getSupportTicket,
   sendEmailFor,
+  getAllTickets,
+  getMessagesByTicketId,
+  addMessageToTicket,
+  deleteMessageFromTicket,
 } from '../../controller/admin/auth.controller';
 import adminAuth from '../../middleware/admin.auth';
 
@@ -249,4 +253,19 @@ router.get(
 router.get('/getAdminProfile', adminAuth, getAdminProfile);
 router.get('/getAdminSupportTicket', adminAuth, getSupportTicket);
 router.post('/Email' ,adminAuth, sendEmailFor)
+
+router.get('/support-tickets', getAllTickets);
+
+// Route: GET /api/support-tickets/:id/messages -> Fetch messages for a specific ticket
+router.get('/support-tickets/:id/messages', getMessagesByTicketId);
+
+// Route: POST /api/support-tickets/:id/messages -> Add a new message to a ticket
+router.post('/support-tickets/:id/messages', addMessageToTicket);
+
+router.delete(
+  '/support-tickets/:ticketId/messages/:messageId',
+  deleteMessageFromTicket
+);
+
+
 export default router;

@@ -6,6 +6,7 @@ import adminSchema from '../../models/admin.schema';
 import authTokenSchema from '../../models/authToken.schema';
 import otpSchema from '../../models/otp.schema';
 import SupportTicket from '../../models/SupportTicket';
+import { io } from '../../../index'
 import {
   createAuthTokens,
   createNotification,
@@ -32,6 +33,7 @@ import deliveryManSchema from '../../models/deliveryMan.schema';
 import subscribedSchema from '../../models/subcription.schema';
 import Notifications from '../../models/notificatio.schema';
 import merchantSchema from '../../models/user.schema';
+import Ticket from '../../models/Ticket.schema'
 
 export const signIn = async (req: RequestParams, res: Response) => {
   try {
@@ -296,6 +298,7 @@ export const logout = async (req: RequestParams, res: Response) => {
   }
 };
 
+
 export const getOrderCounts = async (req: RequestParams, res: Response) => {
   try {
     const totalOrders = await orderSchema.countDocuments();
@@ -325,12 +328,66 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       status: 'CANCELLED',
     });
     const deliveryMan = await deliveryManSchema.countDocuments();
-    const subscribedMerchants = await subscribedSchema.countDocuments({
-      isActive: true,
-    });
-    const unsubscribedMerchants = await subscribedSchema.countDocuments({
-      isActive: { $ne: false },
-    });
+
+    const merchantCount = await merchantSchema.aggregate([
+      {
+        $lookup: {
+          from: "subcriptionPurchase",
+          localField: "_id",
+          foreignField: "merchant",
+          as: "subcriptionPurchase",
+        },
+      },
+      {
+        $unwind: {
+          path: "$subcriptionPurchase",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "subcriptions",
+          localField: "subcriptionPurchase.subcriptionId",
+          foreignField: "_id",
+          as: "subcription",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          subcription: 1,
+          expiry: "$subcriptionPurchase.expiry",
+        },
+      },
+      {
+        $addFields: {
+          isActive: {
+            $cond: {
+              if: {
+                $and: [
+                  { $ne: ["$subcription", []] }, // Not empty subcription
+                  { $gte: ["$expiry", new Date()] } // Expiry is valid
+                ]
+              },
+              then: true,
+              else: false
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null, 
+          subscribedMerchants: {
+            $sum: { $cond: [{ $eq: ["$isActive", true] }, 1, 0] }
+          },
+          unsubscribedMerchants: {
+            $sum: { $cond: [{ $eq: ["$isActive", false] }, 1, 0] }
+          }
+        }
+      }
+    ]);
+
 
     let totalCounts = {
       totalOrders,
@@ -343,14 +400,12 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       deliveredOrders,
       cancelledOrders,
       deliveryMan,
-      subscribedMerchants,
-      unsubscribedMerchants,
+      subscribedMerchants:merchantCount[0].subscribedMerchants,
+      unsubscribedMerchants:merchantCount[0].unsubscribedMerchants,
+
     };
 
-    // return res.status(200).json({
-    //   success: true,
-    //   data: totalCounts
-    // });
+
     return res.ok({
       message: getLanguage('en').countedData,
       data: totalCounts,
@@ -609,5 +664,87 @@ export const sendEmailFor = async (req: RequestParams, res: Response) => {
       error: error,
       message: getLanguage('en').somethingWentWrong,
     });
+  }
+};
+
+
+export const getAllTickets = async (req: RequestParams, res: Response) => {
+  try {
+    const tickets = await SupportTicket.find({}, 'userid'); // Return only merchantName and _id
+    res.json(tickets);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch tickets' });
+  }
+};
+
+// Fetch messages for a specific ticket
+export const getMessagesByTicketId = async (req: RequestParams, res: Response) => {
+  try {
+    const ticket = await SupportTicket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    res.json(ticket.messages);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch messages' });
+  }
+};
+
+// Add a new message to a specific ticket
+export const addMessageToTicket = async (req: RequestParams, res: Response) => {
+  try {
+    const { text, sender } = req.body;
+    if (!text || !['merchant', 'admin'].includes(sender)) {
+      return res.status(400).json({ message: 'Invalid message data' });
+    }
+
+    const ticket = await SupportTicket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Add the new message
+    ticket.messages.push({ text, sender });
+    await ticket.save();
+
+    // Emit the new message to the ticket room
+    io.to(req.params.id).emit('newMessage', { text, sender });
+
+    res.json(ticket.messages);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to add message' });
+  }
+};
+
+export const deleteMessageFromTicket = async (req: RequestParams, res: Response) => {
+  try {
+    console.log("Gfgeguefg");
+    
+    const { ticketId, messageId } = req.params;
+
+    // Find the ticket by ID
+    const ticket = await SupportTicket.findById(ticketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Find the index of the message to delete
+    const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId);
+    if (messageIndex === -1) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    // Remove the message from the messages array
+    ticket.messages.splice(messageIndex, 1);
+
+    // Save the updated ticket
+    await ticket.save();
+
+    // Emit the message deletion event via socket
+    io.to(ticketId).emit('messageDeleted', { messageId });
+
+    res.status(200).json({ message: 'Message deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete message' });
   }
 };

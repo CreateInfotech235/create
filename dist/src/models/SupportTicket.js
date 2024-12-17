@@ -28,6 +28,13 @@ const SupportTicket = new mongoose_1.default.Schema({
         ref: 'admin',
         required: true,
     },
+    messages: [
+        {
+            text: { type: String, required: true },
+            sender: { type: String, enum: ['merchant', 'admin'], required: true }, // 'merchant' or 'admin'
+            timestamp: { type: Date, default: Date.now },
+        },
+    ],
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('SupportTicket', SupportTicket);
 exports.default = Model;

@@ -49,15 +49,33 @@ exports.addCustomer = addCustomer;
 const getAllCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const createdBy = req.params.createdBy === 'true';
-        console.log(createdBy);
+        console.log(typeof createdBy);
+        // {
+        // $match: (() => {
+        //   if (req.query.existss === 'true') {
+        //     return { merchant: { $exists: true } };
+        //   }
+        //   if (req.query.existss === 'false') {
+        //     return { merchant: { $exists: false } };
+        //   }
+        //   return {};
+        // })(),
+        // },
         const customers = yield customer_schema_1.default.aggregate([
             {
-                $match: {
-                    createdByAdmin: createdBy,
+                $lookup: {
+                    from: 'merchants',
+                    localField: 'merchantId',
+                    foreignField: '_id',
+                    as: 'merchantDetails',
                 },
             },
             {
+                $unwind: '$merchantDetails',
+            },
+            {
                 $project: {
+                    showCustomerNumber: 1,
                     name: { $concat: ['$firstName', ' ', '$lastName'] },
                     firstName: '$firstName',
                     lastName: '$lastName',
@@ -66,13 +84,40 @@ const getAllCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     postCode: 1,
                     country: 1,
                     city: 1,
+                    createdByAdmin: 1,
                     mobileNumber: 1,
                     customerId: 1,
                     location: 1,
+                    merchant: {
+                        $ifNull: [
+                            {
+                                $concat: [
+                                    { $ifNull: ['$merchantDetails.firstName', ''] },
+                                    ' ',
+                                    { $ifNull: ['$merchantDetails.lastName', ''] },
+                                ],
+                            },
+                            '-',
+                        ],
+                    },
                 },
             },
+            {
+                // $match: {
+                //   createdByAdmin: createdBy,
+                // },
+                $match: (() => {
+                    if (req.params.createdBy === 'true') {
+                        return { createdByAdmin: true };
+                    }
+                    if (req.params.createdBy === 'false') {
+                        return { createdByAdmin: false };
+                    }
+                    return {};
+                })(),
+            },
         ]);
-        // console.log('🚀 ~ getAllCustomer ~ customers:', customers);
+        console.log('🚀 ~ getAllCustomer ~ customers:', customers);
         res.status(200).json({ data: customers });
     }
     catch (error) {

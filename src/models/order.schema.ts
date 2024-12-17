@@ -34,6 +34,12 @@ const OrderSchema = new mongoose.Schema(
     endDeliveryDate: {
       type: Date,
     },
+
+    time: {
+      start: { type: Date },
+      end: { type: Date },
+    },
+
     parcelsCount: {
       type: Number,
     },
@@ -140,7 +146,7 @@ const OrderSchema = new mongoose.Schema(
     totalCharge: { type: Number },
     dayChargeNumber: { type: Number, default: 1 },
     reason: { type: String },
-    distance: { type: Number },
+    distance: { type: Number, default: 0 },
     duration: { type: String },
     pickupExpress: { type: Boolean },
     cashCollection: { type: Number },

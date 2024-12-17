@@ -567,4 +567,10 @@ router.get('/getUnreadNotificationCount/:id', auth_controller_1.getUnreadNotific
 router.get('/getAllDeliveryMans', auth_controller_1.getAllDeliveryMans);
 router.get('/subscriptions', auth_controller_1.getSubscriptions);
 router.patch('/SupportTicketUpdate', auth_controller_1.SupportTicketUpdate);
+router.get('/support-tickets', auth_controller_1.getAllTickets);
+// Route: GET /api/support-tickets/:id/messages -> Fetch messages for a specific ticket
+router.get('/support-tickets/:id/messages', auth_controller_1.getMessagesByTicketId);
+// Route: POST /api/support-tickets/:id/messages -> Add a new message to a ticket
+router.post('/support-tickets/:id/messages', auth_controller_1.addMessageToTicket);
+router.delete('/support-tickets/:ticketId/messages/:messageId', auth_controller_1.deleteMessageFromTicket);
 exports.default = router;

@@ -335,7 +335,9 @@ const acceptOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
         if (value.status === enum_1.ORDER_REQUEST.ACCEPTED) {
             yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
-                $set: { status: enum_1.ORDER_HISTORY.ASSIGNED },
+                $set: {
+                    status: enum_1.ORDER_HISTORY.ASSIGNED,
+                },
             });
             const data = yield deliveryMan_schema_1.default.findById(value.deliveryManId, {
                 _id: 0,
@@ -370,6 +372,8 @@ exports.acceptOrder = acceptOrder;
 const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderArriveValidation);
+        // TODO: get distance from google map api
+        const tampdestens = 3.2;
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
@@ -391,8 +395,15 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 message: (0, languageHelper_1.getLanguage)('en').invalidDeliveryMan,
             });
         }
+        // TODO: add distance to the order
         yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
-            $set: { status: enum_1.ORDER_HISTORY.ARRIVED },
+            $set: {
+                status: enum_1.ORDER_HISTORY.ARRIVED,
+                time: {
+                    start: Date.now(),
+                },
+            },
+            $inc: { distance: tampdestens },
         });
         yield orderHistory_schema_1.default.create({
             message: `Your order ${value.orderId} has been arrived`,
@@ -454,7 +465,14 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
         }
         // Update the order status to canceled
-        yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { status: enum_1.ORDER_HISTORY.UNASSIGNED } });
+        yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
+            $set: {
+                status: enum_1.ORDER_HISTORY.UNASSIGNED,
+                time: {
+                    end: Date.now(),
+                },
+            },
+        });
         console.log('Third');
         // Update the assignee status (if needed)
         yield orderAssignee_schema_1.default.findByIdAndUpdate(isAssigned._id, {
@@ -513,6 +531,8 @@ exports.cancelOrder = cancelOrder;
 const departOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderArriveValidation);
+        // TODO: get distance from google map api
+        const tampdestens = 3.1;
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
@@ -536,6 +556,7 @@ const departOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: { status: enum_1.ORDER_HISTORY.DEPARTED },
+            $inc: { distance: tampdestens },
         });
         yield orderHistory_schema_1.default.create({
             message: `Your order ${value.orderId} has been out for delivery`,
@@ -577,6 +598,8 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
+        // TODO: get distance from google map api
+        const tampdestens = 1.2;
         const { value } = validateRequest;
         console.log(value, 'value');
         const isArrived = yield order_schema_1.default.findOne({
@@ -608,6 +631,7 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 'pickupDetails.orderTimestamp': value.pickupTimestamp,
                 status: enum_1.ORDER_HISTORY.PICKED_UP,
             },
+            $inc: { distance: tampdestens },
         });
         // if (isArrived.cashOnDelivery) {
         //   await PaymentInfoSchema.updateOne(
@@ -767,6 +791,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!isArrived) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
+        // otp verification START
         const otpData = yield otp_schema_1.default.findOne({
             value: value.otp,
             customerEmail: isArrived.deliveryDetails.email,
@@ -776,13 +801,18 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!otpData) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
         }
-        // const signDocs = value.deliveryManSignature.split(',');
-        // value.deliveryManSignature = await uploadFile(
-        //   signDocs[0],
-        //   signDocs[1],
-        //   'USER-SIGNATURE',
-        // );
-        // console.log('Signature Upload:', value.deliveryManSignature);
+        // otp verification END
+        // total amount to be paid
+        const endTime = Date.now(); // Current time in milliseconds
+        const startTime = new Date(isArrived.time.start).getTime();
+        var totalAmount = isArrived.paymentCollectionRupees;
+        // delivery boy charge
+        var chargeofDeliveryBoy = 0;
+        // admin balance
+        var adminBalance = 0;
+        // if delivery boy is created by admin
+        // then totalamount - adminCommission
+        // 
         const [paymentInfo] = yield Promise.all([
             paymentInfo_schema_1.default.findOne({ order: value.orderId }),
             order_schema_1.default.updateOne({ orderId: value.orderId }, {
@@ -790,8 +820,9 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     'deliveryDetails.deliveryBoySignature': value.deliveryManSignature,
                     'deliveryDetails.orderTimestamp': value.deliverTimestamp,
                     status: enum_1.ORDER_HISTORY.DELIVERED,
+                    'time.end': endTime, // Use dot notation to set only the 'end' field
                 },
-            }),
+            }, { new: true }),
         ]);
         console.log('Payment Info:', paymentInfo);
         const admin = yield admin_schema_1.default.findOne();
@@ -801,10 +832,39 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
         console.log('Order Assignment:', assignData);
         console.log('Order Assignee details', assignData.deliveryBoy);
+        // delivery boy details
+        const DeliveryMan = yield deliveryMan_schema_1.default.findById(assignData.deliveryBoy);
+        // charge of delivery boy
+        if (DeliveryMan.chargeMethod === enum_1.CHARGE_METHOD.TIME) {
+            // time in hours
+            const timeTaken = endTime - startTime;
+            const hour = timeTaken / 3600000;
+            // charge per hour
+            chargeofDeliveryBoy = hour * DeliveryMan.charge;
+            console.log(`Charge: ${chargeofDeliveryBoy}`);
+            console.log(`Time taken: ${timeTaken} ms`);
+        }
+        else if (DeliveryMan.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
+            //  distance in miles
+            const distance = isArrived.distance;
+            chargeofDeliveryBoy = distance * DeliveryMan.charge;
+            console.log(`Charge: ${chargeofDeliveryBoy}`);
+            console.log(`Distance: ${distance} miles`);
+        }
+        // if delivery boy is created by admin
+        if (DeliveryMan.createdByAdmin) {
+            console.log('Processing Cash on Delivery Payment');
+            if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
+                yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
+            }
+            console.log('chargeofDeliveryBoy', chargeofDeliveryBoy);
+            console.log(value.orderId);
+            yield (0, common_1.updateWallet)(chargeofDeliveryBoy, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Delivery Boy Commission`, false);
+        }
         // Only update delivery boy balance if it's cash on delivery
         if (isArrived.cashOnDelivery) {
-            const balance = isArrived.paymentCollectionRupees;
-            const deliveryBoy = yield deliveryMan_schema_1.default.findByIdAndUpdate(assignData.deliveryBoy, { $inc: { balance: balance } });
+            const balance = totalAmount;
+            const deliveryBoy = yield deliveryMan_schema_1.default.findByIdAndUpdate(assignData.deliveryBoy, { $inc: { balance: balance } }, { $inc: { earning: chargeofDeliveryBoy } });
             console.log('Delivery Boy Details', deliveryBoy);
         }
         else {
@@ -821,11 +881,15 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const adminCommission = chargeData.adminCommission;
         console.log('Admin Commission:', adminCommission);
         const message = `Order ${value.orderId} Amount`;
+        console.log('isArrived.cashOnDelivery', isArrived.cashOnDelivery);
         if (isArrived.cashOnDelivery) {
+            // if cash on delivery
             console.log('Processing Cash on Delivery Payment');
             if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
                 yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
             }
+            console.log('adminCommission', adminCommission);
+            console.log(value.orderId);
             yield (0, common_1.updateWallet)(adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Admin Commission`, false);
         }
         else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.WALLET) {
@@ -837,6 +901,9 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
         else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.ONLINE) {
             console.log('Processing Online Payment');
+            const admin = yield admin_schema_1.default.findOneAndUpdate({}, {
+                $inc: { balance: adminCommission }
+            });
             yield (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false);
         }
         else {

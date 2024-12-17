@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DAY_WISE_CHARGE_TYPE = exports.PERSON_TYPE = exports.WEIGHT_TYPE = exports.DISTANCE_TYPE = exports.CHARGE_TYPE = exports.PICKUP_REQUEST = exports.VEHICLE_CITY_TYPE = exports.TRANSACTION_TYPE = exports.PAYMENT_TYPE = exports.SUBCRIPTION_REQUEST = exports.PAYMENT_INFO = exports.ORDER_LOCATION = exports.ORDER_REQUEST = exports.ORDER_LIST = exports.ADMIN_ORDER_LOCATIONS = exports.ORDER_STATUS = exports.ORDER_HISTORY = exports.PROVIDER = exports.SWITCHSTATUS = exports.SWITCH = void 0;
+exports.DAY_WISE_CHARGE_TYPE = exports.PERSON_TYPE = exports.WEIGHT_TYPE = exports.DISTANCE_TYPE = exports.CHARGE_TYPE = exports.PICKUP_REQUEST = exports.VEHICLE_CITY_TYPE = exports.TRANSACTION_TYPE = exports.PAYMENT_TYPE = exports.SUBCRIPTION_REQUEST = exports.PAYMENT_INFO = exports.ORDER_LOCATION = exports.ORDER_REQUEST = exports.CHARGE_METHOD = exports.ORDER_LIST = exports.ADMIN_ORDER_LOCATIONS = exports.ORDER_STATUS = exports.ORDER_HISTORY = exports.PROVIDER = exports.SWITCHSTATUS = exports.SWITCH = void 0;
 var SWITCH;
 (function (SWITCH) {
     SWITCH["ENABLE"] = "ENABLE";
@@ -59,6 +59,11 @@ var ORDER_LIST;
     ORDER_LIST["PENDING"] = "PENDING";
     ORDER_LIST["COMPLETED"] = "COMPLETED";
 })(ORDER_LIST || (exports.ORDER_LIST = ORDER_LIST = {}));
+var CHARGE_METHOD;
+(function (CHARGE_METHOD) {
+    CHARGE_METHOD["TIME"] = "TIME";
+    CHARGE_METHOD["DISTANCE"] = "DISTANCE";
+})(CHARGE_METHOD || (exports.CHARGE_METHOD = CHARGE_METHOD = {}));
 var ORDER_REQUEST;
 (function (ORDER_REQUEST) {
     ORDER_REQUEST["ACCEPTED"] = "ACCEPTED";

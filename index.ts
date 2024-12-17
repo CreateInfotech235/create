@@ -20,21 +20,27 @@ const path = require('path');
 const app = express();
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// config({ path: `.env.development.${process.env.NODE_ENV}`, debug: false });
+// Load environment variables
 config({ path: `.env.development.local` });
 
+// Set up server
 const server = http.createServer(app);
 
+// Database connection and seeders
 databaseConnection(process.env.DB_URI);
 loadSeeders();
 
+// Set server port
 const PORT = process.env.PORT || 1000;
 
+// Logger middleware
 app.use(logger('dev'));
 
-const corsOptions = { origin: process.env.ALLOW_ORIGIN };
+// CORS Configuration
+const corsOptions = { origin: process.env.ALLOW_ORIGIN }; // Ensure this points to your frontend's URL (e.g., http://localhost:5173)
 app.use(cors(corsOptions));
 
+// Body parser middleware
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(
   bodyParser.urlencoded({
@@ -43,15 +49,12 @@ app.use(
     parameterLimit: 50000,
   }),
 );
+
+// Response handler middleware
 app.use(responseHandler);
 
-// const { startCrone } = require('./src/utils/taskSchedule')
-// const { startSocketServer } = require('./src/controller/socketController')
-
-app.use(routes);
-
+// Swagger Documentation (Optional)
 const { ENV } = process.env;
-
 if (ENV === 'DEV') {
   app.use(
     '/docs-for-api',
@@ -60,11 +63,22 @@ if (ENV === 'DEV') {
   );
 }
 
-const io = new Server(server);
+// API routes
+app.use(routes);
 
+// Socket.IO Setup
+const io = new Server(server, {
+  cors: {
+    origin: process.env.ALLOW_ORIGIN, // CORS for Socket.IO
+    methods: ['GET', 'POST'],
+  },
+});
+
+export {io}
 io.on('connection', (socket) => {
   console.log('🚀 ~ io.on ~ socket:', 'socket connected');
 
+  // Order tracking event
   socket.on(
     'orderTracking',
     async (deliveryManId: string, lat: number, long: number) => {
@@ -74,9 +88,11 @@ io.on('connection', (socket) => {
           message: 'Lat Long Required',
         });
       }
+
       const orderAssignData = await OrderAssigneeSchema.findOne({
         deliveryBoy: deliveryManId,
       });
+
       const orderData = await OrderSchema.findOne({
         orderId: orderAssignData.order,
         status: {
@@ -88,11 +104,13 @@ io.on('connection', (socket) => {
           ],
         },
       });
+
       if (orderData) {
         io.to(orderAssignData.order.toString()).emit('orderTracking', {
           lat,
           long,
         });
+
         await DeliveryManSchema.updateOne(
           { _id: deliveryManId },
           {
@@ -103,19 +121,38 @@ io.on('connection', (socket) => {
     },
   );
 
+  // Join a specific socket room (e.g., for order tracking)
   socket.on('socketJoin', (orderId: number) => {
     socket.join(orderId.toString());
   });
 
+  // Leave a specific socket room
   socket.on('socketLeave', (orderId: number) => {
     socket.leave(orderId.toString());
   });
 
+  // Send a message to a specific ticket
+  socket.on('sendMessage', (ticketId, message) => {
+    io.to(ticketId).emit('newMessage', message);
+  });
+
+  // Join ticket room
+  socket.on('joinTicket', (ticketId) => {
+    socket.join(ticketId);
+  });
+
+  socket.on('deleteMessage', (ticketId, messageId) => {
+    // Emit the deletion to all clients in the ticket's room
+    io.to(ticketId).emit('messageDeleted', { messageId });
+  });
+
+  // Socket disconnection
   socket.on('disconnect', () => {
     console.log('🚀 ~ socket.on ~ disconnect:', 'socket disconnected');
   });
 });
 
+// Start the server
 server.listen(PORT, async () => {
   console.log(`Server Running At Port : ${PORT}`);
 });
