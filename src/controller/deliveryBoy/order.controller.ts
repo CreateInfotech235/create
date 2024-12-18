@@ -381,7 +381,14 @@ export const getOederForDeliveryMan = async (
             trashed: {
               $ifNull: ['$trashed', false],
             },
-            paymentCollectionRupees: '$paymentCollectionRupees',
+            paymentCollectionRupees: {
+              $cond: {
+                  if: { $eq: [{ $type: '$paymentCollectionRupees' }, 'double'] },
+                  then: { $round: ['$paymentCollectionRupees', 2] },
+                  else: { $toString: { $round: [{ $toDecimal: '$paymentCollectionRupees' }, 2] } },
+              },
+          },
+  
           },
         },
       },
