@@ -150,10 +150,10 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
           deliveryBoy: 1,
           status: 1,
           createdAt: 1,
-          order1: {
+          order: {
             orderId: '$orderData.orderId',
             _id: '$orderData._id',
-            showOrderNumber : '$orderData.showOrderNumber',
+            showOrderNumber: '$orderData.showOrderNumber',
             parcelsCount: '$orderData.parcelsCount',
             customerName: '$orderData.deliveryDetails.name',
             cutomerEmail: '$orderData.deliveryDetails.email',
@@ -203,7 +203,6 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
           totalCount: [{ $count: 'count' }],
         },
       },
-     
     ]);
 
     const data = {
@@ -341,7 +340,7 @@ export const getOederForDeliveryMan = async (
           order: {
             orderId: '$orderId',
             _id: '$_id',
-            showOrderNumber : '$showOrderNumber',
+            showOrderNumber: '$showOrderNumber',
             parcelsCount: '$parcelsCount',
             customerName: '$deliveryDetails.name',
             cutomerEmail: '$deliveryDetails.email',
@@ -383,12 +382,15 @@ export const getOederForDeliveryMan = async (
             },
             paymentCollectionRupees: {
               $cond: {
-                  if: { $eq: [{ $type: '$paymentCollectionRupees' }, 'double'] },
-                  then: { $round: ['$paymentCollectionRupees', 2] },
-                  else: { $toString: { $round: [{ $toDecimal: '$paymentCollectionRupees' }, 2] } },
+                if: { $eq: [{ $type: '$paymentCollectionRupees' }, 'double'] },
+                then: { $round: ['$paymentCollectionRupees', 2] },
+                else: {
+                  $toString: {
+                    $round: [{ $toDecimal: '$paymentCollectionRupees' }, 2],
+                  },
+                },
               },
-          },
-  
+            },
           },
         },
       },
