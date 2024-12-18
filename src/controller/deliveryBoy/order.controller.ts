@@ -99,7 +99,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     // console.log(demo, 'demo');
 
     // Aggregation pipeline with pagination
-    const data = await OrderAssigneeSchema.aggregate([
+    const data1 = await OrderAssigneeSchema.aggregate([
       {
         $sort: { createdAt: -1 },
       },
@@ -130,13 +130,18 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        $skip: skip, // Skip the calculated number of documents
+        $facet: {
+          data: [{ $skip: skip }, { $limit: pageLimit }],
+          totalCount: [{ $count: 'count' }],
+        },
       },
-      {
-        $limit: pageLimit, // Limit the number of documents per page
-      },
+     
     ]);
 
+    const data = {
+      data: data1[0].data,
+      totalCount: data1[0].totalCount[0]?.count || 0,
+    };
     // Calculate total count for pagination
     const totalCount = await OrderAssigneeSchema.countDocuments(query);
 

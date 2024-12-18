@@ -29,6 +29,7 @@ const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const order_validation_1 = require("../../utils/validation/order.validation");
 const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const validateRequest = (0, validateRequest_1.default)(req.query, order_validation_1.orderListByDeliveryManValidation);
         if (!validateRequest.isValid) {
@@ -63,7 +64,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
         // });
         // console.log(demo, 'demo');
         // Aggregation pipeline with pagination
-        const data = yield orderAssignee_schema_1.default.aggregate([
+        const data1 = yield orderAssignee_schema_1.default.aggregate([
             {
                 $sort: { createdAt: -1 },
             },
@@ -94,12 +95,16 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 },
             },
             {
-                $skip: skip, // Skip the calculated number of documents
-            },
-            {
-                $limit: pageLimit, // Limit the number of documents per page
+                $facet: {
+                    data: [{ $skip: skip }, { $limit: pageLimit }],
+                    totalCount: [{ $count: 'count' }],
+                },
             },
         ]);
+        const data = {
+            data: data1[0].data,
+            totalCount: ((_a = data1[0].totalCount[0]) === null || _a === void 0 ? void 0 : _a.count) || 0,
+        };
         // Calculate total count for pagination
         const totalCount = yield orderAssignee_schema_1.default.countDocuments(query);
         // Calculate total pages
@@ -118,7 +123,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.getAssignedOrders = getAssignedOrders;
 const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const { startDate, endDate, status, pageCount = 1, pageLimit = 10, } = req.query; // Add pageCount and pageLimit params
         // Calculate pagination values
@@ -265,7 +270,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
         ]);
         const data = {
             data: data1[0].data,
-            totalCount: ((_a = data1[0].totalCount[0]) === null || _a === void 0 ? void 0 : _a.count) || 0,
+            totalCount: ((_b = data1[0].totalCount[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
         };
         // Get total count for pagination
         const totalCount = yield order_schema_1.default.countDocuments(matchCondition);
