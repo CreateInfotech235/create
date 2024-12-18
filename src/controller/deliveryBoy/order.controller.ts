@@ -121,12 +121,80 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
         },
       },
       {
+        $lookup: {
+          from: 'deliveryMan',
+          localField: 'deliveryBoy',
+          foreignField: '_id',
+          as: 'deliveryManData',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$deliveryManData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
-          _id: 0,
-          order: '$orderData',
+          _id: 1,
+          // order: '$orderData',
           deliveryBoy: 1,
           status: 1,
           createdAt: 1,
+          order1: {
+            orderId: '$orderData.orderId',
+            _id: '$orderData._id',
+            showOrderNumber : '$orderData.showOrderNumber',
+            parcelsCount: '$orderData.parcelsCount',
+            customerName: '$orderData.deliveryDetails.name',
+            cutomerEmail: '$orderData.deliveryDetails.email',
+            pickupDetails: '$orderData.pickupDetails',
+            deliveryDetails: '$orderData.deliveryDetails',
+            deliveryMan: {
+              $concat: [
+                '$deliveryManData.firstName',
+                ' ',
+                '$deliveryManData.lastName',
+              ],
+            },
+            deliveryManId: '$deliveryManData._id',
+            pickupDate: {
+              $dateToString: {
+                format: '%d-%m-%Y , %H:%M',
+                date: '$orderData.pickupDetails.dateTime',
+              },
+            },
+            deliveryDate: {
+              $dateToString: {
+                format: '%d-%m-%Y , %H:%M',
+                date: '$orderData.deliveryDetails.orderTimestamp',
+              },
+            },
+            createdDate: {
+              $dateToString: {
+                format: '%d-%m-%Y , %H:%M',
+                date: '$orderData.createdAt',
+              },
+            },
+            pickupRequest: '$orderData.pickupDetails.request',
+            postCode: '$orderData.pickupDetails.postCode',
+            cashOnDelivery: '$orderData.cashOnDelivery',
+            status: '$orderData.status',
+            dateTime: '$orderData.dateTime',
+            trashed: {
+              $ifNull: ['$orderData.trashed', false],
+            },
+            paymentCollectionRupees: '$orderData.paymentCollectionRupees',
+          },
         },
       },
       {
@@ -273,6 +341,7 @@ export const getOederForDeliveryMan = async (
           order: {
             orderId: '$orderId',
             _id: '$_id',
+            showOrderNumber : '$showOrderNumber',
             parcelsCount: '$parcelsCount',
             customerName: '$deliveryDetails.name',
             cutomerEmail: '$deliveryDetails.email',
