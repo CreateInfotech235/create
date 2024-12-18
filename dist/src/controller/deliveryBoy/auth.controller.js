@@ -260,8 +260,6 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
         if (!mongoose_1.default.Types.ObjectId.isValid(req.params.id)) {
             return res.badRequest({ message: 'Invalid delivery man ID' });
         }
-        // const allOrders = await OrderAssigneeSchema.find({ deliveryBoy: req.params.id });
-        // const order = await OrderSchema.findOne({ orderId: allOrders?.order });
         const result = yield deliveryMan_schema_1.default.aggregate([
             {
                 $match: {
@@ -287,14 +285,20 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
             {
                 $lookup: {
                     from: 'orders',
-                    localField: 'allOrders.order',
-                    foreignField: 'orderId',
+                    let: { orderIds: '$allOrders.order' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $in: ['$orderId', '$$orderIds'] },
+                                        { $eq: ['$status', 'DELIVERED'] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
                     as: 'orderDetails',
-                },
-            },
-            {
-                $match: {
-                    'orderDetails.status': 'DELIVERED',
                 },
             },
             {
@@ -337,9 +341,10 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
             },
             {
                 $addFields: {
-                    totalOrderCount: { $size: '$allOrders' },
-                    totalAcceptedOrders: { $size: '$acceptedOrders' },
-                    totalCancelledOrders: { $size: '$rejectedOrders' },
+                    totalOrderCount: { $ifNull: [{ $size: '$allOrders' }, 0] },
+                    totalAcceptedOrders: { $ifNull: [{ $size: '$acceptedOrders' }, 0] },
+                    totalCancelledOrders: { $ifNull: [{ $size: '$rejectedOrders' }, 0] },
+                    totalDeliveredOrders: { $ifNull: [{ $size: '$orderDetails' }, 0] },
                 },
             },
             {
@@ -379,7 +384,7 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     totalOrderCount: 1,
                     totalAcceptedOrders: 1,
                     totalCancelledOrders: 1,
-                    totalDeliveredOrders: { $size: '$orderDetails' },
+                    totalDeliveredOrders: 1,
                     location: 1,
                     postCode: 1,
                     balance: 1,
@@ -387,10 +392,7 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 },
             },
         ]);
-        // .catch((err) => {
-        //   console.error('Aggregation error:', err);
-        //   return [];
-        // });
+        console.log(result);
         if (!result || !result.length) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
         }

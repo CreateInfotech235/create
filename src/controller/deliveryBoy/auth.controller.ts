@@ -355,10 +355,6 @@ export const getDeliveryManProfile = async (
       return res.badRequest({ message: 'Invalid delivery man ID' });
     }
 
-    // const allOrders = await OrderAssigneeSchema.find({ deliveryBoy: req.params.id });
-
-    // const order = await OrderSchema.findOne({ orderId: allOrders?.order });
-
     const result = await deliveryManSchema.aggregate([
       {
         $match: {
@@ -384,14 +380,20 @@ export const getDeliveryManProfile = async (
       {
         $lookup: {
           from: 'orders',
-          localField: 'allOrders.order',
-          foreignField: 'orderId',
+          let: { orderIds: '$allOrders.order' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $in: ['$orderId', '$$orderIds'] },
+                    { $eq: ['$status', 'DELIVERED'] },
+                  ],
+                },
+              },
+            },
+          ],
           as: 'orderDetails',
-        },
-      },
-      {
-        $match: {
-          'orderDetails.status': 'DELIVERED',
         },
       },
       {
@@ -432,12 +434,12 @@ export const getDeliveryManProfile = async (
           as: 'rejectedOrders',
         },
       },
-
       {
         $addFields: {
-          totalOrderCount: { $size: '$allOrders' },
-          totalAcceptedOrders: { $size: '$acceptedOrders' },
-          totalCancelledOrders: { $size: '$rejectedOrders' },
+          totalOrderCount: { $ifNull: [{ $size: '$allOrders' }, 0] },
+          totalAcceptedOrders: { $ifNull: [{ $size: '$acceptedOrders' }, 0] },
+          totalCancelledOrders: { $ifNull: [{ $size: '$rejectedOrders' }, 0] },
+          totalDeliveredOrders: { $ifNull: [{ $size: '$orderDetails' }, 0] },
         },
       },
       {
@@ -477,7 +479,7 @@ export const getDeliveryManProfile = async (
           totalOrderCount: 1,
           totalAcceptedOrders: 1,
           totalCancelledOrders: 1,
-          totalDeliveredOrders: { $size: '$orderDetails' },
+          totalDeliveredOrders: 1,
           location: 1,
           postCode: 1,
           balance: 1,
@@ -485,12 +487,11 @@ export const getDeliveryManProfile = async (
         },
       },
     ]);
+    
 
-    // .catch((err) => {
-    //   console.error('Aggregation error:', err);
-    //   return [];
-    // });
-
+    console.log(result);
+    
+  
     if (!result || !result.length) {
       return res.badRequest({ message: getLanguage('en').deliveryManNotFound });
     }
@@ -504,6 +505,7 @@ export const getDeliveryManProfile = async (
     });
   }
 };
+
 
 export const deleteDeliveryMan = async (req: RequestParams, res: Response) => {
   try {
