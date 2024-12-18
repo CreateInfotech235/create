@@ -430,8 +430,8 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
                 $sort: {
-                    createdAt: -1
-                }
+                    createdAt: -1,
+                },
             },
             {
                 $match: Query,
@@ -448,6 +448,46 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                 $unwind: {
                     path: '$countryData',
                     preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'merchants',
+                    localField: 'merchantId',
+                    foreignField: '_id',
+                    as: 'merchantData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 0,
+                                firstName: 1,
+                                lastName: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$merchantData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $addFields: {
+                    merchantName: {
+                        $cond: {
+                            if: { $ne: ['$merchantData', null] },
+                            then: {
+                                $concat: [
+                                    '$merchantData.firstName',
+                                    ' ',
+                                    '$merchantData.lastName',
+                                ],
+                            },
+                            else: 'Unknown Merchant',
+                        },
+                    },
                 },
             },
             {
@@ -469,6 +509,7 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                     firstName: 1,
                     lastName: 1,
                     countryCode: 1,
+                    merchantName: 1,
                     contactNumber: 1,
                     email: 1,
                     status: 1,
@@ -554,8 +595,8 @@ const getAllDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, funct
                     registerDate: {
                         $dateToString: {
                             format: '%d-%m-%Y | %H:%M',
-                            date: '$createdAt'
-                        }
+                            date: '$createdAt',
+                        },
                     },
                     isVerified: 1,
                     city: 1,
@@ -580,8 +621,8 @@ const getAllDeliveryMansFromAdmin = (req, res) => __awaiter(void 0, void 0, void
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
                 $sort: {
-                    createdAt: -1
-                }
+                    createdAt: -1,
+                },
             },
             {
                 $match: { createdByAdmin: true },

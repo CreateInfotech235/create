@@ -281,8 +281,7 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
       },
       {
         $lookup: {
-          from: 'users',
-          // localField: 'customer',
+          from: 'merchants',
           localField: 'merchant',
           foreignField: '_id',
           as: 'userData',
@@ -290,7 +289,8 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
             {
               $project: {
                 _id: 0,
-                name: 1,
+                firstName: 1,
+                lastName: 1,
               },
             },
           ],
@@ -300,6 +300,19 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
         $unwind: {
           path: '$userData',
           preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          merchantName: {
+            $cond: {
+              if: { $ne: ['$userData', null] },
+              then: {
+                $concat: ['$userData.firstName', ' ', '$userData.lastName'],
+              },
+              else: 'Unknown Merchant',
+            },
+          },
         },
       },
       {
@@ -330,8 +343,9 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
           _id: 1,
           orderId: 1,
           parcelsCount: 1,
+          merchantName: 1,
           customerName: '$deliveryDetails.name',
-          cutomerEmail: '$deliveryDetails.email',
+          customerEmail: '$deliveryDetails.email',
           pickupAddress: '$pickupDetails',
           deliveryAddress: '$deliveryDetails',
           deliveryMan: {

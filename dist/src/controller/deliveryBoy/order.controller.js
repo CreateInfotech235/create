@@ -118,6 +118,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.getAssignedOrders = getAssignedOrders;
 const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { startDate, endDate, status, pageCount = 1, pageLimit = 10, } = req.query; // Add pageCount and pageLimit params
         // Calculate pagination values
@@ -149,7 +150,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
         }
         // Build match condition for count
         const matchCondition = Object.assign(Object.assign({ 'order.deliveryManId': new mongoose_1.default.Types.ObjectId(req.id) }, statusFilter), dateFilter);
-        const data = yield order_schema_1.default.aggregate([
+        const data1 = yield order_schema_1.default.aggregate([
             {
                 $sort: {
                     createdAt: -1,
@@ -177,29 +178,6 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                     preserveNullAndEmptyArrays: true,
                 },
             },
-            // {
-            //   $lookup: {
-            //     from: 'users',
-            //     // localField: 'customer',
-            //     localField: 'merchant',
-            //     foreignField: '_id',
-            //     as: 'userData',
-            //     pipeline: [
-            //       {
-            //         $project: {
-            //           _id: 0,
-            //           name: 1,
-            //         },
-            //       },
-            //     ],
-            //   },
-            // },
-            // {
-            //   $unwind: {
-            //     path: '$userData',
-            //     preserveNullAndEmptyArrays: true,
-            //   },
-            // },
             {
                 $lookup: {
                     from: 'deliveryMan',
@@ -279,12 +257,16 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                 $match: matchCondition,
             },
             {
-                $skip: skip,
-            },
-            {
-                $limit: pageLimitt,
+                $facet: {
+                    data: [{ $skip: skip }, { $limit: pageLimitt }],
+                    totalCount: [{ $count: 'count' }],
+                },
             },
         ]);
+        const data = {
+            data: data1[0].data,
+            totalCount: ((_a = data1[0].totalCount[0]) === null || _a === void 0 ? void 0 : _a.count) || 0,
+        };
         // Get total count for pagination
         const totalCount = yield order_schema_1.default.countDocuments(matchCondition);
         const totalPages = Math.ceil(totalCount / pageLimitt);
@@ -812,7 +794,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         var adminBalance = 0;
         // if delivery boy is created by admin
         // then totalamount - adminCommission
-        // 
+        //
         const [paymentInfo] = yield Promise.all([
             paymentInfo_schema_1.default.findOne({ order: value.orderId }),
             order_schema_1.default.updateOne({ orderId: value.orderId }, {
@@ -902,7 +884,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.ONLINE) {
             console.log('Processing Online Payment');
             const admin = yield admin_schema_1.default.findOneAndUpdate({}, {
-                $inc: { balance: adminCommission }
+                $inc: { balance: adminCommission },
             });
             yield (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false);
         }

@@ -271,8 +271,8 @@ export const getDeliveryManLocations = async (
         $project: {
           deliveryManId: '$_id',
           location: 1,
-          firstName : 1,
-          lastName : 1,
+          firstName: 1,
+          lastName: 1,
           // location: {
           //   latitude: { $arrayElemAt: ['$location.coordinates', 1] },
           //   longitude: { $arrayElemAt: ['$location.coordinates', 0] },
@@ -511,9 +511,9 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
 
     const data = await deliveryManSchema.aggregate([
       {
-        $sort : {
-          createdAt: -1
-        }
+        $sort: {
+          createdAt: -1,
+        },
       },
       {
         $match: Query,
@@ -530,6 +530,46 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
         $unwind: {
           path: '$countryData',
           preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'merchants',
+          localField: 'merchantId',
+          foreignField: '_id',
+          as: 'merchantData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                firstName: 1,
+                lastName: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$merchantData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          merchantName: {
+            $cond: {
+              if: { $ne: ['$merchantData', null] },
+              then: {
+                $concat: [
+                  '$merchantData.firstName',
+                  ' ',
+                  '$merchantData.lastName',
+                ],
+              },
+              else: 'Unknown Merchant',
+            },
+          },
         },
       },
       {
@@ -551,12 +591,13 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
           firstName: 1,
           lastName: 1,
           countryCode: 1,
+          merchantName: 1,
           contactNumber: 1,
           email: 1,
           status: 1,
-          address : 1,
-          postCode : 1,
-          showDeliveryManNumber : 1,
+          address: 1,
+          postCode: 1,
+          showDeliveryManNumber: 1,
           country: '$countryData.countryName',
           city: '$cityData.cityName',
           registerDate: '$createdAt',
@@ -624,24 +665,24 @@ export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
           countryCode: 1,
           contactNumber: 1,
           email: 1,
-          address : 1,
+          address: 1,
           status: 1,
-          postCode : 1,
+          postCode: 1,
 
-          showDeliveryManNumber:1 ,
+          showDeliveryManNumber: 1,
           country: '$countryData.countryName',
           // city: '$cityData.cityName',
           merchantId: 1,
           createdByMerchant: 1,
           createdByAdmin: 1,
           registerDate: {
-            $dateToString : {
-              format : '%d-%m-%Y | %H:%M',
-              date : '$createdAt'
-            }
+            $dateToString: {
+              format: '%d-%m-%Y | %H:%M',
+              date: '$createdAt',
+            },
           },
           isVerified: 1,
-          city:1,
+          city: 1,
           location: {
             latitude: { $arrayElemAt: ['$location.coordinates', 0] },
             longitude: { $arrayElemAt: ['$location.coordinates', 1] },
@@ -665,9 +706,9 @@ export const getAllDeliveryMansFromAdmin = async (
   try {
     const data = await deliveryManSchema.aggregate([
       {
-        $sort : {
-          createdAt: -1
-        }
+        $sort: {
+          createdAt: -1,
+        },
       },
       {
         $match: { createdByAdmin: true },
@@ -709,9 +750,9 @@ export const getAllDeliveryMansFromAdmin = async (
           countryCode: 1,
           contactNumber: 1,
           email: 1,
-          showDeliveryManNumber : 1 ,
-          address : 1,
-          postCode : 1,
+          showDeliveryManNumber: 1,
+          address: 1,
+          postCode: 1,
 
           status: 1,
           country: '$countryData.countryName',

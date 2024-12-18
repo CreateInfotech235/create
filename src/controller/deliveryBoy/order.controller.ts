@@ -208,7 +208,7 @@ export const getOederForDeliveryMan = async (
       ...dateFilter,
     };
 
-    const data = await orderSchema.aggregate([
+    const data1 = await orderSchema.aggregate([
       {
         $sort: {
           createdAt: -1,
@@ -236,29 +236,6 @@ export const getOederForDeliveryMan = async (
           preserveNullAndEmptyArrays: true,
         },
       },
-      // {
-      //   $lookup: {
-      //     from: 'users',
-      //     // localField: 'customer',
-      //     localField: 'merchant',
-      //     foreignField: '_id',
-      //     as: 'userData',
-      //     pipeline: [
-      //       {
-      //         $project: {
-      //           _id: 0,
-      //           name: 1,
-      //         },
-      //       },
-      //     ],
-      //   },
-      // },
-      // {
-      //   $unwind: {
-      //     path: '$userData',
-      //     preserveNullAndEmptyArrays: true,
-      //   },
-      // },
       {
         $lookup: {
           from: 'deliveryMan',
@@ -338,12 +315,17 @@ export const getOederForDeliveryMan = async (
         $match: matchCondition,
       },
       {
-        $skip: skip,
-      },
-      {
-        $limit: pageLimitt,
+        $facet: {
+          data: [{ $skip: skip }, { $limit: pageLimitt }],
+          totalCount: [{ $count: 'count' }],
+        },
       },
     ]);
+
+    const data = {
+      data: data1[0].data,
+      totalCount: data1[0].totalCount[0]?.count || 0,
+    };
 
     // Get total count for pagination
     const totalCount = await orderSchema.countDocuments(matchCondition);
@@ -411,7 +393,6 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
         {
           $set: {
             status: ORDER_HISTORY.ASSIGNED,
-
           },
         },
       );
@@ -1000,7 +981,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const endTime = Date.now(); // Current time in milliseconds
     const startTime = new Date(isArrived.time.start).getTime();
 
-
     var totalAmount = isArrived.paymentCollectionRupees;
     // delivery boy charge
     var chargeofDeliveryBoy = 0;
@@ -1009,7 +989,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     var adminBalance = 0;
     // if delivery boy is created by admin
     // then totalamount - adminCommission
-    // 
+    //
 
     const [paymentInfo] = await Promise.all([
       PaymentInfoSchema.findOne({ order: value.orderId }),
@@ -1023,7 +1003,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
             'time.end': endTime, // Use dot notation to set only the 'end' field
           },
         },
-        { new: true }
+        { new: true },
       ),
     ]);
     console.log('Payment Info:', paymentInfo);
@@ -1031,16 +1011,16 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const admin = await AdminSchema.findOne();
     console.log('Admin Details:', admin);
 
-
     const assignData = await OrderAssigneeSchema.findOne({
       order: value.orderId,
     });
     console.log('Order Assignment:', assignData);
     console.log('Order Assignee details', assignData.deliveryBoy);
 
-
     // delivery boy details
-    const DeliveryMan = await DeliveryManSchema.findById(assignData.deliveryBoy);
+    const DeliveryMan = await DeliveryManSchema.findById(
+      assignData.deliveryBoy,
+    );
     // charge of delivery boy
 
     if (DeliveryMan.chargeMethod === CHARGE_METHOD.TIME) {
@@ -1051,18 +1031,13 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       chargeofDeliveryBoy = hour * DeliveryMan.charge;
       console.log(`Charge: ${chargeofDeliveryBoy}`);
       console.log(`Time taken: ${timeTaken} ms`);
-
     } else if (DeliveryMan.chargeMethod === CHARGE_METHOD.DISTANCE) {
       //  distance in miles
       const distance = isArrived.distance;
       chargeofDeliveryBoy = distance * DeliveryMan.charge;
       console.log(`Charge: ${chargeofDeliveryBoy}`);
       console.log(`Distance: ${distance} miles`);
-
     }
-
-
-
 
     // if delivery boy is created by admin
     if (DeliveryMan.createdByAdmin) {
@@ -1086,9 +1061,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       );
     }
 
-
-
-
     // Only update delivery boy balance if it's cash on delivery
     if (isArrived.cashOnDelivery) {
       const balance = totalAmount;
@@ -1102,8 +1074,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       console.log('Delivery Boy Details', 'Not updated');
       console.log('isArrived.cashOnDelivery is false');
     }
-
-
 
     const city = await CitySchema.findById(isArrived.city);
     console.log('City Details:', city);
@@ -1120,7 +1090,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const message = `Order ${value.orderId} Amount`;
 
     console.log('isArrived.cashOnDelivery', isArrived.cashOnDelivery);
-
 
     if (isArrived.cashOnDelivery) {
       // if cash on delivery
@@ -1143,7 +1112,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         `Order ${value.orderId} Admin Commission`,
         false,
       );
-
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.WALLET) {
       console.log('Processing Wallet Payment');
       await Promise.all([
@@ -1166,9 +1134,12 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.ONLINE) {
       console.log('Processing Online Payment');
 
-      const admin = await AdminSchema.findOneAndUpdate({}, {
-        $inc: { balance: adminCommission }
-      })
+      const admin = await AdminSchema.findOneAndUpdate(
+        {},
+        {
+          $inc: { balance: adminCommission },
+        },
+      );
 
       await updateWallet(
         isArrived.totalCharge - adminCommission,
@@ -1189,8 +1160,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         false,
       );
     }
-
-
 
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been successfully delivered`,
