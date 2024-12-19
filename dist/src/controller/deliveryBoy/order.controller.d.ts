@@ -12,3 +12,4 @@ export declare const deliverOrder: (req: RequestParams, res: Response) => Promis
 export declare const OrderAssigneeSchemaData: (req: RequestParams, res: Response) => Promise<void>;
 export declare const allPaymentInfo: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getOrderById: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getAllCancelledOrders: (req: RequestParams, res: Response) => Promise<void | Response<any, Record<string, any>>>;

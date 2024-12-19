@@ -203,4 +203,5 @@ router.patch('/deliver', order_controller_1.deliverOrder);
 router.post('/sendEmailOrMobileOtp', order_controller_1.sendEmailOrMobileOtp);
 router.get('/getOrderById/:orderId', order_controller_1.getOrderById);
 router.get('/getOrderForDeliveryMan', order_controller_1.getOederForDeliveryMan);
+router.get('/getCancelledOrder', order_controller_1.getAllCancelledOrders);
 exports.default = router;

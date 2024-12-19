@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrder = exports.sendEmailOrMobileOtp = exports.pickUpOrder = exports.departOrder = exports.cancelOrder = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrders = void 0;
+exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrder = exports.sendEmailOrMobileOtp = exports.pickUpOrder = exports.departOrder = exports.cancelOrder = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrders = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -25,11 +25,11 @@ const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory
 const otp_schema_1 = __importDefault(require("../../models/otp.schema"));
 const paymentInfo_schema_1 = __importDefault(require("../../models/paymentInfo.schema"));
 const productCharges_schema_1 = __importDefault(require("../../models/productCharges.schema"));
+const cancelOderbyDeliveryManSchema_1 = __importDefault(require("../../models/cancelOderbyDeliveryManSchema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const order_validation_1 = require("../../utils/validation/order.validation");
 const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         const validateRequest = (0, validateRequest_1.default)(req.query, order_validation_1.orderListByDeliveryManValidation);
         if (!validateRequest.isValid) {
@@ -64,7 +64,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
         // });
         // console.log(demo, 'demo');
         // Aggregation pipeline with pagination
-        const data1 = yield orderAssignee_schema_1.default.aggregate([
+        const data = yield orderAssignee_schema_1.default.aggregate([
             {
                 $sort: { createdAt: -1 },
             },
@@ -86,93 +86,21 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 },
             },
             {
-                $lookup: {
-                    from: 'deliveryMan',
-                    localField: 'deliveryBoy',
-                    foreignField: '_id',
-                    as: 'deliveryManData',
-                    pipeline: [
-                        {
-                            $project: {
-                                _id: 1,
-                                firstName: 1,
-                                lastName: 1,
-                            },
-                        },
-                    ],
-                },
-            },
-            {
-                $unwind: {
-                    path: '$deliveryManData',
-                    preserveNullAndEmptyArrays: true,
-                },
-            },
-            {
                 $project: {
-                    _id: 1,
-                    // order: '$orderData',
+                    _id: 0,
+                    order: '$orderData',
                     deliveryBoy: 1,
                     status: 1,
                     createdAt: 1,
-                    order: {
-                        orderId: '$orderData.orderId',
-                        _id: '$orderData._id',
-                        showOrderNumber: '$orderData.showOrderNumber',
-                        parcelsCount: '$orderData.parcelsCount',
-                        customerName: '$orderData.deliveryDetails.name',
-                        cutomerEmail: '$orderData.deliveryDetails.email',
-                        pickupDetails: '$orderData.pickupDetails',
-                        deliveryDetails: '$orderData.deliveryDetails',
-                        deliveryMan: {
-                            $concat: [
-                                '$deliveryManData.firstName',
-                                ' ',
-                                '$deliveryManData.lastName',
-                            ],
-                        },
-                        deliveryManId: '$deliveryManData._id',
-                        pickupDate: {
-                            $dateToString: {
-                                format: '%d-%m-%Y , %H:%M',
-                                date: '$orderData.pickupDetails.dateTime',
-                            },
-                        },
-                        deliveryDate: {
-                            $dateToString: {
-                                format: '%d-%m-%Y , %H:%M',
-                                date: '$orderData.deliveryDetails.orderTimestamp',
-                            },
-                        },
-                        createdDate: {
-                            $dateToString: {
-                                format: '%d-%m-%Y , %H:%M',
-                                date: '$orderData.createdAt',
-                            },
-                        },
-                        pickupRequest: '$orderData.pickupDetails.request',
-                        postCode: '$orderData.pickupDetails.postCode',
-                        cashOnDelivery: '$orderData.cashOnDelivery',
-                        status: '$orderData.status',
-                        dateTime: '$orderData.dateTime',
-                        trashed: {
-                            $ifNull: ['$orderData.trashed', false],
-                        },
-                        paymentCollectionRupees: '$orderData.paymentCollectionRupees',
-                    },
                 },
             },
             {
-                $facet: {
-                    data: [{ $skip: skip }, { $limit: pageLimit }],
-                    totalCount: [{ $count: 'count' }],
-                },
+                $skip: skip, // Skip the calculated number of documents
+            },
+            {
+                $limit: pageLimit, // Limit the number of documents per page
             },
         ]);
-        const data = {
-            data: data1[0].data,
-            totalCount: ((_a = data1[0].totalCount[0]) === null || _a === void 0 ? void 0 : _a.count) || 0,
-        };
         // Calculate total count for pagination
         const totalCount = yield orderAssignee_schema_1.default.countDocuments(query);
         // Calculate total pages
@@ -191,7 +119,6 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.getAssignedOrders = getAssignedOrders;
 const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
     try {
         const { startDate, endDate, status, pageCount = 1, pageLimit = 10, } = req.query; // Add pageCount and pageLimit params
         // Calculate pagination values
@@ -223,7 +150,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
         }
         // Build match condition for count
         const matchCondition = Object.assign(Object.assign({ 'order.deliveryManId': new mongoose_1.default.Types.ObjectId(req.id) }, statusFilter), dateFilter);
-        const data1 = yield order_schema_1.default.aggregate([
+        const data = yield order_schema_1.default.aggregate([
             {
                 $sort: {
                     createdAt: -1,
@@ -251,6 +178,29 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                     preserveNullAndEmptyArrays: true,
                 },
             },
+            // {
+            //   $lookup: {
+            //     from: 'users',
+            //     // localField: 'customer',
+            //     localField: 'merchant',
+            //     foreignField: '_id',
+            //     as: 'userData',
+            //     pipeline: [
+            //       {
+            //         $project: {
+            //           _id: 0,
+            //           name: 1,
+            //         },
+            //       },
+            //     ],
+            //   },
+            // },
+            // {
+            //   $unwind: {
+            //     path: '$userData',
+            //     preserveNullAndEmptyArrays: true,
+            //   },
+            // },
             {
                 $lookup: {
                     from: 'deliveryMan',
@@ -283,7 +233,6 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                     order: {
                         orderId: '$orderId',
                         _id: '$_id',
-                        showOrderNumber: '$showOrderNumber',
                         parcelsCount: '$parcelsCount',
                         customerName: '$deliveryDetails.name',
                         cutomerEmail: '$deliveryDetails.email',
@@ -323,34 +272,22 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                         trashed: {
                             $ifNull: ['$trashed', false],
                         },
-                        paymentCollectionRupees: {
-                            $cond: {
-                                if: { $eq: [{ $type: '$paymentCollectionRupees' }, 'double'] },
-                                then: { $round: ['$paymentCollectionRupees', 2] },
-                                else: {
-                                    $toString: {
-                                        $round: [{ $toDecimal: '$paymentCollectionRupees' }, 2],
-                                    },
-                                },
-                            },
-                        },
+                        paymentCollectionRupees: '$paymentCollectionRupees',
                     },
                 },
             },
             {
-                $match: matchCondition,
+                $match: Object.assign(Object.assign({}, matchCondition), { status: { $ne: "UNASSIGNED" } // Exclude orders with "UNASSIGNED" status
+                 }),
             },
             {
-                $facet: {
-                    data: [{ $skip: skip }, { $limit: pageLimitt }],
-                    totalCount: [{ $count: 'count' }],
-                },
+                $skip: skip,
+            },
+            {
+                $limit: pageLimitt,
             },
         ]);
-        const data = {
-            data: data1[0].data,
-            totalCount: ((_b = data1[0].totalCount[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
-        };
+        console.log("data", data);
         // Get total count for pagination
         const totalCount = yield order_schema_1.default.countDocuments(matchCondition);
         const totalPages = Math.ceil(totalCount / pageLimitt);
@@ -572,8 +509,11 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             merchantID: existingOrder.merchant,
             deliveryBoy: value.deliveryManId,
         });
-        console.log('Fifth');
-        console.log('Six');
+        // TODO: send cancellation email to the customer and delivery man
+        yield cancelOderbyDeliveryManSchema_1.default.create({
+            deliveryBoy: value.deliveryManId,
+            order: value.orderId,
+        });
         yield (0, common_1.sendMailService)(existingOrder.pickupDetails.email, 'Cancel Order ', 'Your order is cancelled by deliveryman plz assign order other deliveryman');
         console.log('Seaven');
         yield (0, common_1.createNotification)({
@@ -878,7 +818,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         var adminBalance = 0;
         // if delivery boy is created by admin
         // then totalamount - adminCommission
-        //
+        // 
         const [paymentInfo] = yield Promise.all([
             paymentInfo_schema_1.default.findOne({ order: value.orderId }),
             order_schema_1.default.updateOne({ orderId: value.orderId }, {
@@ -968,7 +908,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.ONLINE) {
             console.log('Processing Online Payment');
             const admin = yield admin_schema_1.default.findOneAndUpdate({}, {
-                $inc: { balance: adminCommission },
+                $inc: { balance: adminCommission }
             });
             yield (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false);
         }
@@ -1068,3 +1008,61 @@ const getOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.getOrderById = getOrderById;
+const getAllCancelledOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const Id = req.id;
+        console.log(Id);
+        if (!mongoose_1.default.Types.ObjectId.isValid(Id)) {
+            return res.status(400).json({ message: 'Invalid delivery man ID' });
+        }
+        const data = yield cancelOderbyDeliveryManSchema_1.default.aggregate([
+            {
+                $match: {
+                    deliveryBoy: Id,
+                    status: 'CANCELLED',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'orders', // Collection name in your database
+                    localField: 'order', // Field in the cancelOderbyDeliveryMan schema
+                    foreignField: 'orderId', // Field in the order collection
+                    as: 'order', // Alias for the resulting joined documents
+                },
+            },
+            {
+                $lookup: {
+                    from: 'merchants',
+                    localField: 'order.merchant', // Field in the cancelOderbyDeliveryMan schema
+                    foreignField: '_id', // Field in the merchants collection
+                    as: 'merchant', // Alias for the resulting joined documents
+                }
+            },
+            {
+                $unwind: "$merchant",
+            },
+            {
+                $unwind: "$order", // Flatten the array of orders
+            },
+            {
+                $project: {
+                    _id: 1,
+                    orderId: "$order.orderId",
+                    customerMobilNumber: "$order.pickupDetails.mobileNumber",
+                    customerName: "$order.deliveryDetails.name",
+                    status: 1,
+                    merchantName: "$merchant.name",
+                    merchantMobilNumber: "$merchant.contactNumber"
+                },
+            },
+        ]);
+        console.log(data);
+        return res.ok({ data: data });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getAllCancelledOrders = getAllCancelledOrders;

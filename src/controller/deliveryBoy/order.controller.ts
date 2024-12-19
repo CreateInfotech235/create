@@ -19,7 +19,10 @@ import OrderAssigneeSchema from '../../models/orderAssignee.schema';
 import OrderHistorySchema from '../../models/orderHistory.schema';
 import otpSchema from '../../models/otp.schema';
 import PaymentInfoSchema from '../../models/paymentInfo.schema';
+
 import ProductChargesSchema from '../../models/productCharges.schema';
+import cancelOderbyDeliveryMan from '../../models/cancelOderbyDeliveryManSchema';
+
 import {
   createNotification,
   emailOrMobileOtp,
@@ -46,6 +49,9 @@ import {
   OrderDeliverType,
   OrderPickUpType,
 } from './types/order';
+
+
+
 
 export const getAssignedOrders = async (req: RequestParams, res: Response) => {
   try {
@@ -99,7 +105,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     // console.log(demo, 'demo');
 
     // Aggregation pipeline with pagination
-    const data1 = await OrderAssigneeSchema.aggregate([
+    const data = await OrderAssigneeSchema.aggregate([
       {
         $sort: { createdAt: -1 },
       },
@@ -121,94 +127,22 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        $lookup: {
-          from: 'deliveryMan',
-          localField: 'deliveryBoy',
-          foreignField: '_id',
-          as: 'deliveryManData',
-          pipeline: [
-            {
-              $project: {
-                _id: 1,
-                firstName: 1,
-                lastName: 1,
-              },
-            },
-          ],
-        },
-      },
-      {
-        $unwind: {
-          path: '$deliveryManData',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
         $project: {
-          _id: 1,
-          // order: '$orderData',
+          _id: 0,
+          order: '$orderData',
           deliveryBoy: 1,
           status: 1,
           createdAt: 1,
-          order: {
-            orderId: '$orderData.orderId',
-            _id: '$orderData._id',
-            showOrderNumber: '$orderData.showOrderNumber',
-            parcelsCount: '$orderData.parcelsCount',
-            customerName: '$orderData.deliveryDetails.name',
-            cutomerEmail: '$orderData.deliveryDetails.email',
-            pickupDetails: '$orderData.pickupDetails',
-            deliveryDetails: '$orderData.deliveryDetails',
-            deliveryMan: {
-              $concat: [
-                '$deliveryManData.firstName',
-                ' ',
-                '$deliveryManData.lastName',
-              ],
-            },
-            deliveryManId: '$deliveryManData._id',
-            pickupDate: {
-              $dateToString: {
-                format: '%d-%m-%Y , %H:%M',
-                date: '$orderData.pickupDetails.dateTime',
-              },
-            },
-            deliveryDate: {
-              $dateToString: {
-                format: '%d-%m-%Y , %H:%M',
-                date: '$orderData.deliveryDetails.orderTimestamp',
-              },
-            },
-            createdDate: {
-              $dateToString: {
-                format: '%d-%m-%Y , %H:%M',
-                date: '$orderData.createdAt',
-              },
-            },
-            pickupRequest: '$orderData.pickupDetails.request',
-            postCode: '$orderData.pickupDetails.postCode',
-            cashOnDelivery: '$orderData.cashOnDelivery',
-            status: '$orderData.status',
-            dateTime: '$orderData.dateTime',
-            trashed: {
-              $ifNull: ['$orderData.trashed', false],
-            },
-            paymentCollectionRupees: '$orderData.paymentCollectionRupees',
-          },
         },
       },
       {
-        $facet: {
-          data: [{ $skip: skip }, { $limit: pageLimit }],
-          totalCount: [{ $count: 'count' }],
-        },
+        $skip: skip, // Skip the calculated number of documents
+      },
+      {
+        $limit: pageLimit, // Limit the number of documents per page
       },
     ]);
 
-    const data = {
-      data: data1[0].data,
-      totalCount: data1[0].totalCount[0]?.count || 0,
-    };
     // Calculate total count for pagination
     const totalCount = await OrderAssigneeSchema.countDocuments(query);
 
@@ -269,6 +203,7 @@ export const getOederForDeliveryMan = async (
 
     // Initialize status filter
     let statusFilter = {};
+
     if (status) {
       statusFilter = { status };
     }
@@ -280,7 +215,7 @@ export const getOederForDeliveryMan = async (
       ...dateFilter,
     };
 
-    const data1 = await orderSchema.aggregate([
+    const data = await orderSchema.aggregate([
       {
         $sort: {
           createdAt: -1,
@@ -308,6 +243,29 @@ export const getOederForDeliveryMan = async (
           preserveNullAndEmptyArrays: true,
         },
       },
+      // {
+      //   $lookup: {
+      //     from: 'users',
+      //     // localField: 'customer',
+      //     localField: 'merchant',
+      //     foreignField: '_id',
+      //     as: 'userData',
+      //     pipeline: [
+      //       {
+      //         $project: {
+      //           _id: 0,
+      //           name: 1,
+      //         },
+      //       },
+      //     ],
+      //   },
+      // },
+      // {
+      //   $unwind: {
+      //     path: '$userData',
+      //     preserveNullAndEmptyArrays: true,
+      //   },
+      // },
       {
         $lookup: {
           from: 'deliveryMan',
@@ -340,7 +298,6 @@ export const getOederForDeliveryMan = async (
           order: {
             orderId: '$orderId',
             _id: '$_id',
-            showOrderNumber: '$showOrderNumber',
             parcelsCount: '$parcelsCount',
             customerName: '$deliveryDetails.name',
             cutomerEmail: '$deliveryDetails.email',
@@ -380,35 +337,25 @@ export const getOederForDeliveryMan = async (
             trashed: {
               $ifNull: ['$trashed', false],
             },
-            paymentCollectionRupees: {
-              $cond: {
-                if: { $eq: [{ $type: '$paymentCollectionRupees' }, 'double'] },
-                then: { $round: ['$paymentCollectionRupees', 2] },
-                else: {
-                  $toString: {
-                    $round: [{ $toDecimal: '$paymentCollectionRupees' }, 2],
-                  },
-                },
-              },
-            },
+            paymentCollectionRupees: '$paymentCollectionRupees',
           },
         },
       },
       {
-        $match: matchCondition,
-      },
-      {
-        $facet: {
-          data: [{ $skip: skip }, { $limit: pageLimitt }],
-          totalCount: [{ $count: 'count' }],
+        $match: {
+          ...matchCondition,
+          status: { $ne: "UNASSIGNED" } // Exclude orders with "UNASSIGNED" status
         },
       },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: pageLimitt,
+      },
     ]);
+    console.log("data", data);
 
-    const data = {
-      data: data1[0].data,
-      totalCount: data1[0].totalCount[0]?.count || 0,
-    };
 
     // Get total count for pagination
     const totalCount = await orderSchema.countDocuments(matchCondition);
@@ -476,6 +423,7 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
         {
           $set: {
             status: ORDER_HISTORY.ASSIGNED,
+
           },
         },
       );
@@ -683,9 +631,15 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       merchantID: existingOrder.merchant,
       deliveryBoy: value.deliveryManId,
     });
-    console.log('Fifth');
 
-    console.log('Six');
+    // TODO: send cancellation email to the customer and delivery man
+
+    await cancelOderbyDeliveryMan.create({
+      deliveryBoy: value.deliveryManId,
+      order: value.orderId,
+    })
+
+
 
     await sendMailService(
       existingOrder.pickupDetails.email,
@@ -1064,6 +1018,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const endTime = Date.now(); // Current time in milliseconds
     const startTime = new Date(isArrived.time.start).getTime();
 
+
     var totalAmount = isArrived.paymentCollectionRupees;
     // delivery boy charge
     var chargeofDeliveryBoy = 0;
@@ -1072,7 +1027,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     var adminBalance = 0;
     // if delivery boy is created by admin
     // then totalamount - adminCommission
-    //
+    // 
 
     const [paymentInfo] = await Promise.all([
       PaymentInfoSchema.findOne({ order: value.orderId }),
@@ -1086,7 +1041,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
             'time.end': endTime, // Use dot notation to set only the 'end' field
           },
         },
-        { new: true },
+        { new: true }
       ),
     ]);
     console.log('Payment Info:', paymentInfo);
@@ -1094,16 +1049,16 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const admin = await AdminSchema.findOne();
     console.log('Admin Details:', admin);
 
+
     const assignData = await OrderAssigneeSchema.findOne({
       order: value.orderId,
     });
     console.log('Order Assignment:', assignData);
     console.log('Order Assignee details', assignData.deliveryBoy);
 
+
     // delivery boy details
-    const DeliveryMan = await DeliveryManSchema.findById(
-      assignData.deliveryBoy,
-    );
+    const DeliveryMan = await DeliveryManSchema.findById(assignData.deliveryBoy);
     // charge of delivery boy
 
     if (DeliveryMan.chargeMethod === CHARGE_METHOD.TIME) {
@@ -1114,13 +1069,18 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       chargeofDeliveryBoy = hour * DeliveryMan.charge;
       console.log(`Charge: ${chargeofDeliveryBoy}`);
       console.log(`Time taken: ${timeTaken} ms`);
+
     } else if (DeliveryMan.chargeMethod === CHARGE_METHOD.DISTANCE) {
       //  distance in miles
       const distance = isArrived.distance;
       chargeofDeliveryBoy = distance * DeliveryMan.charge;
       console.log(`Charge: ${chargeofDeliveryBoy}`);
       console.log(`Distance: ${distance} miles`);
+
     }
+
+
+
 
     // if delivery boy is created by admin
     if (DeliveryMan.createdByAdmin) {
@@ -1144,6 +1104,9 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       );
     }
 
+
+
+
     // Only update delivery boy balance if it's cash on delivery
     if (isArrived.cashOnDelivery) {
       const balance = totalAmount;
@@ -1157,6 +1120,8 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       console.log('Delivery Boy Details', 'Not updated');
       console.log('isArrived.cashOnDelivery is false');
     }
+
+
 
     const city = await CitySchema.findById(isArrived.city);
     console.log('City Details:', city);
@@ -1173,6 +1138,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const message = `Order ${value.orderId} Amount`;
 
     console.log('isArrived.cashOnDelivery', isArrived.cashOnDelivery);
+
 
     if (isArrived.cashOnDelivery) {
       // if cash on delivery
@@ -1195,6 +1161,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         `Order ${value.orderId} Admin Commission`,
         false,
       );
+
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.WALLET) {
       console.log('Processing Wallet Payment');
       await Promise.all([
@@ -1217,12 +1184,9 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.ONLINE) {
       console.log('Processing Online Payment');
 
-      const admin = await AdminSchema.findOneAndUpdate(
-        {},
-        {
-          $inc: { balance: adminCommission },
-        },
-      );
+      const admin = await AdminSchema.findOneAndUpdate({}, {
+        $inc: { balance: adminCommission }
+      })
 
       await updateWallet(
         isArrived.totalCharge - adminCommission,
@@ -1243,6 +1207,8 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         false,
       );
     }
+
+
 
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been successfully delivered`,
@@ -1340,3 +1306,68 @@ export const getOrderById = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
+
+
+export const getAllCancelledOrders = async (req: RequestParams, res: Response) => {
+  try {
+    const Id = req.id;
+    console.log(Id);
+
+    if (!mongoose.Types.ObjectId.isValid(Id)) {
+      return res.status(400).json({ message: 'Invalid delivery man ID' });
+    }
+    const data = await cancelOderbyDeliveryMan.aggregate([
+      {
+        $match: {
+          deliveryBoy: Id,
+          status: 'CANCELLED',
+        },
+      },
+      {
+        $lookup: {
+          from: 'orders', // Collection name in your database
+          localField: 'order', // Field in the cancelOderbyDeliveryMan schema
+          foreignField: 'orderId', // Field in the order collection
+          as: 'order', // Alias for the resulting joined documents
+        },
+      },
+      {
+        $lookup: {
+          from: 'merchants',
+          localField: 'order.merchant', // Field in the cancelOderbyDeliveryMan schema
+          foreignField: '_id', // Field in the merchants collection
+          as: 'merchant', // Alias for the resulting joined documents
+        }
+      },
+      {
+        $unwind: "$merchant",
+      },
+      {
+        $unwind: "$order", // Flatten the array of orders
+      },
+      {
+        $project: {
+          _id: 1,
+          orderId: "$order.orderId",
+          customerMobilNumber: "$order.pickupDetails.mobileNumber",
+          customerName: "$order.deliveryDetails.name",
+          status: 1,
+          merchantName: "$merchant.name",
+          merchantMobilNumber: "$merchant.contactNumber"
+        },
+      },
+    ]);
+
+    console.log(data);
+
+
+    return res.ok({ data: data });
+
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+

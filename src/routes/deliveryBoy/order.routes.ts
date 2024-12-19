@@ -5,6 +5,7 @@ import {
   cancelOrder,
   deliverOrder,
   departOrder,
+  getAllCancelledOrders,
   getAssignedOrders,
   getOederForDeliveryMan,
   getOrderById,
@@ -217,5 +218,8 @@ router.patch('/deliver', deliverOrder);
 router.post('/sendEmailOrMobileOtp', sendEmailOrMobileOtp);
 router.get('/getOrderById/:orderId', getOrderById);
 router.get('/getOrderForDeliveryMan', getOederForDeliveryMan);
+
+router.get('/getCancelledOrder', getAllCancelledOrders);
+
 
 export default router;
