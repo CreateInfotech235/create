@@ -156,7 +156,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
           deliveryBoy: 1,
           status: 1,
           createdAt: 1,
-          order1: {
+          order: {
             orderId: '$orderData.orderId',
             _id: '$orderData._id',
             showOrderNumber : '$orderData.showOrderNumber',

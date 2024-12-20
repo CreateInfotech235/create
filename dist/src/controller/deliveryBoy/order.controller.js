@@ -116,7 +116,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     deliveryBoy: 1,
                     status: 1,
                     createdAt: 1,
-                    order1: {
+                    order: {
                         orderId: '$orderData.orderId',
                         _id: '$orderData._id',
                         showOrderNumber: '$orderData.showOrderNumber',
