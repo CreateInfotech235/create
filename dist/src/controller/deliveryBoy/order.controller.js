@@ -116,7 +116,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     deliveryBoy: 1,
                     status: 1,
                     createdAt: 1,
-                    order: {
+                    order1: {
                         orderId: '$orderData.orderId',
                         _id: '$orderData._id',
                         showOrderNumber: '$orderData.showOrderNumber',
@@ -224,6 +224,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
         }
         // Build match condition for count
         const matchCondition = Object.assign(Object.assign({ 'order.deliveryManId': new mongoose_1.default.Types.ObjectId(req.id) }, statusFilter), dateFilter);
+        console.log(matchCondition);
         const data1 = yield order_schema_1.default.aggregate([
             {
                 $sort: {
@@ -329,8 +330,12 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                 },
             },
             {
-                $match: Object.assign(Object.assign({}, matchCondition), { status: { $ne: "UNASSIGNED" } // Exclude orders with "UNASSIGNED" status
-                 }),
+                $match: Object.assign({}, matchCondition),
+            },
+            {
+                $match: {
+                    status: { $ne: "UNASSIGNED" }
+                }
             },
             {
                 $facet: {
@@ -1103,7 +1108,8 @@ const getAllCancelledOrders = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 $project: {
                     _id: 1,
                     orderId: "$order.orderId",
-                    customerMobilNumber: "$order.pickupDetails.mobileNumber",
+                    // new
+                    customerMobilNumber: "$order.deliveryDetails.mobileNumber",
                     customerName: "$order.deliveryDetails.name",
                     status: 1,
                     merchantName: "$merchant.name",

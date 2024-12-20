@@ -156,7 +156,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
           deliveryBoy: 1,
           status: 1,
           createdAt: 1,
-          order: {
+          order1: {
             orderId: '$orderData.orderId',
             _id: '$orderData._id',
             showOrderNumber : '$orderData.showOrderNumber',
@@ -233,6 +233,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
 export const getOederForDeliveryMan = async (
   req: RequestParams,
   res: Response,
@@ -278,6 +279,7 @@ export const getOederForDeliveryMan = async (
     if (status) {
       statusFilter = { status };
     }
+    
 
     // Build match condition for count
     const matchCondition = {
@@ -285,6 +287,7 @@ export const getOederForDeliveryMan = async (
       ...statusFilter,
       ...dateFilter,
     };
+console.log(matchCondition);
 
     const data1 = await orderSchema.aggregate([
       {
@@ -393,8 +396,12 @@ export const getOederForDeliveryMan = async (
       {
         $match: {
           ...matchCondition,
-          status: { $ne: "UNASSIGNED" } // Exclude orders with "UNASSIGNED" status
         },
+      },
+      {
+        $match:{
+          status: { $ne: "UNASSIGNED" } 
+        }
       },
       {
         $facet: {
@@ -1404,7 +1411,8 @@ export const getAllCancelledOrders = async (req: RequestParams, res: Response) =
         $project: {
           _id: 1,
           orderId: "$order.orderId",
-          customerMobilNumber: "$order.pickupDetails.mobileNumber",
+          // new
+          customerMobilNumber: "$order.deliveryDetails.mobileNumber",
           customerName: "$order.deliveryDetails.name",
           status: 1,
           merchantName: "$merchant.name",
