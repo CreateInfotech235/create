@@ -105,7 +105,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     // console.log(demo, 'demo');
 
     // Aggregation pipeline with pagination
-    const data = await OrderAssigneeSchema.aggregate([
+    const data1 = await OrderAssigneeSchema.aggregate([
       {
         $sort: { createdAt: -1 },
       },
@@ -127,22 +127,95 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        $project: {
-          _id: 0,
-          order: '$orderData',
-          deliveryBoy: 1,
-          status: 1,
-          createdAt: 1,
+        $lookup: {
+          from: 'deliveryMan',
+          localField: 'deliveryBoy',
+          foreignField: '_id',
+          as: 'deliveryManData',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+              },
+            },
+          ],
         },
       },
       {
-        $skip: skip, // Skip the calculated number of documents
+        $unwind: {
+          path: '$deliveryManData',
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
-        $limit: pageLimit, // Limit the number of documents per page
+        $project: {
+          _id: 1,
+          // order: '$orderData',
+          deliveryBoy: 1,
+          status: 1,
+          createdAt: 1,
+          order1: {
+            orderId: '$orderData.orderId',
+            _id: '$orderData._id',
+            showOrderNumber : '$orderData.showOrderNumber',
+            parcelsCount: '$orderData.parcelsCount',
+            customerName: '$orderData.deliveryDetails.name',
+            cutomerEmail: '$orderData.deliveryDetails.email',
+            pickupDetails: '$orderData.pickupDetails',
+            deliveryDetails: '$orderData.deliveryDetails',
+            deliveryMan: {
+              $concat: [
+                '$deliveryManData.firstName',
+                ' ',
+                '$deliveryManData.lastName',
+              ],
+            },
+            deliveryManId: '$deliveryManData._id',
+            pickupDate: {
+              $dateToString: {
+                format: '%d-%m-%Y , %H:%M',
+                date: '$orderData.pickupDetails.dateTime',
+              },
+            },
+            deliveryDate: {
+              $dateToString: {
+                format: '%d-%m-%Y , %H:%M',
+                date: '$orderData.deliveryDetails.orderTimestamp',
+              },
+            },
+            createdDate: {
+              $dateToString: {
+                format: '%d-%m-%Y , %H:%M',
+                date: '$orderData.createdAt',
+              },
+            },
+            pickupRequest: '$orderData.pickupDetails.request',
+            postCode: '$orderData.pickupDetails.postCode',
+            cashOnDelivery: '$orderData.cashOnDelivery',
+            status: '$orderData.status',
+            dateTime: '$orderData.dateTime',
+            trashed: {
+              $ifNull: ['$orderData.trashed', false],
+            },
+            paymentCollectionRupees: '$orderData.paymentCollectionRupees',
+          },
+        },
       },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: pageLimit }],
+          totalCount: [{ $count: 'count' }],
+        },
+      },
+     
     ]);
 
+    const data = {
+      data: data1[0].data,
+      totalCount: data1[0].totalCount[0]?.count || 0,
+    };
     // Calculate total count for pagination
     const totalCount = await OrderAssigneeSchema.countDocuments(query);
 
@@ -160,7 +233,6 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     });
   }
 };
-
 export const getOederForDeliveryMan = async (
   req: RequestParams,
   res: Response,
@@ -203,7 +275,6 @@ export const getOederForDeliveryMan = async (
 
     // Initialize status filter
     let statusFilter = {};
-
     if (status) {
       statusFilter = { status };
     }
@@ -215,7 +286,7 @@ export const getOederForDeliveryMan = async (
       ...dateFilter,
     };
 
-    const data = await orderSchema.aggregate([
+    const data1 = await orderSchema.aggregate([
       {
         $sort: {
           createdAt: -1,
@@ -243,29 +314,6 @@ export const getOederForDeliveryMan = async (
           preserveNullAndEmptyArrays: true,
         },
       },
-      // {
-      //   $lookup: {
-      //     from: 'users',
-      //     // localField: 'customer',
-      //     localField: 'merchant',
-      //     foreignField: '_id',
-      //     as: 'userData',
-      //     pipeline: [
-      //       {
-      //         $project: {
-      //           _id: 0,
-      //           name: 1,
-      //         },
-      //       },
-      //     ],
-      //   },
-      // },
-      // {
-      //   $unwind: {
-      //     path: '$userData',
-      //     preserveNullAndEmptyArrays: true,
-      //   },
-      // },
       {
         $lookup: {
           from: 'deliveryMan',
@@ -298,6 +346,7 @@ export const getOederForDeliveryMan = async (
           order: {
             orderId: '$orderId',
             _id: '$_id',
+            showOrderNumber : '$showOrderNumber',
             parcelsCount: '$parcelsCount',
             customerName: '$deliveryDetails.name',
             cutomerEmail: '$deliveryDetails.email',
@@ -348,14 +397,17 @@ export const getOederForDeliveryMan = async (
         },
       },
       {
-        $skip: skip,
-      },
-      {
-        $limit: pageLimitt,
+        $facet: {
+          data: [{ $skip: skip }, { $limit: pageLimitt }],
+          totalCount: [{ $count: 'count' }],
+        },
       },
     ]);
-    console.log("data", data);
 
+    const data = {
+      data: data1[0].data,
+      totalCount: data1[0].totalCount[0]?.count || 0,
+    };
 
     // Get total count for pagination
     const totalCount = await orderSchema.countDocuments(matchCondition);
@@ -370,6 +422,8 @@ export const getOederForDeliveryMan = async (
     });
   }
 };
+
+
 
 export const acceptOrder = async (req: RequestParams, res: Response) => {
   try {
