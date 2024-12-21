@@ -160,8 +160,8 @@ exports.otpVerifyValidation = joi_1.default.object().keys({
         .required(),
     contactNumber: joi_1.default.number().required(),
     // countryCode: Joi.string().required(),
-    messageSend: joi_1.default.string().required(),
-    subject: joi_1.default.string().required(),
+    messageSend: joi_1.default.string().optional(),
+    subject: joi_1.default.string().optional(),
     personType: joi_1.default.string()
         .valid(enum_1.PERSON_TYPE.CUSTOMER, enum_1.PERSON_TYPE.DELIVERY_BOY, enum_1.PERSON_TYPE.ADMIN)
         .required(),

@@ -390,7 +390,7 @@ export const sendEmailOrMobileOtp = async (
     const validateRequest = validateParamsWithJoi<{
       email: string;
       contactNumber: number;
-      countryCode: string;
+      // countryCode: string;
       personType: PERSON_TYPE;
     }>(req.body, otpVerifyValidation);
 
@@ -398,6 +398,8 @@ export const sendEmailOrMobileOtp = async (
       return res.badRequest({ message: validateRequest.message });
     }
     const { value } = validateRequest;
+    console.log(value);
+    
 
     let userExist;
 
@@ -407,13 +409,13 @@ export const sendEmailOrMobileOtp = async (
       userExist = await merchantSchema.findOne({
         email: value.email,
         contactNumber: value.contactNumber,
-        countryCode: value.countryCode,
+        // countryCode: value.countryCode,
       });
     } else {
       userExist = await deliveryManSchema.findOne({
         email: value.email,
         contactNumber: value.contactNumber,
-        countryCode: value.countryCode,
+        // countryCode: value.countryCode,
       });
     }
 

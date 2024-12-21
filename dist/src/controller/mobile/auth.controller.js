@@ -300,20 +300,21 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        console.log(value);
         let userExist;
         const isCustomer = value.personType === enum_1.PERSON_TYPE.CUSTOMER;
         if (isCustomer) {
             userExist = yield user_schema_1.default.findOne({
                 email: value.email,
                 contactNumber: value.contactNumber,
-                countryCode: value.countryCode,
+                // countryCode: value.countryCode,
             });
         }
         else {
             userExist = yield deliveryMan_schema_1.default.findOne({
                 email: value.email,
                 contactNumber: value.contactNumber,
-                countryCode: value.countryCode,
+                // countryCode: value.countryCode,
             });
         }
         if (userExist) {

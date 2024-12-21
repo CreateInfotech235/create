@@ -176,8 +176,8 @@ export const otpVerifyValidation = Joi.object().keys({
     .required(),
   contactNumber: Joi.number().required(),
   // countryCode: Joi.string().required(),
-  messageSend:Joi.string().required(),
-  subject:Joi.string().required(),
+  messageSend:Joi.string().optional(),
+  subject:Joi.string().optional(),
   personType: Joi.string()
     .valid(PERSON_TYPE.CUSTOMER, PERSON_TYPE.DELIVERY_BOY, PERSON_TYPE.ADMIN)
     .required(),
