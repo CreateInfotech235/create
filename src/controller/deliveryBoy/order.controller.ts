@@ -930,10 +930,17 @@ export const sendEmailOrMobileOtp = async (
 
     const otp = generateIntRandomNo(111111, 999999);
 
-    // await emailOrMobileOtp(
-    //   orderExist.pickupDetails.email,
-    //   `This is your otp for identity verification ${otp}`,
-    // );
+    if (orderExist.status === ORDER_HISTORY.ARRIVED) {
+      await emailOrMobileOtp(
+        orderExist.pickupDetails.email,
+        `This is your otp for identity verification ${otp}`,
+      );
+    } else if (orderExist.status === ORDER_HISTORY.DEPARTED) {
+      await emailOrMobileOtp(
+        orderExist.deliveryDetails.email,
+        `This is your otp for identity verification ${otp}`,
+      );
+    }
 
     const isAtPickUp = orderExist.status === ORDER_HISTORY.ARRIVED;
     const email = isAtPickUp

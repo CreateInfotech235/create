@@ -751,10 +751,12 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
             });
         }
         const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
-        // await emailOrMobileOtp(
-        //   orderExist.pickupDetails.email,
-        //   `This is your otp for identity verification ${otp}`,
-        // );
+        if (orderExist.status === enum_1.ORDER_HISTORY.ARRIVED) {
+            yield (0, common_1.emailOrMobileOtp)(orderExist.pickupDetails.email, `This is your otp for identity verification ${otp}`);
+        }
+        else if (orderExist.status === enum_1.ORDER_HISTORY.DEPARTED) {
+            yield (0, common_1.emailOrMobileOtp)(orderExist.deliveryDetails.email, `This is your otp for identity verification ${otp}`);
+        }
         const isAtPickUp = orderExist.status === enum_1.ORDER_HISTORY.ARRIVED;
         const email = isAtPickUp
             ? orderExist.pickupDetails.email
