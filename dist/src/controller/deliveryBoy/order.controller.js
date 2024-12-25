@@ -509,7 +509,7 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const existingOrder = yield order_schema_1.default.findOne({
             orderId: value.orderId,
             status: {
-                $in: [enum_1.ORDER_HISTORY.CREATED, enum_1.ORDER_HISTORY.ASSIGNED],
+                $in: [enum_1.ORDER_HISTORY.CREATED, enum_1.ORDER_HISTORY.ASSIGNED, enum_1.ORDER_HISTORY.ARRIVED],
             },
         });
         console.log(existingOrder, 'First');

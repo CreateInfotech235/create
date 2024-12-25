@@ -14,6 +14,7 @@ export declare interface encryptPasswordParams {
 }
 
 export declare type responseData = {
+  statusCode?: number;
   message?: string;
   data?: Array<object> | object;
   error?: any;

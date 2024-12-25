@@ -619,7 +619,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
     const existingOrder = await orderSchema.findOne({
       orderId: value.orderId,
       status: {
-        $in: [ORDER_HISTORY.CREATED, ORDER_HISTORY.ASSIGNED],
+        $in: [ORDER_HISTORY.CREATED, ORDER_HISTORY.ASSIGNED , ORDER_HISTORY.ARRIVED],
       },
     });
     console.log(existingOrder, 'First');

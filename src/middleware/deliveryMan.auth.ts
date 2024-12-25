@@ -14,17 +14,20 @@ export default async (
 ) => {
   try {
     const bearerToken = req.headers.authorization;
-
+    
     if (!bearerToken?.includes('Bearer')) {
-      return res.badRequest({ message: getLanguage('en').invalidToken });
+      // return res.badRequest({ statusCode : 910 , message: getLanguage('en').invalidToken });
+      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
     }
+    console.log("Hello");
 
     const token = bearerToken.split(' ');
 
     const data = verify(token[1], process.env.ACCESS_SECRET_KEY) as JwtPayload;
 
     if (!data) {
-      return res.badRequest({ message: getLanguage('en').invalidToken });
+      // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
+      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
     }
 
     const tokenExpired = await authTokenSchema.findOne({
@@ -33,13 +36,15 @@ export default async (
     });
 
     if (tokenExpired) {
-      return res.badRequest({ message: getLanguage('en').invalidToken });
+      // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
+      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
     }
 
     const checkUserExist = await deliveryManSchema.findById(data.id);
 
     if (!checkUserExist) {
-      return res.badRequest({ message: getLanguage('en').invalidToken });
+      // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
+      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
     }
 
     const checkDocumentsApproved = await deliveryManDocumentSchema.find(
@@ -63,6 +68,7 @@ export default async (
     next();
   } catch (error) {
     return res.failureResponse({
+      statusCode: 910,
       message: getLanguage('en').invalidToken,
     });
   }
