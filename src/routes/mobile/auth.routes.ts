@@ -31,6 +31,7 @@ import {
   getMessagesByTicketId,
   addMessageToTicket,
   deleteMessageFromTicket,
+  getDistance,
 } from '../../controller/mobile/auth.controller';
 import multer from 'multer';
 import {
@@ -646,5 +647,7 @@ router.delete(
   '/support-tickets/:ticketId/messages/:messageId',
   deleteMessageFromTicket
 );
+
+router.post('/distance', getDistance);
 
 export default router;

@@ -46,6 +46,7 @@ import {
   paginationValidation,
 } from '../../utils/validation/adminSide.validation';
 import { verifyPassword } from '../deliveryBoy/auth.controller';
+import axios from 'axios';
 
 export const signUp = async (req: RequestParams, res: Response) => {
   try {
@@ -1590,3 +1591,21 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
     res.status(500).json({ message: 'Failed to delete message' });
   }
 };
+
+export const getDistance = async (req: RequestParams, res: Response) => {
+  const { origin, destination, apiKey } = req.query;
+  console.log(origin , "Origin", destination , "Destination", apiKey , "Api Key");
+  try {
+    const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
+      params: {
+        origins: origin,
+        destinations: destination,
+        key: apiKey
+      }
+    });
+    console.log(response , "Sdsdhdsfbsfsdfbf");
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error calling Google Maps API' });
+  }
+}

@@ -57,9 +57,10 @@ export default async (
         (i) => i.status === SUBCRIPTION_REQUEST.PENDING,
       )
     ) {
-      return res.badRequest({
-        message: getLanguage('en').errorDocumentVerified,
-      });
+      // return res.badRequest({
+      //   message: getLanguage('en').errorDocumentVerified,
+      // });
+      return res.status(910).json({ status : 910 , message: getLanguage('en').errorDocumentVerified });
     }
 
     req.id = checkUserExist._id;
@@ -67,9 +68,10 @@ export default async (
 
     next();
   } catch (error) {
-    return res.failureResponse({
-      statusCode: 910,
-      message: getLanguage('en').invalidToken,
-    });
+    // return res.failureResponse({
+    //   statusCode: 910,
+    //   message: getLanguage('en').invalidToken,
+    // });
+    return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
   }
 };

@@ -117,6 +117,8 @@ export const newOrderCreation = Joi.object({
   }),
   cashOnDelivery: Joi.boolean().default(false),
   trashed: Joi.boolean().default(false),
+  duration: Joi.string().required(),
+  distance: Joi.number().required(),
   deliveryManId: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
     .allow('')
