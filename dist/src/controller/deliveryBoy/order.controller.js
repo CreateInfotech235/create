@@ -67,7 +67,10 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
         // Aggregation pipeline with pagination
         const data1 = yield orderAssignee_schema_1.default.aggregate([
             {
-                $sort: { createdAt: -1 },
+                $sort: {
+                    distance: 1,
+                    createdAt: -1
+                },
             },
             {
                 $match: query,
@@ -159,6 +162,8 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
                         trashed: {
                             $ifNull: ['$orderData.trashed', false],
                         },
+                        distance: '$orderData.distance',
+                        duration: '$orderData.duration',
                         paymentCollectionRupees: '$orderData.paymentCollectionRupees',
                     },
                 },
@@ -228,6 +233,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
         const data1 = yield order_schema_1.default.aggregate([
             {
                 $sort: {
+                    distance: 1,
                     createdAt: -1,
                 },
             },
@@ -325,6 +331,8 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
                         trashed: {
                             $ifNull: ['$trashed', false],
                         },
+                        distance: '$distance',
+                        duration: '$duration',
                         paymentCollectionRupees: '$paymentCollectionRupees',
                     },
                 },

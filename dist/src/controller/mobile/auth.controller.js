@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -48,6 +48,7 @@ const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
 const auth_controller_1 = require("../deliveryBoy/auth.controller");
+const axios_1 = __importDefault(require("axios"));
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.userSignUpValidation);
@@ -1285,3 +1286,22 @@ const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.deleteMessageFromTicket = deleteMessageFromTicket;
+const getDistance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { origin, destination, apiKey } = req.query;
+    console.log(origin, "Origin", destination, "Destination", apiKey, "Api Key");
+    try {
+        const response = yield axios_1.default.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
+            params: {
+                origins: origin,
+                destinations: destination,
+                key: apiKey
+            }
+        });
+        console.log(response, "Sdsdhdsfbsfsdfbf");
+        res.json(response.data.rows[0].elements[0]);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Error calling Google Maps API' });
+    }
+});
+exports.getDistance = getDistance;

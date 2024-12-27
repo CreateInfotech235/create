@@ -107,7 +107,10 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     // Aggregation pipeline with pagination
     const data1 = await OrderAssigneeSchema.aggregate([
       {
-        $sort: { createdAt: -1 },
+        $sort: {
+          distance: 1,
+          createdAt: -1
+         },
       },
       {
         $match: query,
@@ -199,6 +202,8 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
             trashed: {
               $ifNull: ['$orderData.trashed', false],
             },
+            distance: '$orderData.distance',
+            duration: '$orderData.duration',
             paymentCollectionRupees: '$orderData.paymentCollectionRupees',
           },
         },
@@ -292,6 +297,7 @@ console.log(matchCondition);
     const data1 = await orderSchema.aggregate([
       {
         $sort: {
+          distance: 1,
           createdAt: -1,
         },
       },
@@ -389,6 +395,8 @@ console.log(matchCondition);
             trashed: {
               $ifNull: ['$trashed', false],
             },
+            distance: '$distance',
+            duration: '$duration',
             paymentCollectionRupees: '$paymentCollectionRupees',
           },
         },

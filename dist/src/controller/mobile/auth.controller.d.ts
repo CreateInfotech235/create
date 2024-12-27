@@ -31,3 +31,4 @@ export declare const getAllTickets: (req: RequestParams, res: Response) => Promi
 export declare const getMessagesByTicketId: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const addMessageToTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const deleteMessageFromTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getDistance: (req: RequestParams, res: Response) => Promise<void>;

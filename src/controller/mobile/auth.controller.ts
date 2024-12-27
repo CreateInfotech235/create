@@ -1592,20 +1592,20 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
   }
 };
 
-export const getDistance = async (req: RequestParams, res: Response) => {
-  const { origin, destination, apiKey } = req.query;
-  console.log(origin , "Origin", destination , "Destination", apiKey , "Api Key");
-  try {
-    const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
-      params: {
-        origins: origin,
-        destinations: destination,
-        key: apiKey
-      }
-    });
-    console.log(response , "Sdsdhdsfbsfsdfbf");
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: 'Error calling Google Maps API' });
+  export const getDistance = async (req: RequestParams, res: Response) => {
+    const { origin, destination, apiKey } = req.query;
+    console.log(origin , "Origin", destination , "Destination", apiKey , "Api Key");
+    try {
+      const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
+        params: {
+          origins: origin,
+          destinations: destination,
+          key: apiKey
+        }
+      });
+      console.log(response , "Sdsdhdsfbsfsdfbf");
+      res.json(response.data.rows[0].elements[0]);
+    } catch (error) {
+      res.status(500).json({ error: 'Error calling Google Maps API' });
+    }
   }
-}

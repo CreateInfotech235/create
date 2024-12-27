@@ -22,37 +22,45 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     try {
         const bearerToken = req.headers.authorization;
         if (!(bearerToken === null || bearerToken === void 0 ? void 0 : bearerToken.includes('Bearer'))) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+            // return res.badRequest({ statusCode : 910 , message: getLanguage('en').invalidToken });
+            return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
+        console.log("Hello");
         const token = bearerToken.split(' ');
         const data = (0, jsonwebtoken_1.verify)(token[1], process.env.ACCESS_SECRET_KEY);
         if (!data) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+            // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
+            return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
         const tokenExpired = yield authToken_schema_1.default.findOne({
             $or: [{ accessToken: token }, { refreshToken: token }],
             isActive: false,
         });
         if (tokenExpired) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+            // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
+            return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
         const checkUserExist = yield deliveryMan_schema_1.default.findById(data.id);
         if (!checkUserExist) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+            // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
+            return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
         const checkDocumentsApproved = yield deliveryManDocument_schema_1.default.find({ deliveryManId: data.id }, { _id: 0, status: 1 });
         if (checkDocumentsApproved.some((i) => i.status === enum_1.SUBCRIPTION_REQUEST.PENDING)) {
-            return res.badRequest({
-                message: (0, languageHelper_1.getLanguage)('en').errorDocumentVerified,
-            });
+            // return res.badRequest({
+            //   message: getLanguage('en').errorDocumentVerified,
+            // });
+            return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').errorDocumentVerified });
         }
         req.id = checkUserExist._id;
         req.language = checkUserExist.language;
         next();
     }
     catch (error) {
-        return res.failureResponse({
-            message: (0, languageHelper_1.getLanguage)('en').invalidToken,
-        });
+        // return res.failureResponse({
+        //   statusCode: 910,
+        //   message: getLanguage('en').invalidToken,
+        // });
+        return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
     }
 });

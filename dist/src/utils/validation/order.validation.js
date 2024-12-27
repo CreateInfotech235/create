@@ -111,6 +111,8 @@ exports.newOrderCreation = joi_1.default.object({
     }),
     cashOnDelivery: joi_1.default.boolean().default(false),
     trashed: joi_1.default.boolean().default(false),
+    duration: joi_1.default.string().required(),
+    distance: joi_1.default.number().required(),
     deliveryManId: joi_1.default.string()
         .pattern(/^[0-9a-fA-F]{24}$/)
         .allow('')
