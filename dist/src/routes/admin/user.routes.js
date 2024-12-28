@@ -79,4 +79,5 @@ router.get('/name', deliveryMan_controller_1.getUserNames);
  *         description: Something went wrong
  */
 router.get('/withdraw-history', deliveryMan_controller_1.getUserWithdrawHistory);
+router.post('/updateProfileOfMerchant/:id', subcription_controller_1.updateProfileOfMerchant);
 exports.default = router;

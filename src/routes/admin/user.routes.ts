@@ -3,7 +3,7 @@ import {
   getUserNames,
   getUserWithdrawHistory,
 } from '../../controller/admin/deliveryMan.controller';
-import { getUsers, getAllUsers, getAllUsersFromAdmin, addUser } from '../../controller/admin/subcription.controller';
+import { getUsers, getAllUsers, getAllUsersFromAdmin, addUser, updateProfileOfMerchant } from '../../controller/admin/subcription.controller';
 
 const router = Router();
 
@@ -36,19 +36,19 @@ router.get('/getAllUsersFromAdmin', getAllUsersFromAdmin);
 router.post('/addUser', addUser);
 /**
  * @swagger
- * /admin/users/name:
- *   get:
- *     security:
- *      - bearerAuth: []
- *     summary: Get  User Names
- *     tags: [ Admin - Users ]
- *     parameters:
- *     - name: pageCount
- *       in: query
- *     - name: pageLimit
- *       in: query
- *     responses:
- *       200:
+ * /admin/users/name:                                                                                                                                                                                                                                                               
+ *   get:                                                                                                                                                                                                                                                               
+ *     security:                                                                                                                                                                                                                                                                
+ *      - bearerAuth: []                                                                                                                                                                                                                                                                
+ *     summary: Get  User Names                                                                                                                                                                                                                                                               
+ *     tags: [ Admin - Users ]                                                                                                                                                                                                                                                                
+ *     parameters:                                                                                                                                                                                                                                                                
+ *     - name: pageCount                                                                                                                                                                                                                                                                
+ *       in: query                                                                                                                                                                                                                                                                
+ *     - name: pageLimit                                                                                                                                                                                                                                                                                  
+ *       in: query                                                                                                                                                                                                                                                                
+ *     responses:                                                                                                                                                                                                                                                               
+ *       200:                                                                                                                                                                                                                                                               
  *         description: Your request is successfully executed.
  *       400:
  *         description: Bad Request Client Error
@@ -83,5 +83,7 @@ router.get('/name', getUserNames);
  *         description: Something went wrong
  */
 router.get('/withdraw-history', getUserWithdrawHistory);
+
+router.post('/updateProfileOfMerchant/:id', updateProfileOfMerchant);
 
 export default router;

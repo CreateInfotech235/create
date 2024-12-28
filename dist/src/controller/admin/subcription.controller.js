@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.exportFreeSubscription = exports.addUser = exports.getAllUsersFromAdmin = exports.getAllUsers = exports.getUsers = exports.getPendingSubscription = exports.acceptSubscription = exports.getApproveSubscription = exports.deletePurchaseSubscription = exports.deleteSubscription = exports.getSubscriptions = exports.manageSubscriptions = void 0;
+exports.updateProfileOfMerchant = exports.exportFreeSubscription = exports.addUser = exports.getAllUsersFromAdmin = exports.getAllUsers = exports.getUsers = exports.getPendingSubscription = exports.acceptSubscription = exports.getApproveSubscription = exports.deletePurchaseSubscription = exports.deleteSubscription = exports.getSubscriptions = exports.manageSubscriptions = void 0;
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
 const subcription_schema_1 = __importDefault(require("../../models/subcription.schema"));
@@ -381,9 +381,6 @@ const getAllUsersFromAdmin = (req, res) => __awaiter(void 0, void 0, void 0, fun
     try {
         const data = yield user_schema_1.default.aggregate([
             {
-                $match: { createdByAdmin: true },
-            },
-            {
                 $sort: { createdAt: -1 },
             },
             {
@@ -402,6 +399,17 @@ const getAllUsersFromAdmin = (req, res) => __awaiter(void 0, void 0, void 0, fun
                     isVerified: 1,
                     createdByAdmin: 1,
                 },
+            },
+            {
+                $match: (() => {
+                    if (req.query.existss === 'true') {
+                        return { createdByAdmin: true };
+                    }
+                    if (req.query.existss === 'false') {
+                        return { createdByAdmin: false };
+                    }
+                    return {};
+                })(),
             },
         ]);
         return res.ok({ data });
@@ -511,3 +519,27 @@ const exportFreeSubscription = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.exportFreeSubscription = exportFreeSubscription;
+const updateProfileOfMerchant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        const updatedUser = yield user_schema_1.default.findByIdAndUpdate(id, updateData, {
+            new: true,
+            runValidators: true,
+        });
+        if (!updatedUser) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').userNotFound });
+        }
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').dataUpdatedSuccessfully,
+            data: updatedUser,
+        });
+    }
+    catch (error) {
+        console.error('Error updating merchant(user) profile:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.updateProfileOfMerchant = updateProfileOfMerchant;

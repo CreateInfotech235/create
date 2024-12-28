@@ -69,7 +69,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
             {
                 $sort: {
                     distance: 1,
-                    createdAt: -1
+                    createdAt: -1,
                 },
             },
             {
@@ -342,8 +342,8 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
             },
             {
                 $match: {
-                    status: { $ne: "UNASSIGNED" }
-                }
+                    status: { $ne: 'UNASSIGNED' },
+                },
             },
             {
                 $facet: {
@@ -517,7 +517,11 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const existingOrder = yield order_schema_1.default.findOne({
             orderId: value.orderId,
             status: {
-                $in: [enum_1.ORDER_HISTORY.CREATED, enum_1.ORDER_HISTORY.ASSIGNED, enum_1.ORDER_HISTORY.ARRIVED],
+                $in: [
+                    enum_1.ORDER_HISTORY.CREATED,
+                    enum_1.ORDER_HISTORY.ASSIGNED,
+                    enum_1.ORDER_HISTORY.ARRIVED,
+                ],
             },
         });
         console.log(existingOrder, 'First');
@@ -888,7 +892,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         var adminBalance = 0;
         // if delivery boy is created by admin
         // then totalamount - adminCommission
-        // 
+        //
         const [paymentInfo] = yield Promise.all([
             paymentInfo_schema_1.default.findOne({ order: value.orderId }),
             order_schema_1.default.updateOne({ orderId: value.orderId }, {
@@ -978,7 +982,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.ONLINE) {
             console.log('Processing Online Payment');
             const admin = yield admin_schema_1.default.findOneAndUpdate({}, {
-                $inc: { balance: adminCommission }
+                $inc: { balance: adminCommission },
             });
             yield (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false);
         }
@@ -1106,24 +1110,24 @@ const getAllCancelledOrders = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     localField: 'order.merchant', // Field in the cancelOderbyDeliveryMan schema
                     foreignField: '_id', // Field in the merchants collection
                     as: 'merchant', // Alias for the resulting joined documents
-                }
+                },
             },
             {
-                $unwind: "$merchant",
+                $unwind: '$merchant',
             },
             {
-                $unwind: "$order", // Flatten the array of orders
+                $unwind: '$order', // Flatten the array of orders
             },
             {
                 $project: {
                     _id: 1,
-                    orderId: "$order.orderId",
+                    orderId: '$order.orderId',
                     // new
-                    customerMobilNumber: "$order.deliveryDetails.mobileNumber",
-                    customerName: "$order.deliveryDetails.name",
+                    customerMobilNumber: '$order.deliveryDetails.mobileNumber',
+                    customerName: '$order.deliveryDetails.name',
                     status: 1,
-                    merchantName: "$merchant.name",
-                    merchantMobilNumber: "$merchant.contactNumber"
+                    merchantName: '$merchant.name',
+                    merchantMobilNumber: '$merchant.contactNumber',
                 },
             },
         ]);

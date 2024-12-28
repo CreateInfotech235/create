@@ -19,7 +19,10 @@ import WalletSchema from '../../models/wallet.schema';
 import { getMongoCommonPagination } from '../../utils/common';
 import { RequestParams } from '../../utils/types/expressTypes';
 import validateParamsWithJoi from '../../utils/validateRequest';
-import { deliveryManSignUpValidation } from '../../utils/validation/auth.validation';
+import {
+  deliveryManSignUpValidation,
+  updatePasswordValidation,
+} from '../../utils/validation/auth.validation';
 import DeliveryManDocumentSchema from '../../models/deliveryManDocument.schema';
 import { encryptPassword, uploadFile } from '../../utils/common';
 
@@ -43,6 +46,7 @@ import {
   IVerificationStatus,
   IWalletList,
 } from './types/order';
+import { verifyPassword } from '../deliveryBoy/auth.controller';
 
 export const updateVerificationStatus = async (
   req: RequestParams,
@@ -1315,6 +1319,88 @@ export const deleteDeliveryMan = async (req: RequestParams, res: Response) => {
     return res.ok({ message: getLanguage('en').deliveryBoysDeleted });
   } catch (error) {
     console.log('🚀 ~ deleteDeliveryMan ~ error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const updateDeliveryManProfileAndPassword = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    console.log(updateData);
+
+    // Update Profile Image Logic
+
+    // Update Password Logic
+    if (
+      updateData?.oldPassword ||
+      updateData?.newPassword ||
+      updateData?.confirmPassword
+    ) {
+      const validateRequest = validateParamsWithJoi<{
+        oldPassword: string;
+        newPassword: string;
+        confirmPassword: string;
+      }>(req.body, updatePasswordValidation);
+
+      if (!validateRequest.isValid) {
+        return res.badRequest({ message: validateRequest.message });
+      }
+
+      const { value } = validateRequest;
+
+      if (value.newPassword !== value.confirmPassword) {
+        return res.badRequest({ message: getLanguage('en').passwordMismatch });
+      }
+
+      const user = await deliveryManSchema.findById(id);
+      if (!user) {
+        return res.badRequest({ message: getLanguage('en').userNotFound });
+      }
+
+      const isPasswordValid = await verifyPassword({
+        password: value.oldPassword,
+        hash: user.password,
+      });
+      if (!isPasswordValid) {
+        return res.badRequest({
+          message: getLanguage('en').invalidOldPassword,
+        });
+      }
+
+      const hashedPassword = await encryptPassword({
+        password: value.newPassword,
+      });
+
+      await deliveryManSchema.updateOne(
+        { _id: user._id },
+        { $set: { password: hashedPassword } },
+      );
+    }
+
+    // Update DeliveryMan Profile Data (excluding password)
+    const updatedDeliveryMan = await deliveryManSchema.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true },
+    );
+
+    if (!updatedDeliveryMan) {
+      return res.badRequest({ message: getLanguage('en').deliveryManNotFound });
+    }
+
+    return res.ok({
+      message: getLanguage('en').dataUpdatedSuccessfully,
+      data: updatedDeliveryMan,
+    });
+  } catch (error) {
+    console.error('Error updating delivery man profile or password:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

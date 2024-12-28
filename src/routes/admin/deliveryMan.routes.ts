@@ -13,6 +13,7 @@ import {
   updateVerificationStatus,
   addDeliveryMan,
   deleteDeliveryMan,
+  updateDeliveryManProfileAndPassword,
 } from '../../controller/admin/deliveryMan.controller';
 
 const router = Router();
@@ -250,5 +251,9 @@ router.get('/wallet-history/:deliveryManId', getDeliveryManWalletHistory);
 router.post('/addDeliveryMan', addDeliveryMan);
 
 router.delete('/deleteDeliveryMan/:deliveryManId', deleteDeliveryMan);
+router.patch(
+  '/updateDeliveryManProfile/:id',
+  updateDeliveryManProfileAndPassword,
+);
 
 export default router;

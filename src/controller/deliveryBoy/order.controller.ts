@@ -50,9 +50,6 @@ import {
   OrderPickUpType,
 } from './types/order';
 
-
-
-
 export const getAssignedOrders = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<
@@ -109,8 +106,8 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
       {
         $sort: {
           distance: 1,
-          createdAt: -1
-         },
+          createdAt: -1,
+        },
       },
       {
         $match: query,
@@ -162,7 +159,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
           order: {
             orderId: '$orderData.orderId',
             _id: '$orderData._id',
-            showOrderNumber : '$orderData.showOrderNumber',
+            showOrderNumber: '$orderData.showOrderNumber',
             parcelsCount: '$orderData.parcelsCount',
             customerName: '$orderData.deliveryDetails.name',
             cutomerEmail: '$orderData.deliveryDetails.email',
@@ -214,7 +211,6 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
           totalCount: [{ $count: 'count' }],
         },
       },
-     
     ]);
 
     const data = {
@@ -284,7 +280,6 @@ export const getOederForDeliveryMan = async (
     if (status) {
       statusFilter = { status };
     }
-    
 
     // Build match condition for count
     const matchCondition = {
@@ -292,7 +287,7 @@ export const getOederForDeliveryMan = async (
       ...statusFilter,
       ...dateFilter,
     };
-console.log(matchCondition);
+    console.log(matchCondition);
 
     const data1 = await orderSchema.aggregate([
       {
@@ -355,7 +350,7 @@ console.log(matchCondition);
           order: {
             orderId: '$orderId',
             _id: '$_id',
-            showOrderNumber : '$showOrderNumber',
+            showOrderNumber: '$showOrderNumber',
             parcelsCount: '$parcelsCount',
             customerName: '$deliveryDetails.name',
             cutomerEmail: '$deliveryDetails.email',
@@ -407,9 +402,9 @@ console.log(matchCondition);
         },
       },
       {
-        $match:{
-          status: { $ne: "UNASSIGNED" } 
-        }
+        $match: {
+          status: { $ne: 'UNASSIGNED' },
+        },
       },
       {
         $facet: {
@@ -437,8 +432,6 @@ console.log(matchCondition);
     });
   }
 };
-
-
 
 export const acceptOrder = async (req: RequestParams, res: Response) => {
   try {
@@ -492,7 +485,6 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
         {
           $set: {
             status: ORDER_HISTORY.ASSIGNED,
-
           },
         },
       );
@@ -627,7 +619,11 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
     const existingOrder = await orderSchema.findOne({
       orderId: value.orderId,
       status: {
-        $in: [ORDER_HISTORY.CREATED, ORDER_HISTORY.ASSIGNED , ORDER_HISTORY.ARRIVED],
+        $in: [
+          ORDER_HISTORY.CREATED,
+          ORDER_HISTORY.ASSIGNED,
+          ORDER_HISTORY.ARRIVED,
+        ],
       },
     });
     console.log(existingOrder, 'First');
@@ -706,9 +702,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
     await cancelOderbyDeliveryMan.create({
       deliveryBoy: value.deliveryManId,
       order: value.orderId,
-    })
-
-
+    });
 
     await sendMailService(
       existingOrder.pickupDetails.email,
@@ -1094,7 +1088,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const endTime = Date.now(); // Current time in milliseconds
     const startTime = new Date(isArrived.time.start).getTime();
 
-
     var totalAmount = isArrived.paymentCollectionRupees;
     // delivery boy charge
     var chargeofDeliveryBoy = 0;
@@ -1103,7 +1096,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     var adminBalance = 0;
     // if delivery boy is created by admin
     // then totalamount - adminCommission
-    // 
+    //
 
     const [paymentInfo] = await Promise.all([
       PaymentInfoSchema.findOne({ order: value.orderId }),
@@ -1117,7 +1110,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
             'time.end': endTime, // Use dot notation to set only the 'end' field
           },
         },
-        { new: true }
+        { new: true },
       ),
     ]);
     console.log('Payment Info:', paymentInfo);
@@ -1125,16 +1118,16 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const admin = await AdminSchema.findOne();
     console.log('Admin Details:', admin);
 
-
     const assignData = await OrderAssigneeSchema.findOne({
       order: value.orderId,
     });
     console.log('Order Assignment:', assignData);
     console.log('Order Assignee details', assignData.deliveryBoy);
 
-
     // delivery boy details
-    const DeliveryMan = await DeliveryManSchema.findById(assignData.deliveryBoy);
+    const DeliveryMan = await DeliveryManSchema.findById(
+      assignData.deliveryBoy,
+    );
     // charge of delivery boy
 
     if (DeliveryMan.chargeMethod === CHARGE_METHOD.TIME) {
@@ -1145,18 +1138,13 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       chargeofDeliveryBoy = hour * DeliveryMan.charge;
       console.log(`Charge: ${chargeofDeliveryBoy}`);
       console.log(`Time taken: ${timeTaken} ms`);
-
     } else if (DeliveryMan.chargeMethod === CHARGE_METHOD.DISTANCE) {
       //  distance in miles
       const distance = isArrived.distance;
       chargeofDeliveryBoy = distance * DeliveryMan.charge;
       console.log(`Charge: ${chargeofDeliveryBoy}`);
       console.log(`Distance: ${distance} miles`);
-
     }
-
-
-
 
     // if delivery boy is created by admin
     if (DeliveryMan.createdByAdmin) {
@@ -1180,9 +1168,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       );
     }
 
-
-
-
     // Only update delivery boy balance if it's cash on delivery
     if (isArrived.cashOnDelivery) {
       const balance = totalAmount;
@@ -1196,8 +1181,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
       console.log('Delivery Boy Details', 'Not updated');
       console.log('isArrived.cashOnDelivery is false');
     }
-
-
 
     const city = await CitySchema.findById(isArrived.city);
     console.log('City Details:', city);
@@ -1214,7 +1197,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     const message = `Order ${value.orderId} Amount`;
 
     console.log('isArrived.cashOnDelivery', isArrived.cashOnDelivery);
-
 
     if (isArrived.cashOnDelivery) {
       // if cash on delivery
@@ -1237,7 +1219,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         `Order ${value.orderId} Admin Commission`,
         false,
       );
-
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.WALLET) {
       console.log('Processing Wallet Payment');
       await Promise.all([
@@ -1260,9 +1241,12 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.ONLINE) {
       console.log('Processing Online Payment');
 
-      const admin = await AdminSchema.findOneAndUpdate({}, {
-        $inc: { balance: adminCommission }
-      })
+      const admin = await AdminSchema.findOneAndUpdate(
+        {},
+        {
+          $inc: { balance: adminCommission },
+        },
+      );
 
       await updateWallet(
         isArrived.totalCharge - adminCommission,
@@ -1283,8 +1267,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
         false,
       );
     }
-
-
 
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been successfully delivered`,
@@ -1383,9 +1365,10 @@ export const getOrderById = async (req: RequestParams, res: Response) => {
   }
 };
 
-
-
-export const getAllCancelledOrders = async (req: RequestParams, res: Response) => {
+export const getAllCancelledOrders = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const Id = req.id;
     console.log(Id);
@@ -1414,37 +1397,34 @@ export const getAllCancelledOrders = async (req: RequestParams, res: Response) =
           localField: 'order.merchant', // Field in the cancelOderbyDeliveryMan schema
           foreignField: '_id', // Field in the merchants collection
           as: 'merchant', // Alias for the resulting joined documents
-        }
+        },
       },
       {
-        $unwind: "$merchant",
+        $unwind: '$merchant',
       },
       {
-        $unwind: "$order", // Flatten the array of orders
+        $unwind: '$order', // Flatten the array of orders
       },
       {
         $project: {
           _id: 1,
-          orderId: "$order.orderId",
+          orderId: '$order.orderId',
           // new
-          customerMobilNumber: "$order.deliveryDetails.mobileNumber",
-          customerName: "$order.deliveryDetails.name",
+          customerMobilNumber: '$order.deliveryDetails.mobileNumber',
+          customerName: '$order.deliveryDetails.name',
           status: 1,
-          merchantName: "$merchant.name",
-          merchantMobilNumber: "$merchant.contactNumber"
+          merchantName: '$merchant.name',
+          merchantMobilNumber: '$merchant.contactNumber',
         },
       },
     ]);
 
     console.log(data);
 
-
     return res.ok({ data: data });
-
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
   }
 };
-

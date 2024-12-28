@@ -455,13 +455,11 @@ export const getAllUsers = async (req: RequestParams, res: Response) => {
 
 export const getAllUsersFromAdmin = async (
   req: RequestParams,
-  res: Response,
+  res: Response,  
 ) => {
   try {
     const data = await merchantSchema.aggregate([
-      {
-        $match: { createdByAdmin: true },
-      },
+      
       {
         $sort: { createdAt: -1 },
       },
@@ -481,6 +479,17 @@ export const getAllUsersFromAdmin = async (
           isVerified: 1,
           createdByAdmin: 1,
         },
+      },
+      {
+        $match: (() => {
+          if (req.query.existss === 'true') {
+            return { createdByAdmin: true };
+          }
+          if (req.query.existss === 'false') {
+            return { createdByAdmin: false };
+          }
+          return {};
+        })(),
       },
     ]);
 
@@ -612,6 +621,35 @@ export const exportFreeSubscription = async (req: RequestParams, res: Response) 
 
     res.status(200).json({ data });
   } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
+export const updateProfileOfMerchant = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    const updatedUser = await merchantSchema.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedUser) {
+      return res.badRequest({ message: getLanguage('en').userNotFound });
+    }
+
+    return res.ok({
+      message: getLanguage('en').dataUpdatedSuccessfully,
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error updating merchant(user) profile:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

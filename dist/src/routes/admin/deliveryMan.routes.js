@@ -226,4 +226,5 @@ router.get('/:deliveryManId', deliveryMan_controller_1.getDeliveryManProfileById
 router.get('/wallet-history/:deliveryManId', deliveryMan_controller_1.getDeliveryManWalletHistory);
 router.post('/addDeliveryMan', deliveryMan_controller_1.addDeliveryMan);
 router.delete('/deleteDeliveryMan/:deliveryManId', deliveryMan_controller_1.deleteDeliveryMan);
+router.patch('/updateDeliveryManProfile/:id', deliveryMan_controller_1.updateDeliveryManProfileAndPassword);
 exports.default = router;

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteDeliveryMan = exports.addDeliveryMan = exports.getUserWithdrawHistory = exports.getDeliveryManWalletHistory = exports.getUserNames = exports.getDeliveryManNames = exports.getDeliveryManInfo = exports.getDeliveryManOrders = exports.getAllDeliveryMansFromAdmin = exports.getAllDeliveryMans = exports.getDeliveryMans = exports.getDeliveryManProfileById = exports.getOrderLocations = exports.getDeliveryManLocations = exports.getDeliveryManDocuments = exports.updateVerificationStatus = void 0;
+exports.updateDeliveryManProfileAndPassword = exports.deleteDeliveryMan = exports.addDeliveryMan = exports.getUserWithdrawHistory = exports.getDeliveryManWalletHistory = exports.getUserNames = exports.getDeliveryManNames = exports.getDeliveryManInfo = exports.getDeliveryManOrders = exports.getAllDeliveryMansFromAdmin = exports.getAllDeliveryMans = exports.getDeliveryMans = exports.getDeliveryManProfileById = exports.getOrderLocations = exports.getDeliveryManLocations = exports.getDeliveryManDocuments = exports.updateVerificationStatus = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -27,6 +27,7 @@ const auth_validation_1 = require("../../utils/validation/auth.validation");
 const deliveryManDocument_schema_2 = __importDefault(require("../../models/deliveryManDocument.schema"));
 const common_2 = require("../../utils/common");
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
+const auth_controller_1 = require("../deliveryBoy/auth.controller");
 const updateVerificationStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, adminSide_validation_1.verificationStatusValidation);
@@ -1154,3 +1155,57 @@ const deleteDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.deleteDeliveryMan = deleteDeliveryMan;
+const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        console.log(updateData);
+        // Update Profile Image Logic
+        // Update Password Logic
+        if ((updateData === null || updateData === void 0 ? void 0 : updateData.oldPassword) ||
+            (updateData === null || updateData === void 0 ? void 0 : updateData.newPassword) ||
+            (updateData === null || updateData === void 0 ? void 0 : updateData.confirmPassword)) {
+            const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.updatePasswordValidation);
+            if (!validateRequest.isValid) {
+                return res.badRequest({ message: validateRequest.message });
+            }
+            const { value } = validateRequest;
+            if (value.newPassword !== value.confirmPassword) {
+                return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').passwordMismatch });
+            }
+            const user = yield deliveryMan_schema_1.default.findById(id);
+            if (!user) {
+                return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').userNotFound });
+            }
+            const isPasswordValid = yield (0, auth_controller_1.verifyPassword)({
+                password: value.oldPassword,
+                hash: user.password,
+            });
+            if (!isPasswordValid) {
+                return res.badRequest({
+                    message: (0, languageHelper_1.getLanguage)('en').invalidOldPassword,
+                });
+            }
+            const hashedPassword = yield (0, common_2.encryptPassword)({
+                password: value.newPassword,
+            });
+            yield deliveryMan_schema_1.default.updateOne({ _id: user._id }, { $set: { password: hashedPassword } });
+        }
+        // Update DeliveryMan Profile Data (excluding password)
+        const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+        if (!updatedDeliveryMan) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
+        }
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').dataUpdatedSuccessfully,
+            data: updatedDeliveryMan,
+        });
+    }
+    catch (error) {
+        console.error('Error updating delivery man profile or password:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.updateDeliveryManProfileAndPassword = updateDeliveryManProfileAndPassword;
