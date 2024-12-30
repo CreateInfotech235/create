@@ -31,6 +31,18 @@ const AdminSchema = new mongoose_1.default.Schema({
         type: String,
         default: 'en',
     },
+    showOrderNumber: {
+        type: Number,
+        default: 1,
+    },
+    showCustomerNumber: {
+        type: Number,
+        default: 1,
+    },
+    showDeliveryManNumber: {
+        type: Number,
+        default: 1,
+    },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('admin', AdminSchema);
 exports.default = Model;

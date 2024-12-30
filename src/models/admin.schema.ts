@@ -28,6 +28,18 @@ const AdminSchema = new mongoose.Schema(
       type: String,
       default: 'en',
     },
+    showOrderNumber: {
+      type: Number,
+      default: 1,
+    },
+    showCustomerNumber: {
+      type: Number,
+      default: 1,
+    },
+    showDeliveryManNumber: {
+      type: Number,
+      default: 1,
+    },
   },
   { timestamps: true, versionKey: false },
 );

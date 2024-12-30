@@ -103,12 +103,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
 
     // Aggregation pipeline with pagination
     const data1 = await OrderAssigneeSchema.aggregate([
-      {
-        $sort: {
-          distance: 1,
-          createdAt: -1,
-        },
-      },
+      
       {
         $match: query,
       },
@@ -203,6 +198,12 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
             duration: '$orderData.duration',
             paymentCollectionRupees: '$orderData.paymentCollectionRupees',
           },
+        },
+      },
+      {
+        $sort: {
+          distance: 1,
+          createdAt: -1,
         },
       },
       {

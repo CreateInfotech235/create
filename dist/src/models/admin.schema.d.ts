@@ -28,7 +28,10 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     name?: string;
     email?: string;
     password?: string;
@@ -40,7 +43,10 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     name?: string;
     email?: string;
     password?: string;
@@ -52,7 +58,10 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     name?: string;
     email?: string;
     password?: string;
@@ -71,7 +80,10 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     name?: string;
     email?: string;
     password?: string;
@@ -83,7 +95,10 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     name?: string;
     email?: string;
     password?: string;
@@ -95,7 +110,10 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    showCustomerNumber: number;
     language: string;
+    showDeliveryManNumber: number;
+    showOrderNumber: number;
     name?: string;
     email?: string;
     password?: string;

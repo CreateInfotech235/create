@@ -108,7 +108,7 @@ exports.customerUpdateValidation = joi_1.default.object({
         latitude: joi_1.default.number().required(),
         longitude: joi_1.default.number().required(),
     }).optional(),
-    merchantId: joi_1.default.string().required(),
+    merchantId: joi_1.default.string().optional(),
     trashed: joi_1.default.boolean().optional(),
 });
 exports.customerSignUpValidation = joi_1.default.object().keys({

@@ -120,7 +120,7 @@ export const customerUpdateValidation = Joi.object({
     latitude: Joi.number().required(),
     longitude: Joi.number().required(),
   }).optional(),
-  merchantId: Joi.string().required(),
+  merchantId: Joi.string().optional(),
   trashed: Joi.boolean().optional(),
 });
 

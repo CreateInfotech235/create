@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import {
   addCustomer,
+  deleteCustomerById,
   getAllCustomer,
+  updateCustomer,
 } from '../../controller/admin/customer.controller';
 
 const router = Router();
@@ -47,6 +49,7 @@ const router = Router();
 //  *         description: Something went wrong
 //  */
 router.post('/addCustomer', addCustomer);
-router.get('/getAllCustomer/:createdBy', getAllCustomer);
-
+router.get('/getAllCustomer', getAllCustomer);
+router.patch('/customerUpdate/:id', updateCustomer);
+router.delete('/deleteCustomer/:id', deleteCustomerById);
 export default router;
