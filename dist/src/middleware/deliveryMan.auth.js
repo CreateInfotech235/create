@@ -45,6 +45,9 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
             return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
+        if (checkUserExist.status === 'DISABLE') {
+            return res.status(401).json({ status: 401, message: (0, languageHelper_1.getLanguage)('en').deliveryManInactive, data: null });
+        }
         const checkDocumentsApproved = yield deliveryManDocument_schema_1.default.find({ deliveryManId: data.id }, { _id: 0, status: 1 });
         if (checkDocumentsApproved.some((i) => i.status === enum_1.SUBCRIPTION_REQUEST.PENDING)) {
             // return res.badRequest({

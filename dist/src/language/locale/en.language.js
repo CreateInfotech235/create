@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const messages = {
     somethingWentWrong: 'Something went wrong',
     invalidToken: 'Unauthorized user, Token is invalid',
+    deliveryManInactive: 'Delivery Man is Offline , Please try again later',
     invalidLoginCredentials: 'Invalid Login Credentials',
     personNotFound: 'Person Not Found',
     deliveryManNotFound: 'Delivery Man Not Found',

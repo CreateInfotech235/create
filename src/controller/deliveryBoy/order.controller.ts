@@ -202,7 +202,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
       },
       {
         $sort: {
-          distance: 1,
+          'order.distance': 1,
           createdAt: -1,
         },
       },

@@ -21,6 +21,7 @@ import bcrypt from 'bcrypt';
 import OrderAssigneeSchema from '../../models/orderAssignee.schema';
 import OrderSchema from '../../models/order.schema';
 import merchantSchema from '../../models/user.schema';
+import { log } from 'console';
 export const verifyPassword = async ({
   password,
   hash,
@@ -308,6 +309,8 @@ export const updateLocation = async (req: RequestParams, res: Response) => {
 
     const { value } = validateRequest;
 
+    console.log(value);
+
     await deliveryManSchema.updateOne(
       { _id: req.id },
       {
@@ -487,11 +490,9 @@ export const getDeliveryManProfile = async (
         },
       },
     ]);
-    
 
     console.log(result);
-    
-  
+
     if (!result || !result.length) {
       return res.badRequest({ message: getLanguage('en').deliveryManNotFound });
     }
@@ -505,7 +506,6 @@ export const getDeliveryManProfile = async (
     });
   }
 };
-
 
 export const deleteDeliveryMan = async (req: RequestParams, res: Response) => {
   try {

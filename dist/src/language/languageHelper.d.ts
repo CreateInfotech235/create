@@ -2,6 +2,7 @@ import { language } from '../utils/types/expressTypes';
 export declare const getLanguage: (lang: language) => {
     somethingWentWrong: string;
     invalidToken: string;
+    deliveryManInactive: string;
     invalidLoginCredentials: string;
     personNotFound: string;
     deliveryManNotFound: string;

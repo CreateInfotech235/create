@@ -1,6 +1,7 @@
 declare const messages: {
     somethingWentWrong: string;
     invalidToken: string;
+    deliveryManInactive: string;
     invalidLoginCredentials: string;
     personNotFound: string;
     deliveryManNotFound: string;

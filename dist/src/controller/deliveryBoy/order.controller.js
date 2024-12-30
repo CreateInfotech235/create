@@ -164,7 +164,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
             },
             {
                 $sort: {
-                    distance: 1,
+                    'order.distance': 1,
                     createdAt: -1,
                 },
             },

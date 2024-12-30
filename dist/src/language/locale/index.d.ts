@@ -2,6 +2,7 @@ declare const _default: {
     en: {
         somethingWentWrong: string;
         invalidToken: string;
+        deliveryManInactive: string;
         invalidLoginCredentials: string;
         personNotFound: string;
         deliveryManNotFound: string;

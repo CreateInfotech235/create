@@ -46,6 +46,9 @@ export default async (
       // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
       return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
     }
+    if(checkUserExist.status === 'DISABLE'){
+      return res.status(401).json({ status : 401 , message: getLanguage('en').deliveryManInactive  , data : null});
+    }
 
     const checkDocumentsApproved = await deliveryManDocumentSchema.find(
       { deliveryManId: data.id },
@@ -60,7 +63,7 @@ export default async (
       // return res.badRequest({
       //   message: getLanguage('en').errorDocumentVerified,
       // });
-      return res.status(910).json({ status : 910 , message: getLanguage('en').errorDocumentVerified });
+      return res.status(910).json({ status : 910 , message: getLanguage('en').errorDocumentVerified }); 
     }
 
     req.id = checkUserExist._id;
