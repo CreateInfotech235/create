@@ -80,4 +80,5 @@ router.get('/name', deliveryMan_controller_1.getUserNames);
  */
 router.get('/withdraw-history', deliveryMan_controller_1.getUserWithdrawHistory);
 router.post('/updateProfileOfMerchant/:id', subcription_controller_1.updateProfileOfMerchant);
+router.delete('/deleteMerchant/:id', subcription_controller_1.deleteMerchant);
 exports.default = router;

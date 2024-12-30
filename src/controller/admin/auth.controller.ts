@@ -697,8 +697,8 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
     if (!text || !['merchant', 'admin'].includes(sender)) {
       return res.status(400).json({ message: 'Invalid message data' });
     }
-
-    const ticket = await SupportTicket.findById(req.params.id);
+    console.log(text , sender);
+    const ticket = await SupportTicket.findById(req.params.id);    
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
@@ -710,6 +710,13 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
     // Emit the new message to the ticket room
     io.to(req.params.id).emit('newMessage', { text, sender });
 
+    await createNotification({
+      userId: ticket.userid,
+      // orderId: ticket.orderId,
+      title: 'New Message From Admin',
+      message: `New message from ${sender} for support ticket`,
+      type: 'ADMIN',
+    });
     res.json(ticket.messages);
   } catch (error) {
     res.status(500).json({ message: 'Failed to add message' });

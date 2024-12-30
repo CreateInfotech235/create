@@ -1554,7 +1554,7 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
 
     res.json(ticket.messages);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to add message' });
+    res.status(500).json({ message: 'Failed to add message' }); 
   }
 };
 

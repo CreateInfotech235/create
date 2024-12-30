@@ -575,6 +575,7 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (!text || !['merchant', 'admin'].includes(sender)) {
             return res.status(400).json({ message: 'Invalid message data' });
         }
+        console.log(text, sender);
         const ticket = yield SupportTicket_1.default.findById(req.params.id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
@@ -584,6 +585,13 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
         yield ticket.save();
         // Emit the new message to the ticket room
         index_1.io.to(req.params.id).emit('newMessage', { text, sender });
+        yield (0, common_1.createNotification)({
+            userId: ticket.userid,
+            // orderId: ticket.orderId,
+            title: 'New Message From Admin',
+            message: `New message from ${sender} for support ticket`,
+            type: 'ADMIN',
+        });
         res.json(ticket.messages);
     }
     catch (error) {

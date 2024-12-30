@@ -3,7 +3,7 @@ import {
   getUserNames,
   getUserWithdrawHistory,
 } from '../../controller/admin/deliveryMan.controller';
-import { getUsers, getAllUsers, getAllUsersFromAdmin, addUser, updateProfileOfMerchant } from '../../controller/admin/subcription.controller';
+import { getUsers, getAllUsers, getAllUsersFromAdmin, addUser, updateProfileOfMerchant, deleteMerchant } from '../../controller/admin/subcription.controller';
 
 const router = Router();
 
@@ -85,5 +85,7 @@ router.get('/name', getUserNames);
 router.get('/withdraw-history', getUserWithdrawHistory);
 
 router.post('/updateProfileOfMerchant/:id', updateProfileOfMerchant);
+
+router.delete('/deleteMerchant/:id', deleteMerchant);
 
 export default router;

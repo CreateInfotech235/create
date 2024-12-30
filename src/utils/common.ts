@@ -90,6 +90,7 @@ export const createNotification = async ({
   type,
   orderId,
   senderId,
+  adminId,
 }: {
   userId: mongoose.Types.ObjectId;
   title: string;
@@ -97,6 +98,7 @@ export const createNotification = async ({
   type: 'ADMIN' | 'MERCHANT' | 'DELIVERYMAN';
   orderId?: number;
   senderId?: mongoose.Types.ObjectId;
+  adminId?: mongoose.Types.ObjectId;
 }) => {
   try {
     const notification = await Notifications.create({
@@ -107,6 +109,7 @@ export const createNotification = async ({
       orderId,
       senderId,
       isRead: false,
+      adminId,
     });
     return notification;
   } catch (error) {

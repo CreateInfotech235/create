@@ -84,7 +84,7 @@ const uploadFile = (fileName, base64FormatImage, fileType) => {
     });
 };
 exports.uploadFile = uploadFile;
-const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ userId, title, message, type, orderId, senderId, }) {
+const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ userId, title, message, type, orderId, senderId, adminId, }) {
     try {
         const notification = yield notificatio_schema_1.default.create({
             userId,
@@ -94,6 +94,7 @@ const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ 
             orderId,
             senderId,
             isRead: false,
+            adminId,
         });
         return notification;
     }

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProfileOfMerchant = exports.exportFreeSubscription = exports.addUser = exports.getAllUsersFromAdmin = exports.getAllUsers = exports.getUsers = exports.getPendingSubscription = exports.acceptSubscription = exports.getApproveSubscription = exports.deletePurchaseSubscription = exports.deleteSubscription = exports.getSubscriptions = exports.manageSubscriptions = void 0;
+exports.deleteMerchant = exports.updateProfileOfMerchant = exports.exportFreeSubscription = exports.addUser = exports.getAllUsersFromAdmin = exports.getAllUsers = exports.getUsers = exports.getPendingSubscription = exports.acceptSubscription = exports.getApproveSubscription = exports.deletePurchaseSubscription = exports.deleteSubscription = exports.getSubscriptions = exports.manageSubscriptions = void 0;
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
 const subcription_schema_1 = __importDefault(require("../../models/subcription.schema"));
@@ -543,3 +543,19 @@ const updateProfileOfMerchant = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.updateProfileOfMerchant = updateProfileOfMerchant;
+const deleteMerchant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const deletedMerchant = yield user_schema_1.default.findByIdAndDelete(id);
+        if (!deletedMerchant) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').userNotFound });
+        }
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').userDeleted });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.deleteMerchant = deleteMerchant;

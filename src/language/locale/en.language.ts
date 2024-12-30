@@ -7,6 +7,7 @@ const messages = {
   deliveryManNotFound: 'Delivery Man Not Found',
   orderNotFound: 'Order Not Found',
   userNotFound: 'User Not Found',
+  userDeleted: 'User deleted successfully',
   invalidData: 'Invalid Data',
   countedData: 'all counted data successfully',
   invalidOldPassword: 'The old password you entered is incorrect.',

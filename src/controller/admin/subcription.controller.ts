@@ -655,3 +655,18 @@ export const updateProfileOfMerchant = async (
     });
   }
 };
+
+export const deleteMerchant = async (req: RequestParams, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deletedMerchant = await merchantSchema.findByIdAndDelete(id);
+    if (!deletedMerchant) {
+      return res.badRequest({ message: getLanguage('en').userNotFound });
+    }
+    return res.ok({ message: getLanguage('en').userDeleted });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+}

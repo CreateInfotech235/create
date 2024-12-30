@@ -8,6 +8,7 @@ declare const _default: {
         deliveryManNotFound: string;
         orderNotFound: string;
         userNotFound: string;
+        userDeleted: string;
         invalidData: string;
         countedData: string;
         invalidOldPassword: string;

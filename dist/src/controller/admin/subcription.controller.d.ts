@@ -13,3 +13,4 @@ export declare const getAllUsersFromAdmin: (req: RequestParams, res: Response) =
 export declare const addUser: (req: RequestParams, res: Response) => Promise<void>;
 export declare const exportFreeSubscription: (req: RequestParams, res: Response) => Promise<void>;
 export declare const updateProfileOfMerchant: (req: RequestParams, res: Response) => Promise<void>;
+export declare const deleteMerchant: (req: RequestParams, res: Response) => Promise<void>;

@@ -8,6 +8,7 @@ export declare const getLanguage: (lang: language) => {
     deliveryManNotFound: string;
     orderNotFound: string;
     userNotFound: string;
+    userDeleted: string;
     invalidData: string;
     countedData: string;
     invalidOldPassword: string;
