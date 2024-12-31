@@ -99,7 +99,7 @@ export const getAllCustomer = async (req: RequestParams, res: Response) => {
           country: 1,
           city: 1,
           createdByAdmin: 1,
-          mobileNumber: 1,
+          mobileNumber: 1, 
           customerId: 1,
           location: 1,
           merchant: {

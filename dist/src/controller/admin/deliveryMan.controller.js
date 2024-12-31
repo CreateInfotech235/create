@@ -524,8 +524,7 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                     createdByAdmin: 1,
                     createdByMerchant: 1,
                     location: {
-                        latitude: { $arrayElemAt: ['$location.coordinates', 0] },
-                        longitude: { $arrayElemAt: ['$location.coordinates', 1] },
+                        coordinates: '$location.coordinates'
                     },
                 },
             },

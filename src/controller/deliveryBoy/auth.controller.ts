@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import mongoose from 'mongoose';
-import { ORDER_REQUEST, SWITCH } from '../../enum';
+import { CHARGE_METHOD, ORDER_REQUEST, SWITCH } from '../../enum';
 import { getLanguage } from '../../language/languageHelper';
 import deliveryManSchema from '../../models/deliveryMan.schema';
 import DeliveryManDocumentSchema from '../../models/deliveryManDocument.schema';
@@ -50,6 +50,8 @@ export const signUp = async (req: RequestParams, res: Response) => {
         documentNumber: string;
       }[];
       merchantId?: string;
+      chargeMethod?: CHARGE_METHOD   ;
+      charge?: number;
       image: string;
       trashed: boolean;
     }>(req.body, deliveryManSignUpValidation);

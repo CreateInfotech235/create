@@ -70,6 +70,8 @@ exports.deliveryManSignUpValidation = joi_1.default.object().keys({
     postCode: joi_1.default.string()
         .regex(/^[A-Za-z0-9\s-]+$/)
         .required(),
+    chargeMethod: joi_1.default.string().valid(enum_1.CHARGE_METHOD.DISTANCE, enum_1.CHARGE_METHOD.TIME).required(),
+    charge: joi_1.default.number().required(),
     otp: joi_1.default.when(joi_1.default.alternatives().try(joi_1.default.exist().valid(true).label('createdByAdmin'), joi_1.default.exist().label('merchantId')), {
         then: joi_1.default.optional(),
         otherwise: joi_1.default.number().required(),

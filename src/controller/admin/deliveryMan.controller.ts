@@ -609,8 +609,7 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
           createdByAdmin: 1,
           createdByMerchant: 1,
           location: {
-            latitude: { $arrayElemAt: ['$location.coordinates', 0] },
-            longitude: { $arrayElemAt: ['$location.coordinates', 1] },
+            coordinates: '$location.coordinates'
           },
         },
       },

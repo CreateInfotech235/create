@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { PERSON_TYPE } from '../../enum';
+import { CHARGE_METHOD, PERSON_TYPE } from '../../enum';
 
 export const userSignInValidation = Joi.object().keys({
   email: Joi.string()
@@ -70,6 +70,8 @@ export const deliveryManSignUpValidation = Joi.object().keys({
   postCode: Joi.string()
     .regex(/^[A-Za-z0-9\s-]+$/)
     .required(),
+  chargeMethod: Joi.string().valid(CHARGE_METHOD.DISTANCE, CHARGE_METHOD.TIME).required(),
+  charge: Joi.number().required(),
   otp: Joi.when(
     Joi.alternatives().try(
       Joi.exist().valid(true).label('createdByAdmin'),
