@@ -22,9 +22,6 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
     contactNumber: {
         type: Number,
     },
-    // countryCode: {
-    //   type: String,
-    // },
     isVerified: {
         type: Boolean,
         default: false,
@@ -80,9 +77,6 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
         type: String,
         enum: enum_1.PROVIDER,
     },
-    // customer: {
-    //   type: mongoose.Types.ObjectId,
-    // },
     merchant: {
         type: mongoose_1.default.Types.ObjectId,
     },
@@ -119,6 +113,11 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
     charge: {
         type: Number,
         default: 10,
+    },
+    // admin charge method
+    adminCharge: {
+        type: Number,
+        default: 0,
     },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('deliveryMan', DeliveryManSchema, 'deliveryMan');

@@ -59,7 +59,7 @@ export const orderCount = Joi.object({
 
 export const manageSubscriptionValidation = Joi.object({
   type: Joi.string(),
-  amount: Joi.string(),
+  amount: Joi.number(),
   discount: Joi.number(),
   features: Joi.array().items(Joi.string()),
   days: Joi.number(),

@@ -384,15 +384,27 @@ const getDeliveryManProfileById = (req, res) => __awaiter(void 0, void 0, void 0
             },
             {
                 $project: {
-                    _id: 0,
-                    name: 1,
-                    image: 1,
-                    mobileNumber: 1,
-                    location: {
-                        $concat: ['$cityData.cityName', ',', '$countryData.countryName'],
-                    },
+                    firstName: 1,
+                    lastName: 1,
+                    countryCode: 1,
+                    merchantName: 1,
+                    contactNumber: 1,
+                    email: 1,
+                    status: 1,
                     address: 1,
-                    documents: 1,
+                    postCode: 1,
+                    showDeliveryManNumber: 1,
+                    country: '$countryData.countryName',
+                    city: '$cityData.cityName',
+                    registerDate: '$createdAt',
+                    isVerified: 1,
+                    createdByAdmin: 1,
+                    createdByMerchant: 1,
+                    chargeMethod: { $ifNull: ['$chargeMethod', '-'] },
+                    charge: { $ifNull: ['$charge', '-'] },
+                    location: {
+                        coordinates: '$location.coordinates',
+                    },
                 },
             },
         ]);
@@ -523,8 +535,10 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                     isVerified: 1,
                     createdByAdmin: 1,
                     createdByMerchant: 1,
+                    chargeMethod: { $ifNull: ['$chargeMethod', '-'] },
+                    charge: { $ifNull: ['$charge', '-'] },
                     location: {
-                        coordinates: '$location.coordinates'
+                        coordinates: '$location.coordinates',
                     },
                 },
             },

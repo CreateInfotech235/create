@@ -51,7 +51,7 @@ exports.orderCount = joi_1.default.object({
 });
 exports.manageSubscriptionValidation = joi_1.default.object({
     type: joi_1.default.string(),
-    amount: joi_1.default.string(),
+    amount: joi_1.default.number(),
     discount: joi_1.default.number(),
     features: joi_1.default.array().items(joi_1.default.string()),
     days: joi_1.default.number(),

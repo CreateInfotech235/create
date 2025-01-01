@@ -40,6 +40,7 @@ declare const Model: mongoose.Model<{
     createdByMerchant: boolean;
     chargeMethod: string;
     charge: number;
+    adminCharge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -92,6 +93,7 @@ declare const Model: mongoose.Model<{
     createdByMerchant: boolean;
     chargeMethod: string;
     charge: number;
+    adminCharge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -144,6 +146,7 @@ declare const Model: mongoose.Model<{
     createdByMerchant: boolean;
     chargeMethod: string;
     charge: number;
+    adminCharge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -203,6 +206,7 @@ declare const Model: mongoose.Model<{
     createdByMerchant: boolean;
     chargeMethod: string;
     charge: number;
+    adminCharge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -255,6 +259,7 @@ declare const Model: mongoose.Model<{
     createdByMerchant: boolean;
     chargeMethod: string;
     charge: number;
+    adminCharge: number;
     firstName?: string;
     lastName?: string;
     address?: string;
@@ -307,6 +312,7 @@ declare const Model: mongoose.Model<{
     createdByMerchant: boolean;
     chargeMethod: string;
     charge: number;
+    adminCharge: number;
     firstName?: string;
     lastName?: string;
     address?: string;

@@ -12,6 +12,8 @@ import parcelTypeRoutes from './parcelType.routes';
 import subscriptionRoutes from './subscription.routes';
 import userRoutes from './user.routes';
 import vehicleRoutes from './vehicle.routes';
+import getPaymentData from './getPaymentData.routes';
+
 
 const router = express.Router();
 
@@ -28,5 +30,5 @@ router.use('/deliveryMan', deliveryManRoutes);
 router.use('/country', countryRoutes);
 router.use('/city', cityRoutes);
 router.use('/subscriptions', subscriptionRoutes);
-
+router.use('/getPaymentData', getPaymentData);
 export default router;

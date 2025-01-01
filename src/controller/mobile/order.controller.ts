@@ -48,14 +48,13 @@ import {
 } from './types/order';
 import { date } from 'joi';
 
+import paymentGetSchema from '../../models/paymentGet.schema';
 export const orderCreation = async (req: RequestParams, res: Response) => {
   try {
-    console.log('in order route');
     const validateRequest = validateParamsWithJoi<OrderCreateType>(
       req.body,
       newOrderCreation,
     );
-    console.log(req.body, 'req.body');
     const datamarcent = await merchantSchema.findById(req.id);
     await merchantSchema.updateOne(
       { _id: req.id },
@@ -74,7 +73,7 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
     // const customerData = await customerSchema.findOne({ address: deliveryDetails.address });
     // if (!customerData) {
     //   return res.badRequest({ message: getLanguage('en').invalidCustomer });
-    // }
+    // }E:\nikunj\create_courier\create_courier
 
     let checkLastOrder = await orderSchema
       .findOne({}, { _id: 0, orderId: 1 })
@@ -87,11 +86,55 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
     }
     value.orderId = checkLastOrder.orderId;
     // value.customer = req.id.toString();
+    const orderId = checkLastOrder.orderId;
     value.merchant = req.id.toString();
     const newOrder = await orderSchema.create({
       ...value,
       showOrderNumber: datamarcent.showOrderNumber,
     });
+
+    const admin = await AdminSchema.findOne();
+    const deliveryMan = await deliveryManSchema.findById({
+      _id: req.body.deliveryManId,
+    });
+    // const payPerMiles = value.deliveryManCharge;
+    console.log(deliveryMan, 'payPerMiles');
+
+    const totalCharge = Number(
+      ((deliveryMan?.charge || 0) * value.distance).toFixed(2),
+    );
+
+    const adminCharge = deliveryMan?.createdByAdmin
+      ? Number((totalCharge % deliveryMan?.adminCharge || 0).toFixed(2))
+      : 0;
+
+    const createdBy = deliveryMan?.createdByMerchant
+      ? 'MERCHANTDELIVERYMAN'
+      : 'ADMINDELIVERYMAN';
+    const paymentStatus = value?.cashOnDelivery
+      ? 'CASHONDELIVERY'
+      : 'DIRECTPAYMENT';
+    const deliveryManWallet = value?.paymentCollectionRupees
+      ? value.paymentCollectionRupees
+      : 0;
+    const data = {
+      adminId: admin?._id || '',
+      merchantId: req?.id || '',
+      deliveryManId: req.body.deliveryManId,
+      orderId: orderId,
+      orderIdForMerchant: newOrder.showOrderNumber,
+      miles: value.distance,
+      payPerMiles: deliveryMan?.charge || 0,
+      totalPaytoDeliveryMan: totalCharge,
+      totalPaytoAdmin: adminCharge,
+      deliveryManWallet: deliveryManWallet,
+      deliveryManType: createdBy,
+      paymentStatus: paymentStatus,
+      statusOfOrder: 'CREATED',
+      orderPickupTime: new Date(),
+      orderDeleverTime: new Date(),
+    };
+    console.log('data123', data);
 
     if (value.deliveryManId) {
       value.isCustomer = true;
@@ -124,7 +167,7 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
     };
 
     await PaymentInfoSchema.create(paymentData);
-
+    await paymentGetSchema.create(data);
     return res.ok({
       message: getLanguage('en').orderCreatedSuccessfully,
       data: { orderId: newOrder.orderId },
@@ -864,6 +907,12 @@ export const getAllOrdersFromMerchant = async (
           cashOnDelivery: 1,
           status: 1,
           dateTime: 1,
+          distance: {
+            $ifNull: ['$distance', '-'],
+          },
+          duration: {
+            $ifNull: ['$duration', '-'],
+          },
           trashed: {
             $ifNull: ['$trashed', false],
           },

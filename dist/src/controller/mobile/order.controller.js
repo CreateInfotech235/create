@@ -29,11 +29,10 @@ const wallet_schema_1 = __importDefault(require("../../models/wallet.schema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const order_validation_1 = require("../../utils/validation/order.validation");
+const paymentGet_schema_1 = __importDefault(require("../../models/paymentGet.schema"));
 const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('in order route');
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.newOrderCreation);
-        console.log(req.body, 'req.body');
         const datamarcent = yield user_schema_1.default.findById(req.id);
         yield user_schema_1.default.updateOne({ _id: req.id }, { $set: { showOrderNumber: datamarcent.showOrderNumber + 1 } });
         if (!validateRequest.isValid) {
@@ -45,7 +44,7 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // const customerData = await customerSchema.findOne({ address: deliveryDetails.address });
         // if (!customerData) {
         //   return res.badRequest({ message: getLanguage('en').invalidCustomer });
-        // }
+        // }E:\nikunj\create_courier\create_courier
         let checkLastOrder = yield order_schema_1.default
             .findOne({}, { _id: 0, orderId: 1 })
             .sort({ orderId: -1 });
@@ -57,8 +56,46 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
         value.orderId = checkLastOrder.orderId;
         // value.customer = req.id.toString();
+        const orderId = checkLastOrder.orderId;
         value.merchant = req.id.toString();
         const newOrder = yield order_schema_1.default.create(Object.assign(Object.assign({}, value), { showOrderNumber: datamarcent.showOrderNumber }));
+        const admin = yield admin_schema_1.default.findOne();
+        const deliveryMan = yield deliveryMan_schema_1.default.findById({
+            _id: req.body.deliveryManId,
+        });
+        // const payPerMiles = value.deliveryManCharge;
+        console.log(deliveryMan, 'payPerMiles');
+        const totalCharge = Number((((deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0) * value.distance).toFixed(2));
+        const adminCharge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByAdmin)
+            ? Number((totalCharge % (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.adminCharge) || 0).toFixed(2))
+            : 0;
+        const createdBy = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByMerchant)
+            ? 'MERCHANTDELIVERYMAN'
+            : 'ADMINDELIVERYMAN';
+        const paymentStatus = (value === null || value === void 0 ? void 0 : value.cashOnDelivery)
+            ? 'CASHONDELIVERY'
+            : 'DIRECTPAYMENT';
+        const deliveryManWallet = (value === null || value === void 0 ? void 0 : value.paymentCollectionRupees)
+            ? value.paymentCollectionRupees
+            : 0;
+        const data = {
+            adminId: (admin === null || admin === void 0 ? void 0 : admin._id) || '',
+            merchantId: (req === null || req === void 0 ? void 0 : req.id) || '',
+            deliveryManId: req.body.deliveryManId,
+            orderId: orderId,
+            orderIdForMerchant: newOrder.showOrderNumber,
+            miles: value.distance,
+            payPerMiles: (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0,
+            totalPaytoDeliveryMan: totalCharge,
+            totalPaytoAdmin: adminCharge,
+            deliveryManWallet: deliveryManWallet,
+            deliveryManType: createdBy,
+            paymentStatus: paymentStatus,
+            statusOfOrder: 'CREATED',
+            orderPickupTime: new Date(),
+            orderDeleverTime: new Date(),
+        };
+        console.log('data123', data);
         if (value.deliveryManId) {
             value.isCustomer = true;
             yield orderAssignee_schema_1.default.create({
@@ -88,6 +125,7 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             order: value.orderId,
         };
         yield paymentInfo_schema_1.default.create(paymentData);
+        yield paymentGet_schema_1.default.create(data);
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCreatedSuccessfully,
             data: { orderId: newOrder.orderId },
@@ -691,6 +729,12 @@ const getAllOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0,
                     cashOnDelivery: 1,
                     status: 1,
                     dateTime: 1,
+                    distance: {
+                        $ifNull: ['$distance', '-'],
+                    },
+                    duration: {
+                        $ifNull: ['$duration', '-'],
+                    },
                     trashed: {
                         $ifNull: ['$trashed', false],
                     },
