@@ -28,10 +28,13 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    isPaid: boolean;
+    statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
-    orderId?: mongoose.Types.ObjectId;
+    orderId?: string;
     adminId?: mongoose.Types.ObjectId;
     deliveryManId?: mongoose.Types.ObjectId;
+    orderIdForMerchant?: string;
     miles?: number;
     payPerMiles?: number;
     totalPaytoDeliveryMan?: number;
@@ -39,14 +42,19 @@ declare const Model: mongoose.Model<{
     deliveryManWallet?: number;
     deliveryManType?: "ADMINDELIVERYMAN" | "MERCHANTDELIVERYMAN";
     paymentStatus?: "CASHONDELIVERY" | "DIRECTPAYMENT";
+    orderPickupTime?: NativeDate;
+    orderDeleverTime?: NativeDate;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    isPaid: boolean;
+    statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
-    orderId?: mongoose.Types.ObjectId;
+    orderId?: string;
     adminId?: mongoose.Types.ObjectId;
     deliveryManId?: mongoose.Types.ObjectId;
+    orderIdForMerchant?: string;
     miles?: number;
     payPerMiles?: number;
     totalPaytoDeliveryMan?: number;
@@ -54,14 +62,19 @@ declare const Model: mongoose.Model<{
     deliveryManWallet?: number;
     deliveryManType?: "ADMINDELIVERYMAN" | "MERCHANTDELIVERYMAN";
     paymentStatus?: "CASHONDELIVERY" | "DIRECTPAYMENT";
+    orderPickupTime?: NativeDate;
+    orderDeleverTime?: NativeDate;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    isPaid: boolean;
+    statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
-    orderId?: mongoose.Types.ObjectId;
+    orderId?: string;
     adminId?: mongoose.Types.ObjectId;
     deliveryManId?: mongoose.Types.ObjectId;
+    orderIdForMerchant?: string;
     miles?: number;
     payPerMiles?: number;
     totalPaytoDeliveryMan?: number;
@@ -69,6 +82,8 @@ declare const Model: mongoose.Model<{
     deliveryManWallet?: number;
     deliveryManType?: "ADMINDELIVERYMAN" | "MERCHANTDELIVERYMAN";
     paymentStatus?: "CASHONDELIVERY" | "DIRECTPAYMENT";
+    orderPickupTime?: NativeDate;
+    orderDeleverTime?: NativeDate;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -80,10 +95,13 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    isPaid: boolean;
+    statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
-    orderId?: mongoose.Types.ObjectId;
+    orderId?: string;
     adminId?: mongoose.Types.ObjectId;
     deliveryManId?: mongoose.Types.ObjectId;
+    orderIdForMerchant?: string;
     miles?: number;
     payPerMiles?: number;
     totalPaytoDeliveryMan?: number;
@@ -91,14 +109,19 @@ declare const Model: mongoose.Model<{
     deliveryManWallet?: number;
     deliveryManType?: "ADMINDELIVERYMAN" | "MERCHANTDELIVERYMAN";
     paymentStatus?: "CASHONDELIVERY" | "DIRECTPAYMENT";
+    orderPickupTime?: NativeDate;
+    orderDeleverTime?: NativeDate;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    isPaid: boolean;
+    statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
-    orderId?: mongoose.Types.ObjectId;
+    orderId?: string;
     adminId?: mongoose.Types.ObjectId;
     deliveryManId?: mongoose.Types.ObjectId;
+    orderIdForMerchant?: string;
     miles?: number;
     payPerMiles?: number;
     totalPaytoDeliveryMan?: number;
@@ -106,14 +129,19 @@ declare const Model: mongoose.Model<{
     deliveryManWallet?: number;
     deliveryManType?: "ADMINDELIVERYMAN" | "MERCHANTDELIVERYMAN";
     paymentStatus?: "CASHONDELIVERY" | "DIRECTPAYMENT";
+    orderPickupTime?: NativeDate;
+    orderDeleverTime?: NativeDate;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    isPaid: boolean;
+    statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
-    orderId?: mongoose.Types.ObjectId;
+    orderId?: string;
     adminId?: mongoose.Types.ObjectId;
     deliveryManId?: mongoose.Types.ObjectId;
+    orderIdForMerchant?: string;
     miles?: number;
     payPerMiles?: number;
     totalPaytoDeliveryMan?: number;
@@ -121,6 +149,8 @@ declare const Model: mongoose.Model<{
     deliveryManWallet?: number;
     deliveryManType?: "ADMINDELIVERYMAN" | "MERCHANTDELIVERYMAN";
     paymentStatus?: "CASHONDELIVERY" | "DIRECTPAYMENT";
+    orderPickupTime?: NativeDate;
+    orderDeleverTime?: NativeDate;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

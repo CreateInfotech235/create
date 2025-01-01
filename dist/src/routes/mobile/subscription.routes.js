@@ -7,4 +7,5 @@ const express_1 = __importDefault(require("express"));
 const subscription_controller_1 = require("../../controller/mobile/subscription.controller");
 const router = express_1.default.Router();
 router.get('/getApproveSubscription/:id', subscription_controller_1.getApproveSubscription);
+router.post('/create-payment-intent', subscription_controller_1.stripPayment);
 exports.default = router;

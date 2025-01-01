@@ -49,6 +49,10 @@ import {
   OrderDeliverType,
   OrderPickUpType,
 } from './types/order';
+import paymentGetSchema from '../../models/paymentGet.schema';
+
+
+
 
 export const getAssignedOrders = async (req: RequestParams, res: Response) => {
   try {
@@ -479,7 +483,7 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
     await OrderAssigneeSchema.findByIdAndUpdate(isAssigned._id, {
       $set: { status: value.status },
     });
-
+    await paymentGetSchema.findOneAndUpdate({orderId:value.orderId},{$set:{statusOfOrder:"ACCEPTED"}})
     if (value.status === ORDER_REQUEST.ACCEPTED) {
       await orderSchema.findOneAndUpdate(
         { orderId: value.orderId },
@@ -528,7 +532,6 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
       orderArriveValidation,
     );
     // TODO: get distance from google map api
-    const tampdestens = 3.2;
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -558,6 +561,8 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
       });
     }
     // TODO: add distance to the order
+
+    await paymentGetSchema.findOneAndUpdate({orderId:value.orderId},{$set:{statusOfOrder:"ARRIVED"}})
     await orderSchema.findOneAndUpdate(
       { orderId: value.orderId },
       {
@@ -567,7 +572,6 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
             start: Date.now(),
           },
         },
-        $inc: { distance: tampdestens },
       },
     );
 
@@ -602,7 +606,9 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
 };
 
 export const cancelOrder = async (req: RequestParams, res: Response) => {
+  console.log(req.body, 'order cancel');
   try {
+
     const validateRequest = validateParamsWithJoi<OrderCancelType>(
       req.body,
       orderCancelValidation, // Ensure you have a validation schema for order cancellation
@@ -705,6 +711,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
     });
 
+    await paymentGetSchema.findOneAndUpdate({orderId:value.orderId},{$set:{statusOfOrder:"CANCELLED"}})
     await sendMailService(
       existingOrder.pickupDetails.email,
       'Cancel Order ',
@@ -865,6 +872,8 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
         $inc: { distance: tampdestens },
       },
     );
+
+    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder:"PICKED_UP" } }, { new: true });
 
     // if (isArrived.cashOnDelivery) {
     //   await PaymentInfoSchema.updateOne(
@@ -1429,3 +1438,21 @@ export const getAllCancelledOrders = async (
     });
   }
 };
+
+
+
+export const getPaymentDataForDeliveryBoy = async (req: RequestParams, res: Response) => {
+    try {
+        const paymentData = await paymentGetSchema
+            .find({ deliveryManId: req.id })
+            .populate('merchantId', 'name email contactNumber')
+            .populate('adminId', 'name email contactNumber');
+        console.log(paymentData, 'paymentData');
+        return res.ok({ data: paymentData });
+    } catch (error) {
+        return res.failureResponse({
+            message: getLanguage('en').somethingWentWrong,
+        });
+    }
+};
+

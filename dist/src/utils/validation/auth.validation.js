@@ -70,7 +70,9 @@ exports.deliveryManSignUpValidation = joi_1.default.object().keys({
     postCode: joi_1.default.string()
         .regex(/^[A-Za-z0-9\s-]+$/)
         .required(),
-    chargeMethod: joi_1.default.string().valid(enum_1.CHARGE_METHOD.DISTANCE, enum_1.CHARGE_METHOD.TIME).required(),
+    chargeMethod: joi_1.default.string()
+        .valid(enum_1.CHARGE_METHOD.DISTANCE, enum_1.CHARGE_METHOD.TIME)
+        .required(),
     charge: joi_1.default.number().required(),
     otp: joi_1.default.when(joi_1.default.alternatives().try(joi_1.default.exist().valid(true).label('createdByAdmin'), joi_1.default.exist().label('merchantId')), {
         then: joi_1.default.optional(),
@@ -93,6 +95,21 @@ exports.deliveryManSignUpValidation = joi_1.default.object().keys({
     createdByAdmin: joi_1.default.boolean().optional(),
 });
 exports.updatePasswordValidation = joi_1.default.object().keys({
+    firstName: joi_1.default.string().optional(),
+    lastName: joi_1.default.string().optional(),
+    email: joi_1.default.string()
+        .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+        .optional(),
+    contactNumber: joi_1.default.number().optional(),
+    // countryCode: Joi.string().required(),
+    address: joi_1.default.string().optional(),
+    postCode: joi_1.default.string()
+        .regex(/^[A-Za-z0-9\s-]+$/)
+        .optional(),
+    chargeMethod: joi_1.default.string()
+        .valid(enum_1.CHARGE_METHOD.DISTANCE, enum_1.CHARGE_METHOD.TIME)
+        .optional(),
+    charge: joi_1.default.number().optional(),
     oldPassword: joi_1.default.string().min(8).required(),
     newPassword: joi_1.default.string().min(8).required(),
     confirmPassword: joi_1.default.string().min(8).required(),

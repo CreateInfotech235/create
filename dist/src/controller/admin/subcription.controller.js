@@ -353,8 +353,8 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     registerDate: {
                         $dateToString: {
                             format: '%d-%m-%Y | %H:%M',
-                            date: '$createdAt'
-                        }
+                            date: '$createdAt',
+                        },
                     },
                     contactNumber: 1,
                     countryCode: 1,
@@ -461,28 +461,28 @@ const exportFreeSubscription = (req, res) => __awaiter(void 0, void 0, void 0, f
                     from: 'subcriptions',
                     localField: 'subcriptionId',
                     foreignField: '_id',
-                    as: 'subcriptionData'
-                }
+                    as: 'subcriptionData',
+                },
             },
             {
                 $lookup: {
                     from: 'merchants',
                     localField: 'merchant',
                     foreignField: '_id',
-                    as: 'merchantData'
-                }
+                    as: 'merchantData',
+                },
             },
             {
                 $match: {
                     'subcriptionData.type': '1 Month Free Trial',
-                    expiry: { $lt: new Date() }
-                }
+                    expiry: { $lt: new Date() },
+                },
             },
             {
-                $unwind: '$subcriptionData'
+                $unwind: '$subcriptionData',
             },
             {
-                $unwind: '$merchantData'
+                $unwind: '$merchantData',
             },
             {
                 $project: {
@@ -500,15 +500,15 @@ const exportFreeSubscription = (req, res) => __awaiter(void 0, void 0, void 0, f
                             date: '$merchantData.createdAt',
                         },
                     },
-                    status: "Disable",
+                    status: 'Disable',
                     expiry: {
                         $dateToString: {
                             format: '%d-%m-%Y , %H:%M',
-                            date: '$expiry'
-                        }
-                    }
-                }
-            }
+                            date: '$expiry',
+                        },
+                    },
+                },
+            },
         ]);
         res.status(200).json({ data });
     }

@@ -70,7 +70,9 @@ export const deliveryManSignUpValidation = Joi.object().keys({
   postCode: Joi.string()
     .regex(/^[A-Za-z0-9\s-]+$/)
     .required(),
-  chargeMethod: Joi.string().valid(CHARGE_METHOD.DISTANCE, CHARGE_METHOD.TIME).required(),
+  chargeMethod: Joi.string()
+    .valid(CHARGE_METHOD.DISTANCE, CHARGE_METHOD.TIME)
+    .required(),
   charge: Joi.number().required(),
   otp: Joi.when(
     Joi.alternatives().try(
@@ -104,6 +106,21 @@ export const deliveryManSignUpValidation = Joi.object().keys({
 });
 
 export const updatePasswordValidation = Joi.object().keys({
+  firstName: Joi.string().optional(),
+  lastName: Joi.string().optional(),
+  email: Joi.string()
+    .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+    .optional(),
+  contactNumber: Joi.number().optional(),
+  // countryCode: Joi.string().required(),
+  address: Joi.string().optional(),
+  postCode: Joi.string()
+    .regex(/^[A-Za-z0-9\s-]+$/)
+    .optional(),
+  chargeMethod: Joi.string()
+    .valid(CHARGE_METHOD.DISTANCE, CHARGE_METHOD.TIME)
+    .optional(),
+  charge: Joi.number().optional(),
   oldPassword: Joi.string().min(8).required(),
   newPassword: Joi.string().min(8).required(),
   confirmPassword: Joi.string().min(8).required(),
@@ -178,8 +195,8 @@ export const otpVerifyValidation = Joi.object().keys({
     .required(),
   contactNumber: Joi.number().required(),
   // countryCode: Joi.string().required(),
-  messageSend:Joi.string().optional(),
-  subject:Joi.string().optional(),
+  messageSend: Joi.string().optional(),
+  subject: Joi.string().optional(),
   personType: Joi.string()
     .valid(PERSON_TYPE.CUSTOMER, PERSON_TYPE.DELIVERY_BOY, PERSON_TYPE.ADMIN)
     .required(),

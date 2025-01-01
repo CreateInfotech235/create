@@ -7,6 +7,7 @@ import subcriptionPurchaseSchema from '../../models/subcriptionPurchase.schema';
 import merchantSchema from '../../models/user.schema';
 import { getMongoCommonPagination } from '../../utils/common';
 import { RequestParams } from '../../utils/types/expressTypes';
+
 import validateParamsWithJoi from '../../utils/validateRequest';
 import {
   manageSubscriptionValidation,
@@ -392,7 +393,7 @@ export const getUsers = async (req: RequestParams, res: Response) => {
           countryCode: 1,
           country: 1,
           city: 1,
-          address:1,
+          address: 1,
           email: 1,
           medicalCertificateNumber: 1,
           status: 1,
@@ -426,11 +427,11 @@ export const getAllUsers = async (req: RequestParams, res: Response) => {
           firstName: 1,
           lastName: 1,
           registerDate: {
-            $dateToString : {
-              format : '%d-%m-%Y | %H:%M',
-              date : '$createdAt'
-            }
-          }, 
+            $dateToString: {
+              format: '%d-%m-%Y | %H:%M',
+              date: '$createdAt',
+            },
+          },
           contactNumber: 1,
           countryCode: 1,
           address: 1,
@@ -455,11 +456,10 @@ export const getAllUsers = async (req: RequestParams, res: Response) => {
 
 export const getAllUsersFromAdmin = async (
   req: RequestParams,
-  res: Response,  
+  res: Response,
 ) => {
   try {
     const data = await merchantSchema.aggregate([
-      
       {
         $sort: { createdAt: -1 },
       },
@@ -561,7 +561,10 @@ export const addUser = async (req: RequestParams, res: Response) => {
   }
 };
 
-export const exportFreeSubscription = async (req: RequestParams, res: Response) => {
+export const exportFreeSubscription = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const data = await subcriptionPurchaseSchema.aggregate([
       {
@@ -569,34 +572,34 @@ export const exportFreeSubscription = async (req: RequestParams, res: Response) 
           from: 'subcriptions',
           localField: 'subcriptionId',
           foreignField: '_id',
-          as: 'subcriptionData'
-        }
+          as: 'subcriptionData',
+        },
       },
       {
         $lookup: {
           from: 'merchants',
           localField: 'merchant',
           foreignField: '_id',
-          as: 'merchantData'
-        }
+          as: 'merchantData',
+        },
       },
       {
         $match: {
           'subcriptionData.type': '1 Month Free Trial',
-          expiry: { $lt: new Date() }
-        }
+          expiry: { $lt: new Date() },
+        },
       },
       {
-        $unwind: '$subcriptionData'
+        $unwind: '$subcriptionData',
       },
       {
-        $unwind: '$merchantData'
+        $unwind: '$merchantData',
       },
       {
         $project: {
           _id: 1,
           // name: { $concat: ['$merchantData.firstName', ' ', '$merchantData.lastName'] },
-          firstName : '$merchantData.firstName',
+          firstName: '$merchantData.firstName',
           lastName: '$merchantData.lastName',
           contactNumber: { $toString: '$merchantData.contactNumber' },
           email: '$merchantData.email',
@@ -608,15 +611,15 @@ export const exportFreeSubscription = async (req: RequestParams, res: Response) 
               date: '$merchantData.createdAt',
             },
           },
-          status: "Disable",
+          status: 'Disable',
           expiry: {
             $dateToString: {
               format: '%d-%m-%Y , %H:%M',
-              date: '$expiry'
-            }
-          }
-        }
-      }
+              date: '$expiry',
+            },
+          },
+        },
+      },
     ]);
 
     res.status(200).json({ data });
@@ -627,7 +630,6 @@ export const exportFreeSubscription = async (req: RequestParams, res: Response) 
   }
 };
 
-
 export const updateProfileOfMerchant = async (
   req: RequestParams,
   res: Response,
@@ -635,7 +637,7 @@ export const updateProfileOfMerchant = async (
   try {
     const { id } = req.params;
     const updateData = req.body;
-    
+
     const updatedUser = await merchantSchema.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
@@ -669,4 +671,4 @@ export const deleteMerchant = async (req: RequestParams, res: Response) => {
       message: getLanguage('en').somethingWentWrong,
     });
   }
-}
+};

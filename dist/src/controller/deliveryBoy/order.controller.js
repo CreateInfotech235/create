@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrder = exports.sendEmailOrMobileOtp = exports.pickUpOrder = exports.departOrder = exports.cancelOrder = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrders = void 0;
+exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrder = exports.sendEmailOrMobileOtp = exports.pickUpOrder = exports.departOrder = exports.cancelOrder = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrders = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -29,6 +29,7 @@ const cancelOderbyDeliveryManSchema_1 = __importDefault(require("../../models/ca
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const order_validation_1 = require("../../utils/validation/order.validation");
+const paymentGet_schema_1 = __importDefault(require("../../models/paymentGet.schema"));
 const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -404,6 +405,7 @@ const acceptOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         yield orderAssignee_schema_1.default.findByIdAndUpdate(isAssigned._id, {
             $set: { status: value.status },
         });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ACCEPTED" } });
         if (value.status === enum_1.ORDER_REQUEST.ACCEPTED) {
             yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
                 $set: {
@@ -444,7 +446,6 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderArriveValidation);
         // TODO: get distance from google map api
-        const tampdestens = 3.2;
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
@@ -467,6 +468,7 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
         }
         // TODO: add distance to the order
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ARRIVED" } });
         yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
                 status: enum_1.ORDER_HISTORY.ARRIVED,
@@ -474,7 +476,6 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     start: Date.now(),
                 },
             },
-            $inc: { distance: tampdestens },
         });
         yield orderHistory_schema_1.default.create({
             message: `Your order ${value.orderId} has been arrived`,
@@ -506,6 +507,7 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.arriveOrder = arriveOrder;
 const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(req.body, 'order cancel');
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderCancelValidation);
         if (!validateRequest.isValid) {
@@ -586,6 +588,7 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             deliveryBoy: value.deliveryManId,
             order: value.orderId,
         });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "CANCELLED" } });
         yield (0, common_1.sendMailService)(existingOrder.pickupDetails.email, 'Cancel Order ', 'Your order is cancelled by deliveryman plz assign order other deliveryman');
         console.log('Seaven');
         yield (0, common_1.createNotification)({
@@ -711,6 +714,7 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             },
             $inc: { distance: tampdestens },
         });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "PICKED_UP" } }, { new: true });
         // if (isArrived.cashOnDelivery) {
         //   await PaymentInfoSchema.updateOne(
         //     { order: value.orderId },
@@ -1141,3 +1145,19 @@ const getAllCancelledOrders = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.getAllCancelledOrders = getAllCancelledOrders;
+const getPaymentDataForDeliveryBoy = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const paymentData = yield paymentGet_schema_1.default
+            .find({ deliveryManId: req.id })
+            .populate('merchantId', 'name email contactNumber')
+            .populate('adminId', 'name email contactNumber');
+        console.log(paymentData, 'paymentData');
+        return res.ok({ data: paymentData });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;

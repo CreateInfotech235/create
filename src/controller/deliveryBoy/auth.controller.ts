@@ -50,7 +50,7 @@ export const signUp = async (req: RequestParams, res: Response) => {
         documentNumber: string;
       }[];
       merchantId?: string;
-      chargeMethod?: CHARGE_METHOD   ;
+      chargeMethod?: CHARGE_METHOD;
       charge?: number;
       image: string;
       trashed: boolean;

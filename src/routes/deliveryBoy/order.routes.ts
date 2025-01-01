@@ -9,6 +9,7 @@ import {
   getAssignedOrders,
   getOederForDeliveryMan,
   getOrderById,
+  getPaymentDataForDeliveryBoy,
   pickUpOrder,
   sendEmailOrMobileOtp,
 } from '../../controller/deliveryBoy/order.controller';
@@ -221,5 +222,6 @@ router.get('/getOrderForDeliveryMan', getOederForDeliveryMan);
 
 router.get('/getCancelledOrder', getAllCancelledOrders);
 
+router.get('/getPaymentData', getPaymentDataForDeliveryBoy);
 
 export default router;
