@@ -22,37 +22,56 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     try {
         const bearerToken = req.headers.authorization;
         if (!(bearerToken === null || bearerToken === void 0 ? void 0 : bearerToken.includes('Bearer'))) {
-            // return res.badRequest({ statusCode : 1312 , message: getLanguage('en').invalidToken });
-            return res.status(1312).json({ status: 1312, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+            // return res.badRequest({ statusCode : 123 , message: getLanguage('en').invalidToken });
+            return res
+                .status(401)
+                .json({ status: 123, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
-        console.log("Hello");
+        console.log('Hello');
         const token = bearerToken.split(' ');
         const data = (0, jsonwebtoken_1.verify)(token[1], process.env.ACCESS_SECRET_KEY);
         if (!data) {
-            // return res.badRequest({statusCode : 1312 , message: getLanguage('en').invalidToken });
-            return res.status(1312).json({ status: 1312, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+            // return res.badRequest({statusCode : 123 , message: getLanguage('en').invalidToken });
+            return res
+                .status(401)
+                .json({ status: 123, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
         const tokenExpired = yield token_schema_1.default.findOne({
             $or: [{ accessToken: token }, { refreshToken: token }],
         });
         if (!tokenExpired) {
-            // return res.badRequest({statusCode : 1312 , message: getLanguage('en').invalidToken });
-            return res.status(1312).json({ status: 1312, message: (0, languageHelper_1.getLanguage)('en').invalidToken1 });
+            // return res.badRequest({statusCode : 123 , message: getLanguage('en').invalidToken });
+            return res
+                .status(401)
+                .json({ status: 123, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
         const checkUserExist = yield deliveryMan_schema_1.default.findById(data.id);
         if (!checkUserExist) {
-            // return res.badRequest({statusCode : 1312 , message: getLanguage('en').invalidToken });
-            return res.status(1312).json({ status: 1312, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+            // return res.badRequest({statusCode : 123 , message: getLanguage('en').invalidToken });
+            return res
+                .status(401)
+                .json({ status: 123, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
         if (checkUserExist.status === 'DISABLE') {
-            return res.status(401).json({ status: 401, message: (0, languageHelper_1.getLanguage)('en').deliveryManInactive, data: null });
+            return res
+                .status(401)
+                .json({
+                status: 401,
+                message: (0, languageHelper_1.getLanguage)('en').deliveryManInactive,
+                data: null,
+            });
         }
         const checkDocumentsApproved = yield deliveryManDocument_schema_1.default.find({ deliveryManId: data.id }, { _id: 0, status: 1 });
         if (checkDocumentsApproved.some((i) => i.status === enum_1.SUBCRIPTION_REQUEST.PENDING)) {
             // return res.badRequest({
             //   message: getLanguage('en').errorDocumentVerified,
             // });
-            return res.status(1312).json({ status: 1312, message: (0, languageHelper_1.getLanguage)('en').errorDocumentVerified });
+            return res
+                .status(401)
+                .json({
+                status: 123,
+                message: (0, languageHelper_1.getLanguage)('en').errorDocumentVerified,
+            });
         }
         req.id = checkUserExist._id;
         req.language = checkUserExist.language;
@@ -60,9 +79,11 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
     catch (error) {
         // return res.failureResponse({
-        //   statusCode: 1312,
+        //   statusCode: 123,
         //   message: getLanguage('en').invalidToken,
         // });
-        return res.status(1312).json({ status: 1312, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+        return res
+            .status(401)
+            .json({ status: 123, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
     }
 });
