@@ -16,8 +16,8 @@ export default async (
     const bearerToken = req.headers.authorization;
     
     if (!bearerToken?.includes('Bearer')) {
-      // return res.badRequest({ statusCode : 910 , message: getLanguage('en').invalidToken });
-      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
+      // return res.badRequest({ statusCode : 1312 , message: getLanguage('en').invalidToken });
+      return res.status(1312).json({ status : 1312 , message: getLanguage('en').invalidToken });
     }
     console.log("Hello");
 
@@ -26,8 +26,8 @@ export default async (
     const data = verify(token[1], process.env.ACCESS_SECRET_KEY) as JwtPayload;
 
     if (!data) {
-      // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
-      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
+      // return res.badRequest({statusCode : 1312 , message: getLanguage('en').invalidToken });
+      return res.status(1312).json({ status : 1312 , message: getLanguage('en').invalidToken });
     }
 
     const tokenExpired = await tokenSchema.findOne({
@@ -35,15 +35,15 @@ export default async (
     });
 
     if (!tokenExpired) {
-      // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
-      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken1 });
+      // return res.badRequest({statusCode : 1312 , message: getLanguage('en').invalidToken });
+      return res.status(1312).json({ status : 1312 , message: getLanguage('en').invalidToken1 });
     }
 
     const checkUserExist = await deliveryManSchema.findById(data.id);
 
     if (!checkUserExist) {
-      // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
-      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
+      // return res.badRequest({statusCode : 1312 , message: getLanguage('en').invalidToken });
+      return res.status(1312).json({ status : 1312 , message: getLanguage('en').invalidToken });
     }
     if(checkUserExist.status === 'DISABLE'){
       return res.status(401).json({ status : 401 , message: getLanguage('en').deliveryManInactive  , data : null});
@@ -62,7 +62,7 @@ export default async (
       // return res.badRequest({
       //   message: getLanguage('en').errorDocumentVerified,
       // });
-      return res.status(910).json({ status : 910 , message: getLanguage('en').errorDocumentVerified }); 
+      return res.status(1312).json({ status : 1312 , message: getLanguage('en').errorDocumentVerified }); 
     }
 
     req.id = checkUserExist._id;
@@ -71,9 +71,9 @@ export default async (
     next();
   } catch (error) {
     // return res.failureResponse({
-    //   statusCode: 910,
+    //   statusCode: 1312,
     //   message: getLanguage('en').invalidToken,
     // });
-    return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
+    return res.status(1312).json({ status : 1312 , message: getLanguage('en').invalidToken });
   }
 };
