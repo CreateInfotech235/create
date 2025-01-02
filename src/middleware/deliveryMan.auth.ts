@@ -14,12 +14,14 @@ export default async (
 ) => {
   try {
     const bearerToken = req.headers.authorization;
-    
+
     if (!bearerToken?.includes('Bearer')) {
       // return res.badRequest({ statusCode : 123 , message: getLanguage('en').invalidToken });
-      return res.status(123).json({ status : 123 , message: getLanguage('en').invalidToken });
+      return res
+        .status(401)
+        .json({ status: 123, message: getLanguage('en').invalidToken });
     }
-    console.log("Hello");
+    console.log('Hello');
 
     const token = bearerToken.split(' ');
 
@@ -27,7 +29,9 @@ export default async (
 
     if (!data) {
       // return res.badRequest({statusCode : 123 , message: getLanguage('en').invalidToken });
-      return res.status(123).json({ status : 123 , message: getLanguage('en').invalidToken });
+      return res
+        .status(401)
+        .json({ status: 123, message: getLanguage('en').invalidToken });
     }
 
     const tokenExpired = await tokenSchema.findOne({
@@ -36,17 +40,27 @@ export default async (
 
     if (!tokenExpired) {
       // return res.badRequest({statusCode : 123 , message: getLanguage('en').invalidToken });
-      return res.status(123).json({ status : 123 , message: getLanguage('en').invalidToken });
+      return res
+        .status(401)
+        .json({ status: 123, message: getLanguage('en').invalidToken });
     }
 
     const checkUserExist = await deliveryManSchema.findById(data.id);
 
     if (!checkUserExist) {
       // return res.badRequest({statusCode : 123 , message: getLanguage('en').invalidToken });
-      return res.status(123).json({ status : 123 , message: getLanguage('en').invalidToken });
+      return res
+        .status(401)
+        .json({ status: 123, message: getLanguage('en').invalidToken });
     }
-    if(checkUserExist.status === 'DISABLE'){
-      return res.status(401).json({ status : 401 , message: getLanguage('en').deliveryManInactive  , data : null});
+    if (checkUserExist.status === 'DISABLE') {
+      return res
+        .status(401)
+        .json({
+          status: 401,
+          message: getLanguage('en').deliveryManInactive,
+          data: null,
+        });
     }
 
     const checkDocumentsApproved = await deliveryManDocumentSchema.find(
@@ -62,7 +76,12 @@ export default async (
       // return res.badRequest({
       //   message: getLanguage('en').errorDocumentVerified,
       // });
-      return res.status(123).json({ status : 123 , message: getLanguage('en').errorDocumentVerified }); 
+      return res
+        .status(401)
+        .json({
+          status: 123,
+          message: getLanguage('en').errorDocumentVerified,
+        });
     }
 
     req.id = checkUserExist._id;
@@ -74,6 +93,8 @@ export default async (
     //   statusCode: 123,
     //   message: getLanguage('en').invalidToken,
     // });
-    return res.status(123).json({ status : 123 , message: getLanguage('en').invalidToken });
+    return res
+      .status(401)
+      .json({ status: 123, message: getLanguage('en').invalidToken });
   }
 };
