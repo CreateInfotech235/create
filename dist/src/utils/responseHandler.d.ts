@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { responseData } from './types/expressTypes';
+import { responseData, responseDatanotAble } from './types/expressTypes';
 declare module 'express-serve-static-core' {
     interface Response {
         ok(data: responseData): void;
@@ -9,6 +9,7 @@ declare module 'express-serve-static-core' {
         unAuthorizedRequest(data: responseData): void;
         accessForbidden(data: responseData): void;
         dataNotFound(data: responseData): void;
+        NotEble(data: responseDatanotAble): void;
     }
 }
 /**

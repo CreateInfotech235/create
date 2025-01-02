@@ -19,6 +19,12 @@ export declare type responseData = {
   data?: Array<object> | object;
   error?: any;
 };
+export declare type responseDatanotAble = {
+  statusCode: 800;
+  message?: string;
+  data?: Array<object> | object;
+  error?: any;
+};
 
 export declare interface errorMessages {
   [key: string]: string;
