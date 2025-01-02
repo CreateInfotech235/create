@@ -30,7 +30,7 @@ export default async (
       isActive: false,
     });
 
-    if (tokenExpired) {
+    if (!tokenExpired) {
       return res.badRequest({ message: getLanguage('en').invalidToken });
     }
 

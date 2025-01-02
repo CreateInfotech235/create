@@ -31,7 +31,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             $or: [{ accessToken: token }, { refreshToken: token }],
             isActive: false,
         });
-        if (tokenExpired) {
+        if (!tokenExpired) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
         const checkUserExist = yield admin_schema_1.default.findById(data.id);

@@ -69,9 +69,13 @@ export const signIn = async (req: RequestParams, res: Response) => {
         message: getLanguage('en').invalidLoginCredentials,
       });
     }
-
+    await authTokenSchema.deleteMany({ adminId: userExist._id });
     const { accessToken, refreshToken } = createAuthTokens(userExist._id);
-
+    await authTokenSchema.create({
+      adminId : userExist._id,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
     return res.ok({
       message: getLanguage('en').loginSuccessfully,
       data: { data: userExist, adminAuthData: { accessToken, refreshToken } },
@@ -226,14 +230,16 @@ export const renewToken = async (req: RequestParams, res: Response) => {
     if (!adminVerify) {
       return res.badRequest({ message: getLanguage('en').invalidToken });
     }
+    await authTokenSchema.deleteMany({ adminId: adminVerify._id });
 
+    
+    const { accessToken, refreshToken } = createAuthTokens(adminVerify._id);
+    
     await authTokenSchema.create({
+      adminId: adminVerify._id,
       accessToken: data.accessToken,
       refreshToken: value.refreshToken,
     });
-
-    const { accessToken, refreshToken } = createAuthTokens(adminVerify._id);
-
     return res.ok({
       message: getLanguage('en').renewTokenSuccessfully,
       data: { accessToken, refreshToken },
@@ -285,10 +291,6 @@ export const logout = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').invalidToken });
     }
 
-    await authTokenSchema.create({
-      accessToken: data.accessToken,
-      refreshToken: value.refreshToken,
-    });
 
     return res.ok({
       message: getLanguage('en').logoutSuccessfully,

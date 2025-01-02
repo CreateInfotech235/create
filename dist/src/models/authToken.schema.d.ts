@@ -28,6 +28,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     isActive: boolean;
     accessToken?: string;
     refreshToken?: string;
@@ -35,6 +36,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     isActive: boolean;
     accessToken?: string;
     refreshToken?: string;
@@ -42,6 +44,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     isActive: boolean;
     accessToken?: string;
     refreshToken?: string;
@@ -56,6 +59,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     isActive: boolean;
     accessToken?: string;
     refreshToken?: string;
@@ -63,6 +67,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     isActive: boolean;
     accessToken?: string;
     refreshToken?: string;
@@ -70,6 +75,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     isActive: boolean;
     accessToken?: string;
     refreshToken?: string;

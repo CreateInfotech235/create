@@ -28,11 +28,11 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
-    adminId: mongoose.Types.ObjectId;
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
@@ -42,11 +42,11 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
-    adminId: mongoose.Types.ObjectId;
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
@@ -56,11 +56,11 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
-    adminId: mongoose.Types.ObjectId;
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
@@ -77,11 +77,11 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
-    adminId: mongoose.Types.ObjectId;
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
@@ -91,11 +91,11 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
-    adminId: mongoose.Types.ObjectId;
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
@@ -105,11 +105,11 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    adminId: mongoose.Types.ObjectId;
     userid: mongoose.Types.ObjectId;
     subject: string;
     problem: string;
     problemSolved: boolean;
-    adminId: mongoose.Types.ObjectId;
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";

@@ -50,7 +50,13 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: (0, languageHelper_1.getLanguage)('en').invalidLoginCredentials,
             });
         }
+        yield authToken_schema_1.default.deleteMany({ adminId: userExist._id });
         const { accessToken, refreshToken } = (0, common_1.createAuthTokens)(userExist._id);
+        yield authToken_schema_1.default.create({
+            adminId: userExist._id,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').loginSuccessfully,
             data: { data: userExist, adminAuthData: { accessToken, refreshToken } },
@@ -166,11 +172,13 @@ const renewToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!adminVerify) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
+        yield authToken_schema_1.default.deleteMany({ adminId: adminVerify._id });
+        const { accessToken, refreshToken } = (0, common_1.createAuthTokens)(adminVerify._id);
         yield authToken_schema_1.default.create({
+            adminId: adminVerify._id,
             accessToken: data.accessToken,
             refreshToken: value.refreshToken,
         });
-        const { accessToken, refreshToken } = (0, common_1.createAuthTokens)(adminVerify._id);
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').renewTokenSuccessfully,
             data: { accessToken, refreshToken },
@@ -207,10 +215,6 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (checkTokenExist) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
-        yield authToken_schema_1.default.create({
-            accessToken: data.accessToken,
-            refreshToken: value.refreshToken,
-        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').logoutSuccessfully,
         });
