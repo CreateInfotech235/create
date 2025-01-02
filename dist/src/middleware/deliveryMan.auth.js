@@ -37,7 +37,8 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         });
         if (!tokenExpired) {
             // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
-            return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken1 });
+            // return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken1 });
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken1 });
         }
         const checkUserExist = yield deliveryMan_schema_1.default.findById(data.id);
         if (!checkUserExist) {

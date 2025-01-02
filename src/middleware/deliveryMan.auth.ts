@@ -36,8 +36,9 @@ export default async (
 
     if (!tokenExpired) {
       // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
-      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken1 });
-    }
+      // return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken1 });
+      return res.badRequest({ message: getLanguage('en').invalidToken1 });
+    } 
 
     const checkUserExist = await deliveryManSchema.findById(data.id);
 
