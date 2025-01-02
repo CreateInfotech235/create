@@ -1,6 +1,11 @@
 const messages = {
   somethingWentWrong: 'Something went wrong',
+  passwordResetSuccess : 'Password reset successfully',
+  emailNotRegistered : 'Email not registered',
   invalidToken: 'Unauthorized user, Token is invalid',
+  invalidToken1: 'Token is invalid',
+  otpSent : 'Otp send successfully',
+  otpVerified : 'Opt verified successfully',
   deliveryManInactive: 'Delivery Man is Offline , Please try again later',
   invalidLoginCredentials: 'Invalid Login Credentials',
   personNotFound: 'Person Not Found',

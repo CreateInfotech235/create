@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express';
 import { JwtPayload, verify } from 'jsonwebtoken';
 import { SUBCRIPTION_REQUEST } from '../enum';
 import { getLanguage } from '../language/languageHelper';
-import authTokenSchema from '../models/authToken.schema';
+import tokenSchema from '../models/token.schema';
 import subcriptionPurchaseSchema from '../models/subcriptionPurchase.schema';
 import merchantSchema from '../models/user.schema';
 import { RequestParams } from '../utils/types/expressTypes';
@@ -23,17 +23,18 @@ export default async (
 
     const data = verify(token[1], process.env.ACCESS_SECRET_KEY) as JwtPayload;
 
+    
     if (!data) {
       return res.badRequest({ message: getLanguage('en').invalidToken });
     }
 
-    const tokenExpired = await authTokenSchema.findOne({
+    const tokenExpired = await tokenSchema.findOne({
       $or: [{ accessToken: token }, { refreshToken: token }],
-      isActive: false,
     });
+    console.log(tokenExpired ,"sdfsiuf");
 
-    if (tokenExpired) {
-      return res.badRequest({ message: getLanguage('en').invalidToken });
+    if (!tokenExpired) {
+      return res.badRequest({ message: getLanguage('en').invalidToken1 });
     }
 
     const checkUserExist = await merchantSchema.findById(data.id);

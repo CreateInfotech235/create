@@ -13,6 +13,21 @@ export const userSignInValidation = Joi.object().keys({
     .required(),
 });
 
+export const verifyOtpValidation = Joi.object().keys({
+  otp : Joi.number().required(),
+  email: Joi.string().required(),
+})
+export const resetPasswordValidation = Joi.object().keys({
+  email: Joi.string().required(),
+  newPassword: Joi.string()
+    .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
+    .required(),
+})
+
+export const sendOtpValidation = Joi.object().keys({
+  email: Joi.string().required()
+})
+
 export const userSignUpValidation = Joi.object().keys({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),

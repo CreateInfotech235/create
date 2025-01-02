@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../enum");
 const languageHelper_1 = require("../language/languageHelper");
-const authToken_schema_1 = __importDefault(require("../models/authToken.schema"));
+const token_schema_1 = __importDefault(require("../models/token.schema"));
 const deliveryMan_schema_1 = __importDefault(require("../models/deliveryMan.schema"));
 const deliveryManDocument_schema_1 = __importDefault(require("../models/deliveryManDocument.schema"));
 exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -32,13 +32,12 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
             return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
-        const tokenExpired = yield authToken_schema_1.default.findOne({
+        const tokenExpired = yield token_schema_1.default.findOne({
             $or: [{ accessToken: token }, { refreshToken: token }],
-            isActive: false,
         });
-        if (tokenExpired) {
+        if (!tokenExpired) {
             // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
-            return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+            return res.status(910).json({ status: 910, message: (0, languageHelper_1.getLanguage)('en').invalidToken1 });
         }
         const checkUserExist = yield deliveryMan_schema_1.default.findById(data.id);
         if (!checkUserExist) {

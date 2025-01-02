@@ -574,4 +574,9 @@ router.get('/support-tickets/:id/messages', auth_controller_1.getMessagesByTicke
 router.post('/support-tickets/:id/messages', auth_controller_1.addMessageToTicket);
 router.delete('/support-tickets/:ticketId/messages/:messageId', auth_controller_1.deleteMessageFromTicket);
 router.post('/distance', auth_controller_1.getDistance);
+router.post('/forgot-password/send-otp', auth_controller_1.sendOtp);
+// Route to verify OTP
+router.post('/forgot-password/verify-otp', auth_controller_1.verifyOtp);
+// Route to reset password
+router.post('/forgot-password/reset-password', auth_controller_1.resetPassword);
 exports.default = router;

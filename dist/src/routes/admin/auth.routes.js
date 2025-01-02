@@ -218,4 +218,7 @@ router.get('/support-tickets/:id/messages', auth_controller_1.getMessagesByTicke
 // Route: POST /api/support-tickets/:id/messages -> Add a new message to a ticket
 router.post('/support-tickets/:id/messages', auth_controller_1.addMessageToTicket);
 router.delete('/support-tickets/:ticketId/messages/:messageId', auth_controller_1.deleteMessageFromTicket);
+router.post('/forgot-password/send-otp', auth_controller_1.sendOtp);
+router.post('/forgot-password/verify-otp', auth_controller_1.verifyOtp);
+router.post('/forgot-password/reset-password', auth_controller_1.resetPassword);
 exports.default = router;

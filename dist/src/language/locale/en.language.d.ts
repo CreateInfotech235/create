@@ -1,6 +1,11 @@
 declare const messages: {
     somethingWentWrong: string;
+    passwordResetSuccess: string;
+    emailNotRegistered: string;
     invalidToken: string;
+    invalidToken1: string;
+    otpSent: string;
+    otpVerified: string;
     deliveryManInactive: string;
     invalidLoginCredentials: string;
     personNotFound: string;

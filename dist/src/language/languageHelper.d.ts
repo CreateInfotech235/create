@@ -1,7 +1,12 @@
 import { language } from '../utils/types/expressTypes';
 export declare const getLanguage: (lang: language) => {
     somethingWentWrong: string;
+    passwordResetSuccess: string;
+    emailNotRegistered: string;
     invalidToken: string;
+    invalidToken1: string;
+    otpSent: string;
+    otpVerified: string;
     deliveryManInactive: string;
     invalidLoginCredentials: string;
     personNotFound: string;

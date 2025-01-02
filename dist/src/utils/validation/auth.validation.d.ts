@@ -1,5 +1,8 @@
 import Joi from 'joi';
 export declare const userSignInValidation: Joi.ObjectSchema<any>;
+export declare const verifyOtpValidation: Joi.ObjectSchema<any>;
+export declare const resetPasswordValidation: Joi.ObjectSchema<any>;
+export declare const sendOtpValidation: Joi.ObjectSchema<any>;
 export declare const userSignUpValidation: Joi.ObjectSchema<any>;
 export declare const deliveryManSignUpValidation: Joi.ObjectSchema<any>;
 export declare const updatePasswordValidation: Joi.ObjectSchema<any>;

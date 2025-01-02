@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -626,3 +626,89 @@ const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.deleteMessageFromTicket = deleteMessageFromTicket;
+const sendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.sendOtpValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Check if the user exists
+        const user = yield admin_schema_1.default.findOne({ email: value.email });
+        if (!user) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
+        }
+        // Generate OTP
+        const otp = Math.floor(1000 + Math.random() * 9000);
+        const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+        yield (0, common_1.emailOrMobileOtp)(value.email, `This is your otp for Reset Password ${otp}`);
+        yield otp_schema_1.default.create({
+            value: otp,
+            customerEmail: value.email,
+            expiry: otpExpiry,
+        });
+        // Send OTP (mock or use an actual email/SMS service)
+        console.log(`OTP for ${value.email}: ${otp}`);
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').otpSent });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendOtp = sendOtp;
+const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.verifyOtpValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Validate OTP
+        const otpData = yield otp_schema_1.default.findOne({
+            value: value.otp,
+            expiry: { $gte: Date.now() },
+        });
+        if (!otpData) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
+        }
+        // Optionally, mark OTP as used or delete it
+        yield otp_schema_1.default.deleteOne({ _id: otpData._id });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').otpVerified });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.verifyOtp = verifyOtp;
+const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.resetPasswordValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Check if the user exists
+        const user = yield admin_schema_1.default.findOne({ email: value.email });
+        if (!user) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
+        }
+        // Encrypt the new password
+        const encryptedPassword = yield (0, common_1.encryptPassword)({ password: value.newPassword });
+        // Update the user's password
+        yield admin_schema_1.default.updateOne({ email: value.email }, { $set: { password: encryptedPassword } });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').passwordResetSuccess });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.resetPassword = resetPassword;

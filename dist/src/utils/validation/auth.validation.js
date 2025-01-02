@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.activateFreeSubcriptionValidation = exports.renewTokenValidation = exports.otpVerifyValidation = exports.adminProfileValidation = exports.adminCredentialValidation = exports.customerSignUpValidation = exports.customerUpdateValidation = exports.updatePasswordValidation = exports.deliveryManSignUpValidation = exports.userSignUpValidation = exports.userSignInValidation = void 0;
+exports.activateFreeSubcriptionValidation = exports.renewTokenValidation = exports.otpVerifyValidation = exports.adminProfileValidation = exports.adminCredentialValidation = exports.customerSignUpValidation = exports.customerUpdateValidation = exports.updatePasswordValidation = exports.deliveryManSignUpValidation = exports.userSignUpValidation = exports.sendOtpValidation = exports.resetPasswordValidation = exports.verifyOtpValidation = exports.userSignInValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 const enum_1 = require("../../enum");
 exports.userSignInValidation = joi_1.default.object().keys({
@@ -16,6 +16,19 @@ exports.userSignInValidation = joi_1.default.object().keys({
     personType: joi_1.default.string()
         .valid(enum_1.PERSON_TYPE.CUSTOMER, enum_1.PERSON_TYPE.DELIVERY_BOY)
         .required(),
+});
+exports.verifyOtpValidation = joi_1.default.object().keys({
+    otp: joi_1.default.number().required(),
+    email: joi_1.default.string().required(),
+});
+exports.resetPasswordValidation = joi_1.default.object().keys({
+    email: joi_1.default.string().required(),
+    newPassword: joi_1.default.string()
+        .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
+        .required(),
+});
+exports.sendOtpValidation = joi_1.default.object().keys({
+    email: joi_1.default.string().required()
 });
 exports.userSignUpValidation = joi_1.default.object().keys({
     firstName: joi_1.default.string().required(),

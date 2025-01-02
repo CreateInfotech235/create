@@ -13,3 +13,6 @@ export declare const getDeliveryManProfile: (req: RequestParams, res: Response) 
 export declare const deleteDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
 export declare const updateDeliveryManProfile: (req: RequestParams, res: Response) => Promise<void>;
 export declare const moveToTrashDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
+export declare const sendOtp: (req: RequestParams, res: Response) => Promise<void>;
+export declare const verifyOtp: (req: RequestParams, res: Response) => Promise<void>;
+export declare const resetPassword: (req: RequestParams, res: Response) => Promise<void>;

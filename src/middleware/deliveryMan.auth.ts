@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express';
 import { JwtPayload, verify } from 'jsonwebtoken';
 import { SUBCRIPTION_REQUEST } from '../enum';
 import { getLanguage } from '../language/languageHelper';
-import authTokenSchema from '../models/authToken.schema';
+import tokenSchema from '../models/token.schema';
 import deliveryManSchema from '../models/deliveryMan.schema';
 import deliveryManDocumentSchema from '../models/deliveryManDocument.schema';
 import { RequestParams } from '../utils/types/expressTypes';
@@ -30,14 +30,13 @@ export default async (
       return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
     }
 
-    const tokenExpired = await authTokenSchema.findOne({
+    const tokenExpired = await tokenSchema.findOne({
       $or: [{ accessToken: token }, { refreshToken: token }],
-      isActive: false,
     });
 
-    if (tokenExpired) {
+    if (!tokenExpired) {
       // return res.badRequest({statusCode : 910 , message: getLanguage('en').invalidToken });
-      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken });
+      return res.status(910).json({ status : 910 , message: getLanguage('en').invalidToken1 });
     }
 
     const checkUserExist = await deliveryManSchema.findById(data.id);

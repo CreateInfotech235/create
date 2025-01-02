@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../enum");
 const languageHelper_1 = require("../language/languageHelper");
-const authToken_schema_1 = __importDefault(require("../models/authToken.schema"));
+const token_schema_1 = __importDefault(require("../models/token.schema"));
 const subcriptionPurchase_schema_1 = __importDefault(require("../models/subcriptionPurchase.schema"));
 const user_schema_1 = __importDefault(require("../models/user.schema"));
 exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -29,12 +29,12 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         if (!data) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
         }
-        const tokenExpired = yield authToken_schema_1.default.findOne({
+        const tokenExpired = yield token_schema_1.default.findOne({
             $or: [{ accessToken: token }, { refreshToken: token }],
-            isActive: false,
         });
-        if (tokenExpired) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+        console.log(tokenExpired, "sdfsiuf");
+        if (!tokenExpired) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken1 });
         }
         const checkUserExist = yield user_schema_1.default.findById(data.id);
         if (!checkUserExist) {

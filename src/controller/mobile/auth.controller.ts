@@ -16,6 +16,7 @@ import OrderHistorySchema from '../../models/orderHistory.schema';
 import SupportTicket from '../../models/SupportTicket';
 import adminSchema from '../../models/admin.schema';
 import Notifications from '../../models/notificatio.schema';
+import tokenSchema from '../../models/token.schema';
 import {
   createAuthTokens,
   emailOrMobileOtp,
@@ -32,9 +33,12 @@ import {
   activateFreeSubcriptionValidation,
   otpVerifyValidation,
   renewTokenValidation,
+  resetPasswordValidation,
+  sendOtpValidation,
   updatePasswordValidation,
   userSignInValidation,
   userSignUpValidation,
+  verifyOtpValidation,
 } from '../../utils/validation/auth.validation';
 import path from 'path';
 import orderHistorySchema from '../../models/orderHistory.schema';
@@ -181,8 +185,15 @@ export const signIn = async (req: RequestParams, res: Response) => {
         message: getLanguage('en').invalidLoginCredentials,
       });
     }
-
+    await tokenSchema.deleteMany({ userId: userExist._id });
     const { accessToken, refreshToken } = createAuthTokens(userExist._id);
+    await tokenSchema.create({
+      userId: userExist._id,
+      accessToken,
+      refreshToken,
+      createdAt: new Date(),
+    });
+
 
     const { bankData, providerId, ...userData } = userExist;
 
@@ -1609,3 +1620,166 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
       res.status(500).json({ error: 'Error calling Google Maps API' });
     }
   }
+
+  // export const forgotPassword = async (req: RequestParams, res: Response) => {
+  //   try {
+  //     const validateRequest = validateParamsWithJoi<{
+  //       email: string;
+  //       otp: number;
+  //       newPassword: string;
+  //     }>(req.body, forgotPasswordValidation);
+  
+  //     if (!validateRequest.isValid) {
+  //       return res.badRequest({ message: validateRequest.message });
+  //     }
+  
+  //     const { value } = validateRequest;
+  
+  //     // Check if the user exists
+  //     const user = await merchantSchema.findOne({ email: value.email });
+  
+  //     if (!user) {
+  //       return res.badRequest({ message: getLanguage('en').emailNotRegistered });
+  //     }
+  
+  //     // Validate the OTP
+  //     const otpData = await otpSchema.findOne({
+  //       value: value.otp,
+  //       customerEmail: value.email,
+  //       expiry: { $gte: Date.now() },
+  //     });
+  
+  //     if (!otpData) {
+  //       return res.badRequest({ message: getLanguage('en').otpExpired });
+  //     }
+  
+  //     // Encrypt the new password
+  //     const encryptedPassword = await encryptPassword({ password: value.newPassword });
+  
+  //     // Update the user's password
+  //     await merchantSchema.updateOne(
+  //       { email: value.email },
+  //       { $set: { password: encryptedPassword } }
+  //     );
+  
+  //     // Optionally delete the OTP record after use
+  //     await otpSchema.deleteOne({ _id: otpData._id });
+  
+  //     return res.ok({ message: getLanguage('en').passwordResetSuccess });
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     return res.failureResponse({
+  //       message: getLanguage('en').somethingWentWrong,
+  //     });
+  //   }
+  // };
+  
+
+export const sendOtp = async (req: RequestParams, res: Response) => {
+    try {
+      const validateRequest = validateParamsWithJoi<{ email: string }>(req.body, sendOtpValidation);
+  
+      if (!validateRequest.isValid) {
+        return res.badRequest({ message: validateRequest.message });
+      }
+  
+      const { value } = validateRequest;
+  
+      // Check if the user exists
+      const user = await merchantSchema.findOne({ email: value.email });
+  
+      if (!user) {
+        return res.badRequest({ message: getLanguage('en').emailNotRegistered });
+      }
+  
+      // Generate OTP
+      const otp = Math.floor(1000 + Math.random() * 9000); 
+      const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+      await emailOrMobileOtp(
+        value.email,
+        `This is your otp for Reset Password ${otp}`,
+      );
+      await otpSchema.create({
+        value: otp,
+        customerEmail: value.email,
+        expiry: otpExpiry,
+      });
+  
+      // Send OTP (mock or use an actual email/SMS service)
+      console.log(`OTP for ${value.email}: ${otp}`);
+  
+      return res.ok({ message: getLanguage('en').otpSent });
+    } catch (error) {
+      console.error('Error:', error);
+      return res.failureResponse({
+        message: getLanguage('en').somethingWentWrong,
+      });
+    }
+};
+
+export const verifyOtp = async (req: RequestParams, res: Response) => {
+  try {
+    const validateRequest = validateParamsWithJoi<{ otp: number }>(req.body, verifyOtpValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    // Validate OTP
+    const otpData = await otpSchema.findOne({
+      value: value.otp,
+      expiry: { $gte: Date.now() },
+    });
+
+    if (!otpData) {
+      return res.badRequest({ message: getLanguage('en').otpExpired });
+    }
+
+    // Optionally, mark OTP as used or delete it
+    await otpSchema.deleteOne({ _id: otpData._id });
+
+    return res.ok({ message: getLanguage('en').otpVerified });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};  
+
+export const resetPassword = async (req: RequestParams, res: Response) => {
+  try {
+    const validateRequest = validateParamsWithJoi<{ email: string; newPassword: string }>(req.body, resetPasswordValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    // Check if the user exists
+    const user = await merchantSchema.findOne({ email: value.email });
+
+    if (!user) {
+      return res.badRequest({ message: getLanguage('en').emailNotRegistered });
+    }
+
+    // Encrypt the new password
+    const encryptedPassword = await encryptPassword({ password: value.newPassword });
+
+    // Update the user's password
+    await merchantSchema.updateOne(
+      { email: value.email },
+      { $set: { password: encryptedPassword } }
+    );
+
+    return res.ok({ message: getLanguage('en').passwordResetSuccess });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};

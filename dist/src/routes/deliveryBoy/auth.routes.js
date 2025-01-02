@@ -176,4 +176,7 @@ router.patch('/updateDeliveryManProfile/:id', auth_controller_1.updateDeliveryMa
  *         description: Something went wrong
  */
 router.patch('/updateDeliveryManStatus/:id', auth_controller_1.updateDeliveryManStatus);
+router.post('/forgot-password/send-otp', auth_controller_1.sendOtp);
+router.post('/forgot-password/verify-otp', auth_controller_1.verifyOtp);
+router.post('/forgot-password/reset-password', auth_controller_1.resetPassword);
 exports.default = router;

@@ -130,7 +130,7 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
       deliveryManWallet: deliveryManWallet,
       deliveryManType: createdBy,
       paymentStatus: paymentStatus,
-      statusOfOrder: 'CREATED',
+      statusOfOrder: 'ASSIGNED',
       orderPickupTime: new Date(),
       orderDeleverTime: new Date(),
     };
@@ -199,11 +199,12 @@ export const getAllPaymentInfo = async (req: RequestParams, res: Response) => {
   }
 };
 
+
 export const orderUpdate = async (req: RequestParams, res: Response) => {
   try {
     const orderId = req.params.orderId; // Get orderId from request parameters
     const updateData = req.body; // Get the fields to update from request body
-
+    console.log(req.body, 'updateData');
     // Validate the incoming data using Joi (if needed)
     const validateRequest = validateParamsWithJoi<OrderCreateType>(
       updateData,
@@ -228,11 +229,60 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
       { $set: value },
       { new: true }, // Return the updated order object
     );
+console.log(value, 'value');
+
 
     if (!updatedOrder) {
       return res.failureResponse({
         message: 'Failed to update order',
       });
+    } else {
+      console.log(updatedOrder, 'updatedOrder');
+      const deliveryMan = await deliveryManSchema.findById({
+        _id: value.deliveryManId,
+      });
+
+      const admin = await AdminSchema.findOne();
+
+      const totalCharge = Number(
+        ((deliveryMan?.charge || 0) * value.distance).toFixed(2),
+      );
+
+      const adminCharge = deliveryMan?.createdByAdmin
+        ? Number((totalCharge % deliveryMan?.adminCharge || 0).toFixed(2))
+        : 0;
+
+      const createdBy = deliveryMan?.createdByMerchant
+        ? 'MERCHANTDELIVERYMAN'
+        : 'ADMINDELIVERYMAN';
+      const paymentStatus = updatedOrder?.cashOnDelivery
+        ? 'CASHONDELIVERY'
+        : 'DIRECTPAYMENT';
+      const deliveryManWallet = updatedOrder?.paymentCollectionRupees
+        ? updatedOrder.paymentCollectionRupees
+        : 0;
+      const data = {
+        adminId: admin?._id || '',
+        merchantId: req?.id || '',
+        deliveryManId: value.deliveryManId,
+        orderId: updatedOrder.orderId,
+        orderIdForMerchant: updatedOrder.showOrderNumber,
+        miles: value.distance,
+        payPerMiles: deliveryMan?.charge || 0,
+        totalPaytoDeliveryMan: totalCharge,
+        totalPaytoAdmin: adminCharge,
+        deliveryManWallet: deliveryManWallet,
+        deliveryManType: createdBy,
+        paymentStatus: paymentStatus,
+        orderPickupTime: new Date(),
+        orderDeleverTime: new Date(),
+      };
+      console.log(data, 'data');
+
+      console.log(updatedOrder.orderId, 'orderId');
+
+      await paymentGetSchema.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: data }, { new: true });
+
     }
 
     // If deliveryManId is updated, update the assignee table too
@@ -244,6 +294,9 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
           { status: 'ASSIGNED' },
           // { new: true }, // Return the updated order object
         );
+
+
+        await paymentGetSchema.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: { statusOfOrder: "ASSIGNED"} }, { new: true });
 
         await OrderAssigneeSchema.updateOne(
           { _id: orderId },

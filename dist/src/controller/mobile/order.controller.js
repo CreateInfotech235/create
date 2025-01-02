@@ -91,7 +91,7 @@ const orderCreation = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             deliveryManWallet: deliveryManWallet,
             deliveryManType: createdBy,
             paymentStatus: paymentStatus,
-            statusOfOrder: 'CREATED',
+            statusOfOrder: 'ASSIGNED',
             orderPickupTime: new Date(),
             orderDeleverTime: new Date(),
         };
@@ -161,6 +161,7 @@ const orderUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         const orderId = req.params.orderId; // Get orderId from request parameters
         const updateData = req.body; // Get the fields to update from request body
+        console.log(req.body, 'updateData');
         // Validate the incoming data using Joi (if needed)
         const validateRequest = (0, validateRequest_1.default)(updateData, order_validation_1.newOrderCreation);
         if (!validateRequest.isValid) {
@@ -174,15 +175,56 @@ const orderUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         // Update fields in the order
         const updatedOrder = yield order_schema_1.default.findOneAndUpdate({ _id: orderId }, { $set: value }, { new: true });
+        console.log(value, 'value');
         if (!updatedOrder) {
             return res.failureResponse({
                 message: 'Failed to update order',
             });
         }
+        else {
+            console.log(updatedOrder, 'updatedOrder');
+            const deliveryMan = yield deliveryMan_schema_1.default.findById({
+                _id: value.deliveryManId,
+            });
+            const admin = yield admin_schema_1.default.findOne();
+            const totalCharge = Number((((deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0) * value.distance).toFixed(2));
+            const adminCharge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByAdmin)
+                ? Number((totalCharge % (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.adminCharge) || 0).toFixed(2))
+                : 0;
+            const createdBy = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByMerchant)
+                ? 'MERCHANTDELIVERYMAN'
+                : 'ADMINDELIVERYMAN';
+            const paymentStatus = (updatedOrder === null || updatedOrder === void 0 ? void 0 : updatedOrder.cashOnDelivery)
+                ? 'CASHONDELIVERY'
+                : 'DIRECTPAYMENT';
+            const deliveryManWallet = (updatedOrder === null || updatedOrder === void 0 ? void 0 : updatedOrder.paymentCollectionRupees)
+                ? updatedOrder.paymentCollectionRupees
+                : 0;
+            const data = {
+                adminId: (admin === null || admin === void 0 ? void 0 : admin._id) || '',
+                merchantId: (req === null || req === void 0 ? void 0 : req.id) || '',
+                deliveryManId: value.deliveryManId,
+                orderId: updatedOrder.orderId,
+                orderIdForMerchant: updatedOrder.showOrderNumber,
+                miles: value.distance,
+                payPerMiles: (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0,
+                totalPaytoDeliveryMan: totalCharge,
+                totalPaytoAdmin: adminCharge,
+                deliveryManWallet: deliveryManWallet,
+                deliveryManType: createdBy,
+                paymentStatus: paymentStatus,
+                orderPickupTime: new Date(),
+                orderDeleverTime: new Date(),
+            };
+            console.log(data, 'data');
+            console.log(updatedOrder.orderId, 'orderId');
+            yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: data }, { new: true });
+        }
         // If deliveryManId is updated, update the assignee table too
         if (value.deliveryManId) {
             if (existingOrder.status === 'UNASSIGNED') {
                 const updatedOrder = yield order_schema_1.default.findOneAndUpdate({ _id: orderId }, { status: 'ASSIGNED' });
+                yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: { statusOfOrder: "ASSIGNED" } }, { new: true });
                 yield orderAssignee_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });
                 yield orderHistory_schema_1.default.create({
                     message: 'Order has been assigned',

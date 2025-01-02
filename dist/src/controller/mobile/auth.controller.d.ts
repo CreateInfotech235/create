@@ -32,3 +32,6 @@ export declare const getMessagesByTicketId: (req: RequestParams, res: Response) 
 export declare const addMessageToTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const deleteMessageFromTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const getDistance: (req: RequestParams, res: Response) => Promise<void>;
+export declare const sendOtp: (req: RequestParams, res: Response) => Promise<void>;
+export declare const verifyOtp: (req: RequestParams, res: Response) => Promise<void>;
+export declare const resetPassword: (req: RequestParams, res: Response) => Promise<void>;

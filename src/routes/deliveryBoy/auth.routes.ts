@@ -8,6 +8,9 @@ import {
   deleteDeliveryMan,
   moveToTrashDeliveryMan,
   updateDeliveryManProfileAndPassword,
+  sendOtp,
+  verifyOtp,
+  resetPassword,
 } from '../../controller/deliveryBoy/auth.controller';
 import {
   allPaymentInfo,
@@ -197,4 +200,11 @@ router.patch(
  */
 router.patch('/updateDeliveryManStatus/:id', updateDeliveryManStatus);
 
+
+
+router.post('/forgot-password/send-otp', sendOtp);
+
+router.post('/forgot-password/verify-otp', verifyOtp);
+
+router.post('/forgot-password/reset-password', resetPassword);
 export default router;

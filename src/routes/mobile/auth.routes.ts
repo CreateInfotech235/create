@@ -32,6 +32,9 @@ import {
   addMessageToTicket,
   deleteMessageFromTicket,
   getDistance,
+  sendOtp,
+  verifyOtp,
+  resetPassword,
 } from '../../controller/mobile/auth.controller';
 import multer from 'multer';
 import {
@@ -650,4 +653,12 @@ router.delete(
 
 router.post('/distance', getDistance);
 
+
+router.post('/forgot-password/send-otp', sendOtp);
+
+// Route to verify OTP
+router.post('/forgot-password/verify-otp', verifyOtp);
+
+// Route to reset password
+router.post('/forgot-password/reset-password', resetPassword);
 export default router;

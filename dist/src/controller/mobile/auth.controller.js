@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.activateFreeSubcription = exports.signIn = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -40,6 +40,7 @@ const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory
 const SupportTicket_1 = __importDefault(require("../../models/SupportTicket"));
 const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
 const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
+const token_schema_1 = __importDefault(require("../../models/token.schema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
@@ -136,7 +137,14 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: (0, languageHelper_1.getLanguage)('en').invalidLoginCredentials,
             });
         }
+        yield token_schema_1.default.deleteMany({ userId: userExist._id });
         const { accessToken, refreshToken } = (0, common_1.createAuthTokens)(userExist._id);
+        yield token_schema_1.default.create({
+            userId: userExist._id,
+            accessToken,
+            refreshToken,
+            createdAt: new Date(),
+        });
         const { bankData, providerId } = userExist, userData = __rest(userExist, ["bankData", "providerId"]);
         const currency = yield currency_schema_1.default.findOne({}, { _id: 0, name: 1, symbol: 1, position: 1 });
         return res.ok({
@@ -1305,3 +1313,131 @@ const getDistance = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getDistance = getDistance;
+// export const forgotPassword = async (req: RequestParams, res: Response) => {
+//   try {
+//     const validateRequest = validateParamsWithJoi<{
+//       email: string;
+//       otp: number;
+//       newPassword: string;
+//     }>(req.body, forgotPasswordValidation);
+//     if (!validateRequest.isValid) {
+//       return res.badRequest({ message: validateRequest.message });
+//     }
+//     const { value } = validateRequest;
+//     // Check if the user exists
+//     const user = await merchantSchema.findOne({ email: value.email });
+//     if (!user) {
+//       return res.badRequest({ message: getLanguage('en').emailNotRegistered });
+//     }
+//     // Validate the OTP
+//     const otpData = await otpSchema.findOne({
+//       value: value.otp,
+//       customerEmail: value.email,
+//       expiry: { $gte: Date.now() },
+//     });
+//     if (!otpData) {
+//       return res.badRequest({ message: getLanguage('en').otpExpired });
+//     }
+//     // Encrypt the new password
+//     const encryptedPassword = await encryptPassword({ password: value.newPassword });
+//     // Update the user's password
+//     await merchantSchema.updateOne(
+//       { email: value.email },
+//       { $set: { password: encryptedPassword } }
+//     );
+//     // Optionally delete the OTP record after use
+//     await otpSchema.deleteOne({ _id: otpData._id });
+//     return res.ok({ message: getLanguage('en').passwordResetSuccess });
+//   } catch (error) {
+//     console.error('Error:', error);
+//     return res.failureResponse({
+//       message: getLanguage('en').somethingWentWrong,
+//     });
+//   }
+// };
+const sendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.sendOtpValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Check if the user exists
+        const user = yield user_schema_1.default.findOne({ email: value.email });
+        if (!user) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
+        }
+        // Generate OTP
+        const otp = Math.floor(1000 + Math.random() * 9000);
+        const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+        yield (0, common_1.emailOrMobileOtp)(value.email, `This is your otp for Reset Password ${otp}`);
+        yield otp_schema_1.default.create({
+            value: otp,
+            customerEmail: value.email,
+            expiry: otpExpiry,
+        });
+        // Send OTP (mock or use an actual email/SMS service)
+        console.log(`OTP for ${value.email}: ${otp}`);
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').otpSent });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendOtp = sendOtp;
+const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.verifyOtpValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Validate OTP
+        const otpData = yield otp_schema_1.default.findOne({
+            value: value.otp,
+            expiry: { $gte: Date.now() },
+        });
+        if (!otpData) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
+        }
+        // Optionally, mark OTP as used or delete it
+        yield otp_schema_1.default.deleteOne({ _id: otpData._id });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').otpVerified });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.verifyOtp = verifyOtp;
+const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.resetPasswordValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Check if the user exists
+        const user = yield user_schema_1.default.findOne({ email: value.email });
+        if (!user) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
+        }
+        // Encrypt the new password
+        const encryptedPassword = yield (0, common_1.encryptPassword)({ password: value.newPassword });
+        // Update the user's password
+        yield user_schema_1.default.updateOne({ email: value.email }, { $set: { password: encryptedPassword } });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').passwordResetSuccess });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.resetPassword = resetPassword;
