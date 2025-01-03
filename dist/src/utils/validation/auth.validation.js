@@ -106,6 +106,14 @@ exports.deliveryManSignUpValidation = joi_1.default.object().keys({
         .optional(),
     merchantId: joi_1.default.string().optional(),
     createdByAdmin: joi_1.default.boolean().optional(),
+    location: joi_1.default.object({
+        latitude: joi_1.default.number().required(),
+        longitude: joi_1.default.number().required(),
+    }).required(),
+    defaultLocation: joi_1.default.object({
+        latitude: joi_1.default.number().required(),
+        longitude: joi_1.default.number().required(),
+    }).required(),
 });
 exports.updatePasswordValidation = joi_1.default.object().keys({
     firstName: joi_1.default.string().optional(),

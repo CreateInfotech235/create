@@ -118,6 +118,14 @@ export const deliveryManSignUpValidation = Joi.object().keys({
     .optional(),
   merchantId: Joi.string().optional(),
   createdByAdmin: Joi.boolean().optional(),
+  location: Joi.object({
+    latitude: Joi.number().required(),
+    longitude: Joi.number().required(),
+  }).required(),
+  defaultLocation: Joi.object({
+    latitude: Joi.number().required(),
+    longitude: Joi.number().required(),
+  }).required(),
 });
 
 export const updatePasswordValidation = Joi.object().keys({

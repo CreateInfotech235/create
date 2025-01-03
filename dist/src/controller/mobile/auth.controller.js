@@ -897,7 +897,10 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
             yield deliveryMan_schema_1.default.updateOne({ _id: user._id }, { $set: { password: hashedPassword } });
         }
         // Update DeliveryMan Profile Data (excluding password)
-        const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+        const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, Object.assign(Object.assign({}, updateData), { defaultLocation: {
+                type: 'Point',
+                coordinates: [updateData.defaultLocation.longitude, updateData.defaultLocation.latitude],
+            } }), { new: true, runValidators: true });
         if (!updatedDeliveryMan) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
         }
@@ -1362,11 +1365,14 @@ const sendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        console.log(value);
         // Check if the user exists
         const user = yield user_schema_1.default.findOne({ email: value.email });
+        console.log(user);
         if (!user) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
         }
+        console.log("dfsad");
         // Generate OTP
         const otp = Math.floor(1000 + Math.random() * 9000);
         const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes

@@ -55,6 +55,14 @@ export const signUp = async (req: RequestParams, res: Response) => {
       charge?: number;
       image: string;
       trashed: boolean;
+      location: {
+        latitude: number;
+        longitude: number;
+      };
+      defaultLocation: {
+        latitude: number;
+        longitude: number;
+      },
     }>(req.body, deliveryManSignUpValidation);
 
     if (!validateRequest.isValid) {
@@ -127,6 +135,14 @@ export const signUp = async (req: RequestParams, res: Response) => {
 
     const data = await deliveryManSchema.create({
       ...value,
+      location: {
+        type: 'Point',
+        coordinates: [value.location.longitude, value.location.latitude],
+      },
+      defaultLocation: {
+        type: 'Point',
+        coordinates: [value.defaultLocation.longitude, value.defaultLocation.latitude],
+      },
       createdByMerchant: isFromMerchantPanel,
       isVerified: isFromMerchantPanel ? true : false,
       showDeliveryManNumber: datamarcent.showDeliveryManNumber,
@@ -166,8 +182,6 @@ export const updateDeliveryManProfileAndPassword = async (
     const updateData = req.body;
 
     console.log(updateData);
-
-    // Update Profile Image Logic
 
     // Update Password Logic
     if (
@@ -219,7 +233,12 @@ export const updateDeliveryManProfileAndPassword = async (
     // Update DeliveryMan Profile Data (excluding password)
     const updatedDeliveryMan = await deliveryManSchema.findByIdAndUpdate(
       id,
-      updateData,
+      {...updateData ,
+        defaultLocation: {
+          type: 'Point',
+          coordinates: [updateData.defaultLocation.longitude, updateData.defaultLocation.latitude],
+        },
+      },
       { new: true, runValidators: true },
     );
 

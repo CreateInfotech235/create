@@ -49,6 +49,12 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
         },
         coordinates: [],
     },
+    defaultLocation: {
+        type: {
+            type: String,
+        },
+        coordinates: [],
+    },
     bankData: {
         type: {
             name: { type: String },

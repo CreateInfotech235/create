@@ -64,6 +64,10 @@ declare const Model: mongoose.Model<{
     contactNumber?: number;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
+    defaultLocation?: {
+        coordinates: any[];
+        type?: string;
+    };
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -117,6 +121,10 @@ declare const Model: mongoose.Model<{
     contactNumber?: number;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
+    defaultLocation?: {
+        coordinates: any[];
+        type?: string;
+    };
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -170,6 +178,10 @@ declare const Model: mongoose.Model<{
     contactNumber?: number;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
+    defaultLocation?: {
+        coordinates: any[];
+        type?: string;
+    };
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -230,6 +242,10 @@ declare const Model: mongoose.Model<{
     contactNumber?: number;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
+    defaultLocation?: {
+        coordinates: any[];
+        type?: string;
+    };
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -283,6 +299,10 @@ declare const Model: mongoose.Model<{
     contactNumber?: number;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
+    defaultLocation?: {
+        coordinates: any[];
+        type?: string;
+    };
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -336,6 +356,10 @@ declare const Model: mongoose.Model<{
     contactNumber?: number;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
+    defaultLocation?: {
+        coordinates: any[];
+        type?: string;
+    };
     bankData?: {
         name?: string;
         accountNumber?: number;

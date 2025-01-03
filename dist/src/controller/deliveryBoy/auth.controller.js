@@ -88,7 +88,13 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield user_schema_1.default.updateOne({ _id: value.merchantId }, {
             $set: { showDeliveryManNumber: datamarcent.showDeliveryManNumber + 1 },
         });
-        const data = yield deliveryMan_schema_1.default.create(Object.assign(Object.assign({}, value), { createdByMerchant: isFromMerchantPanel, isVerified: isFromMerchantPanel ? true : false, showDeliveryManNumber: datamarcent.showDeliveryManNumber }));
+        const data = yield deliveryMan_schema_1.default.create(Object.assign(Object.assign({}, value), { location: {
+                type: 'Point',
+                coordinates: [value.location.longitude, value.location.latitude],
+            }, defaultLocation: {
+                type: 'Point',
+                coordinates: [value.defaultLocation.longitude, value.defaultLocation.latitude],
+            }, createdByMerchant: isFromMerchantPanel, isVerified: isFromMerchantPanel ? true : false, showDeliveryManNumber: datamarcent.showDeliveryManNumber }));
         if (((_b = value.documents) === null || _b === void 0 ? void 0 : _b.length) > 0) {
             const documentNames = yield Promise.all(value.documents.map((i, j) => __awaiter(void 0, void 0, void 0, function* () {
                 const document = i.image.split(',');
@@ -116,7 +122,6 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
         const { id } = req.params;
         const updateData = req.body;
         console.log(updateData);
-        // Update Profile Image Logic
         // Update Password Logic
         if ((updateData === null || updateData === void 0 ? void 0 : updateData.oldPassword) ||
             (updateData === null || updateData === void 0 ? void 0 : updateData.newPassword) ||
@@ -148,7 +153,10 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
             yield deliveryMan_schema_1.default.updateOne({ _id: user._id }, { $set: { password: hashedPassword } });
         }
         // Update DeliveryMan Profile Data (excluding password)
-        const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+        const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, Object.assign(Object.assign({}, updateData), { defaultLocation: {
+                type: 'Point',
+                coordinates: [updateData.defaultLocation.longitude, updateData.defaultLocation.latitude],
+            } }), { new: true, runValidators: true });
         if (!updatedDeliveryMan) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
         }

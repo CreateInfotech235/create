@@ -1166,7 +1166,12 @@ export const updateDeliveryManProfileAndPassword = async (
     // Update DeliveryMan Profile Data (excluding password)
     const updatedDeliveryMan = await deliveryManSchema.findByIdAndUpdate(
       id,
-      updateData,
+      {...updateData ,
+        defaultLocation: {
+          type: 'Point',
+          coordinates: [updateData.defaultLocation.longitude, updateData.defaultLocation.latitude],
+        },
+      },
       { new: true, runValidators: true },
     );
 
@@ -1677,6 +1682,7 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
 
 export const sendOtp = async (req: RequestParams, res: Response) => {
     try {
+      
       const validateRequest = validateParamsWithJoi<{ email: string }>(req.body, sendOtpValidation);
   
       if (!validateRequest.isValid) {
@@ -1684,13 +1690,17 @@ export const sendOtp = async (req: RequestParams, res: Response) => {
       }
   
       const { value } = validateRequest;
-  
+      console.log(value);
+      
       // Check if the user exists
       const user = await merchantSchema.findOne({ email: value.email });
-  
+      console.log(user);
+      
       if (!user) {
         return res.badRequest({ message: getLanguage('en').emailNotRegistered });
       }
+      console.log("dfsad");
+   
   
       // Generate OTP
       const otp = Math.floor(1000 + Math.random() * 9000); 
