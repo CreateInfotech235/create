@@ -33,7 +33,7 @@ const messages = {
     otpExpired: 'OTP verification failed due to expired',
     logoutSuccessfully: 'Logout successfully',
     renewTokenSuccessfully: 'Renew token successfully',
-    otpSentSuccess: 'Email or mobile otp sent successfully',
+    otpSentSuccess: 'Otp sent successfully on your email',
     EmailSentSuccess: 'Email sent successfully',
     accountActiveSuccessfully: 'Your request sent for confirmation successfully',
     certificateNumberRegistered: 'Medical Certificate Number Invalid',

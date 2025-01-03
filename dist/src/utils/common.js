@@ -121,7 +121,6 @@ const createAuthTokens = (id) => {
 exports.createAuthTokens = createAuthTokens;
 const emailOrMobileOtp = (email, message) => __awaiter(void 0, void 0, void 0, function* () {
     // if (process.env.ENV !== 'DEV') {
-    console.log("dsdfsfdsfsdjf");
     const adminEmailOptionCheck = yield adminSettings_schema_1.default.findOne();
     if (adminEmailOptionCheck.emailVerify) {
         yield (0, exports.sendMailService)(email, 'Email Otp Verification Mail', message);
