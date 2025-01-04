@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const auth_controller_1 = require("../../controller/admin/auth.controller");
 const admin_auth_1 = __importDefault(require("../../middleware/admin.auth"));
+const mapApi_controller_1 = require("../../controller/admin/mapApi.controller");
 /**
  * index.js
  * @description :: index route of platforms
@@ -221,4 +222,9 @@ router.delete('/support-tickets/:ticketId/messages/:messageId', auth_controller_
 router.post('/forgot-password/send-otp', auth_controller_1.sendOtp);
 router.post('/forgot-password/verify-otp', auth_controller_1.verifyOtp);
 router.post('/forgot-password/reset-password', auth_controller_1.resetPassword);
+router.post('/mapapi', mapApi_controller_1.mapApiCreate);
+router.get('/mapapi', mapApi_controller_1.getAllmapApi);
+router.get('/mapapi/:id', mapApi_controller_1.getOneMapApi);
+router.patch('/mapapi/:id', mapApi_controller_1.updateMapApi);
+router.delete('/mapapi/:id', mapApi_controller_1.deleteMapApi);
 exports.default = router;

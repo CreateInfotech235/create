@@ -24,6 +24,7 @@ import {
   resetPassword,
 } from '../../controller/admin/auth.controller';
 import adminAuth from '../../middleware/admin.auth';
+import { deleteMapApi, getAllmapApi, getOneMapApi, mapApiCreate, updateMapApi } from '../../controller/admin/mapApi.controller';
 
 /**
  * index.js
@@ -255,7 +256,7 @@ router.get(
 );
 router.get('/getAdminProfile', adminAuth, getAdminProfile);
 router.get('/getAdminSupportTicket', adminAuth, getSupportTicket);
-router.post('/Email' ,adminAuth, sendEmailFor)
+router.post('/Email', adminAuth, sendEmailFor);
 
 router.get('/support-tickets', getAllTickets);
 
@@ -267,9 +268,8 @@ router.post('/support-tickets/:id/messages', addMessageToTicket);
 
 router.delete(
   '/support-tickets/:ticketId/messages/:messageId',
-  deleteMessageFromTicket
+  deleteMessageFromTicket,
 );
-
 
 router.post('/forgot-password/send-otp', sendOtp);
 
@@ -277,4 +277,9 @@ router.post('/forgot-password/verify-otp', verifyOtp);
 
 router.post('/forgot-password/reset-password', resetPassword);
 
+router.post('/mapapi', mapApiCreate);
+router.get('/mapapi', getAllmapApi);
+router.get('/mapapi/:id', getOneMapApi);
+router.patch('/mapapi/:id', updateMapApi);
+router.delete('/mapapi/:id', deleteMapApi);
 export default router;
