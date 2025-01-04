@@ -579,4 +579,5 @@ router.post('/forgot-password/send-otp', auth_controller_1.sendOtp);
 router.post('/forgot-password/verify-otp', auth_controller_1.verifyOtp);
 // Route to reset password
 router.post('/forgot-password/reset-password', auth_controller_1.resetPassword);
+router.get('/location/:merchantId', auth_controller_2.getDeliveryManLocation);
 exports.default = router;

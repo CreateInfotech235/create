@@ -39,6 +39,7 @@ import {
 import multer from 'multer';
 import {
   deleteDeliveryMan,
+  getDeliveryManLocation,
   moveToTrashDeliveryMan,
 } from '../../controller/deliveryBoy/auth.controller';
 
@@ -661,4 +662,6 @@ router.post('/forgot-password/verify-otp', verifyOtp);
 
 // Route to reset password
 router.post('/forgot-password/reset-password', resetPassword);
+
+router.get('/location/:merchantId' , getDeliveryManLocation)
 export default router;

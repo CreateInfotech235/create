@@ -1,5 +1,5 @@
 import express from 'express';
-import { updateLocation } from '../../controller/deliveryBoy/auth.controller';
+import { getDeliveryManLocation, updateLocation } from '../../controller/deliveryBoy/auth.controller';
 
 const router = express.Router();
 
@@ -27,5 +27,4 @@ const router = express.Router();
  *         description: Something went wrong
  */
 router.patch('/update', updateLocation);
-
 export default router;

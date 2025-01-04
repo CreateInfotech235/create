@@ -564,6 +564,39 @@ export const getDeliveryManProfile = async (
   }
 };
 
+export const getDeliveryManLocation = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const merchantId = req.params.merchantId;
+    const deliveryManId = req.query.deliveryManId;
+    console.log(deliveryManId);
+    
+    // Fetch only specific fields, for example: name, location, and contact
+    const deliveryBoys = await deliveryManSchema.find(
+      { createdByMerchant: true, merchantId , _id : deliveryManId},
+      { email: 1, location: 1, defaultLocation: 1 , status : 1} // Projection: only fetch these fields
+    );
+
+    if (!deliveryBoys || deliveryBoys.length === 0) {
+      return res.badRequest({ message: getLanguage('en').noDeliveryBoysFound });
+    }
+
+    return res.ok({
+      message: getLanguage('en').deliveryBoysFetched,
+      data: deliveryBoys,
+    });
+  } catch (error) {
+    console.log('🚀 ~ getDeliveryBoysForMerchant ~ error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
+
 export const deleteDeliveryMan = async (req: RequestParams, res: Response) => {
   try {
     const { id } = req.params;

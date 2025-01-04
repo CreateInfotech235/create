@@ -10,6 +10,7 @@ export declare const updateDeliveryManStatus: (req: RequestParams, res: Response
 export declare const getDeliveryBoysForMerchant: (req: RequestParams, res: Response) => Promise<void>;
 export declare const updateLocation: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getDeliveryManProfile: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManLocation: (req: RequestParams, res: Response) => Promise<void>;
 export declare const deleteDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
 export declare const updateDeliveryManProfile: (req: RequestParams, res: Response) => Promise<void>;
 export declare const moveToTrashDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
