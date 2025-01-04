@@ -14,7 +14,12 @@ import {
 } from '../../utils/common';
 import { RequestParams } from '../../utils/types/expressTypes';
 import validateParamsWithJoi from '../../utils/validateRequest';
-import { deliveryManSignUpValidation, resetPasswordValidation, sendOtpValidation, verifyOtpValidation } from '../../utils/validation/auth.validation';
+import {
+  deliveryManSignUpValidation,
+  resetPasswordValidation,
+  sendOtpValidation,
+  verifyOtpValidation,
+} from '../../utils/validation/auth.validation';
 import { updatePasswordValidation } from '../../utils/validation/auth.validation';
 import { updateLocationValidation } from '../../utils/validation/deliveryMan.validation';
 import { IUpdateLocation } from './types/auth';
@@ -62,7 +67,7 @@ export const signUp = async (req: RequestParams, res: Response) => {
       defaultLocation: {
         latitude: number;
         longitude: number;
-      },
+      };
     }>(req.body, deliveryManSignUpValidation);
 
     if (!validateRequest.isValid) {
@@ -141,7 +146,10 @@ export const signUp = async (req: RequestParams, res: Response) => {
       },
       defaultLocation: {
         type: 'Point',
-        coordinates: [value.defaultLocation.longitude, value.defaultLocation.latitude],
+        coordinates: [
+          value.defaultLocation.longitude,
+          value.defaultLocation.latitude,
+        ],
       },
       createdByMerchant: isFromMerchantPanel,
       isVerified: isFromMerchantPanel ? true : false,
@@ -230,25 +238,37 @@ export const updateDeliveryManProfileAndPassword = async (
       );
     }
 
-    if (updateData?.defaultLocation) {
-      const { longitude, latitude } = updateData.defaultLocation;
+    if (updateData?.address) {
+      try {
+        const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+            updateData.address,
+          )}&key=${apiKey}`,
+        );
+        const data = await response.json();
 
-      if (
-        typeof longitude !== 'number' ||
-        typeof latitude !== 'number' ||
-        !isFinite(longitude) ||
-        !isFinite(latitude)
-      ) {
-        return res.badRequest({
-          message: getLanguage('en').invalidDefaultLocation,
-        });
+        if (data.results && data.results.length > 0) {
+          const { lat, lng } = data.results[0].geometry.location;
+
+          updateData.defaultLocation = {
+            type: 'Point',
+            coordinates: [lng, lat],
+          };
+        } else {
+          alert('Address not found. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error fetching geocode data:', error);
+        alert(
+          'An error occurred while processing the address. Please try again.',
+        );
       }
-
-      updateData.defaultLocation = {
-        type: 'Point',
-        coordinates: [longitude, latitude],
-      };
+    } else {
+      alert('Please enter an address.');
     }
+    console.log(updateData.defaultLocation , "Loc");
+    
 
     // Update DeliveryMan Profile Data (excluding password)
     const updatedDeliveryMan = await deliveryManSchema.findByIdAndUpdate(
@@ -655,10 +675,12 @@ export const moveToTrashDeliveryMan = async (
   }
 };
 
-
 export const sendOtp = async (req: RequestParams, res: Response) => {
   try {
-    const validateRequest = validateParamsWithJoi<{ email: string }>(req.body, sendOtpValidation);
+    const validateRequest = validateParamsWithJoi<{ email: string }>(
+      req.body,
+      sendOtpValidation,
+    );
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -674,7 +696,7 @@ export const sendOtp = async (req: RequestParams, res: Response) => {
     }
 
     // Generate OTP
-    const otp = Math.floor(1000 + Math.random() * 9000); 
+    const otp = Math.floor(1000 + Math.random() * 9000);
     const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
     await emailOrMobileOtp(
       value.email,
@@ -699,69 +721,77 @@ export const sendOtp = async (req: RequestParams, res: Response) => {
 };
 
 export const verifyOtp = async (req: RequestParams, res: Response) => {
-try {
-  const validateRequest = validateParamsWithJoi<{email: string; otp: number }>(req.body, verifyOtpValidation);
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      email: string;
+      otp: number;
+    }>(req.body, verifyOtpValidation);
 
-  if (!validateRequest.isValid) {
-    return res.badRequest({ message: validateRequest.message });
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    // Validate OTP
+    const otpData = await otpSchema.findOne({
+      customerEmail: value.email,
+      value: value.otp,
+      expiry: { $gte: Date.now() },
+    });
+
+    if (!otpData) {
+      return res.badRequest({ message: getLanguage('en').otpExpired });
+    }
+
+    // Optionally, mark OTP as used or delete it
+    await otpSchema.deleteOne({ _id: otpData._id });
+
+    return res.ok({ message: getLanguage('en').otpVerified });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
   }
-
-  const { value } = validateRequest;
-
-  // Validate OTP
-  const otpData = await otpSchema.findOne({
-    customerEmail : value.email,
-    value: value.otp,
-    expiry: { $gte: Date.now() },
-  });
-
-  if (!otpData) {
-    return res.badRequest({ message: getLanguage('en').otpExpired });
-  }
-
-  // Optionally, mark OTP as used or delete it
-  await otpSchema.deleteOne({ _id: otpData._id });
-
-  return res.ok({ message: getLanguage('en').otpVerified });
-} catch (error) {
-  console.error('Error:', error);
-  return res.failureResponse({
-    message: getLanguage('en').somethingWentWrong,
-  });
-}
-};  
+};
 
 export const resetPassword = async (req: RequestParams, res: Response) => {
-try {
-  const validateRequest = validateParamsWithJoi<{ email: string; newPassword: string }>(req.body, resetPasswordValidation);
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      email: string;
+      newPassword: string;
+    }>(req.body, resetPasswordValidation);
 
-  if (!validateRequest.isValid) {
-    return res.badRequest({ message: validateRequest.message });
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    // Check if the user exists
+    const user = await deliveryManSchema.findOne({ email: value.email });
+
+    if (!user) {
+      return res.badRequest({ message: getLanguage('en').emailNotRegistered });
+    }
+
+    // Encrypt the new password
+    const encryptedPassword = await encryptPassword({
+      password: value.newPassword,
+    });
+
+    // Update the user's password
+    await deliveryManSchema.updateOne(
+      { email: value.email },
+      { $set: { password: encryptedPassword } },
+    );
+
+    return res.ok({ message: getLanguage('en').passwordResetSuccess });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
   }
-
-  const { value } = validateRequest;
-
-  // Check if the user exists
-  const user = await deliveryManSchema.findOne({ email: value.email });
-
-  if (!user) {
-    return res.badRequest({ message: getLanguage('en').emailNotRegistered });
-  }
-
-  // Encrypt the new password
-  const encryptedPassword = await encryptPassword({ password: value.newPassword });
-
-  // Update the user's password
-  await deliveryManSchema.updateOne(
-    { email: value.email },
-    { $set: { password: encryptedPassword } }
-  );
-
-  return res.ok({ message: getLanguage('en').passwordResetSuccess });
-} catch (error) {
-  console.error('Error:', error);
-  return res.failureResponse({
-    message: getLanguage('en').somethingWentWrong,
-  });
-}
 };

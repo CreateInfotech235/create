@@ -93,7 +93,10 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 coordinates: [value.location.longitude, value.location.latitude],
             }, defaultLocation: {
                 type: 'Point',
-                coordinates: [value.defaultLocation.longitude, value.defaultLocation.latitude],
+                coordinates: [
+                    value.defaultLocation.longitude,
+                    value.defaultLocation.latitude,
+                ],
             }, createdByMerchant: isFromMerchantPanel, isVerified: isFromMerchantPanel ? true : false, showDeliveryManNumber: datamarcent.showDeliveryManNumber }));
         if (((_b = value.documents) === null || _b === void 0 ? void 0 : _b.length) > 0) {
             const documentNames = yield Promise.all(value.documents.map((i, j) => __awaiter(void 0, void 0, void 0, function* () {
@@ -152,21 +155,31 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
             });
             yield deliveryMan_schema_1.default.updateOne({ _id: user._id }, { $set: { password: hashedPassword } });
         }
-        if (updateData === null || updateData === void 0 ? void 0 : updateData.defaultLocation) {
-            const { longitude, latitude } = updateData.defaultLocation;
-            if (typeof longitude !== 'number' ||
-                typeof latitude !== 'number' ||
-                !isFinite(longitude) ||
-                !isFinite(latitude)) {
-                return res.badRequest({
-                    message: (0, languageHelper_1.getLanguage)('en').invalidDefaultLocation,
-                });
+        if (updateData === null || updateData === void 0 ? void 0 : updateData.address) {
+            try {
+                const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
+                const response = yield fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(updateData.address)}&key=${apiKey}`);
+                const data = yield response.json();
+                if (data.results && data.results.length > 0) {
+                    const { lat, lng } = data.results[0].geometry.location;
+                    updateData.defaultLocation = {
+                        type: 'Point',
+                        coordinates: [lng, lat],
+                    };
+                }
+                else {
+                    alert('Address not found. Please try again.');
+                }
             }
-            updateData.defaultLocation = {
-                type: 'Point',
-                coordinates: [longitude, latitude],
-            };
+            catch (error) {
+                console.error('Error fetching geocode data:', error);
+                alert('An error occurred while processing the address. Please try again.');
+            }
         }
+        else {
+            alert('Please enter an address.');
+        }
+        console.log(updateData.defaultLocation, "Loc");
         // Update DeliveryMan Profile Data (excluding password)
         const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
         if (!updatedDeliveryMan) {
@@ -587,7 +600,9 @@ const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
         }
         // Encrypt the new password
-        const encryptedPassword = yield (0, common_1.encryptPassword)({ password: value.newPassword });
+        const encryptedPassword = yield (0, common_1.encryptPassword)({
+            password: value.newPassword,
+        });
         // Update the user's password
         yield deliveryMan_schema_1.default.updateOne({ email: value.email }, { $set: { password: encryptedPassword } });
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').passwordResetSuccess });
