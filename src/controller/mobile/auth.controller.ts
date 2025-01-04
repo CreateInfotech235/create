@@ -1114,8 +1114,6 @@ export const updateDeliveryManProfileAndPassword = async (
 
     console.log(updateData);
 
-    // Update Profile Image Logic
-
     // Update Password Logic
     if (
       updateData?.oldPassword ||
@@ -1163,15 +1161,30 @@ export const updateDeliveryManProfileAndPassword = async (
       );
     }
 
+    // Handle defaultLocation if it exists
+    if (updateData?.defaultLocation) {
+      const { longitude, latitude } = updateData.defaultLocation;
+
+      if (
+        typeof longitude !== 'number' ||
+        typeof latitude !== 'number' ||
+        !isFinite(longitude) ||
+        !isFinite(latitude)
+      ) {
+        return res.badRequest({
+          message: getLanguage('en').invalidDefaultLocation,
+        });
+      }
+
+      updateData.defaultLocation = {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      };
+    }
     // Update DeliveryMan Profile Data (excluding password)
     const updatedDeliveryMan = await deliveryManSchema.findByIdAndUpdate(
       id,
-      {...updateData ,
-        defaultLocation: {
-          type: 'Point',
-          coordinates: [updateData.defaultLocation.longitude, updateData.defaultLocation.latitude],
-        },
-      },
+      updateData,
       { new: true, runValidators: true },
     );
 
@@ -1190,6 +1203,7 @@ export const updateDeliveryManProfileAndPassword = async (
     });
   }
 };
+
 
 export const getadmindata = async (req: RequestParams, res: Response) => {
   try {

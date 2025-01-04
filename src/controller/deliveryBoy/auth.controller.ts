@@ -230,15 +230,30 @@ export const updateDeliveryManProfileAndPassword = async (
       );
     }
 
+    if (updateData?.defaultLocation) {
+      const { longitude, latitude } = updateData.defaultLocation;
+
+      if (
+        typeof longitude !== 'number' ||
+        typeof latitude !== 'number' ||
+        !isFinite(longitude) ||
+        !isFinite(latitude)
+      ) {
+        return res.badRequest({
+          message: getLanguage('en').invalidDefaultLocation,
+        });
+      }
+
+      updateData.defaultLocation = {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      };
+    }
+
     // Update DeliveryMan Profile Data (excluding password)
     const updatedDeliveryMan = await deliveryManSchema.findByIdAndUpdate(
       id,
-      {...updateData ,
-        defaultLocation: {
-          type: 'Point',
-          coordinates: [updateData.defaultLocation.longitude, updateData.defaultLocation.latitude],
-        },
-      },
+      updateData,
       { new: true, runValidators: true },
     );
 

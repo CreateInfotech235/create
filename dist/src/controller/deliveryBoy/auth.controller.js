@@ -152,11 +152,23 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
             });
             yield deliveryMan_schema_1.default.updateOne({ _id: user._id }, { $set: { password: hashedPassword } });
         }
-        // Update DeliveryMan Profile Data (excluding password)
-        const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, Object.assign(Object.assign({}, updateData), { defaultLocation: {
+        if (updateData === null || updateData === void 0 ? void 0 : updateData.defaultLocation) {
+            const { longitude, latitude } = updateData.defaultLocation;
+            if (typeof longitude !== 'number' ||
+                typeof latitude !== 'number' ||
+                !isFinite(longitude) ||
+                !isFinite(latitude)) {
+                return res.badRequest({
+                    message: (0, languageHelper_1.getLanguage)('en').invalidDefaultLocation,
+                });
+            }
+            updateData.defaultLocation = {
                 type: 'Point',
-                coordinates: [updateData.defaultLocation.longitude, updateData.defaultLocation.latitude],
-            } }), { new: true, runValidators: true });
+                coordinates: [longitude, latitude],
+            };
+        }
+        // Update DeliveryMan Profile Data (excluding password)
+        const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
         if (!updatedDeliveryMan) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').deliveryManNotFound });
         }

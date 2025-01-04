@@ -144,7 +144,7 @@ export const createAuthTokens = (id: Types.ObjectId) => {
 
 export const emailOrMobileOtp = async (email: string, message: string) => {
   // if (process.env.ENV !== 'DEV') {
-  
+
   const adminEmailOptionCheck = await adminSettingsSchema.findOne();
 
   if (adminEmailOptionCheck.emailVerify) {
@@ -156,7 +156,11 @@ export const emailOrMobileOtp = async (email: string, message: string) => {
   }
   // }
 };
-export const emailSend = async (email: string,subject:string, message: string) => {
+export const emailSend = async (
+  email: string,
+  subject: string,
+  message: string,
+) => {
   // if (process.env.ENV !== 'DEV') {
   const adminEmailOptionCheck = await adminSettingsSchema.findOne();
 

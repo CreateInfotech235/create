@@ -6,6 +6,7 @@ declare const _default: {
         invalidToken: string;
         invalidToken1: string;
         otpSent: string;
+        invalidDefaultLocation: string;
         otpVerified: string;
         deliveryManInactive: string;
         invalidLoginCredentials: string;

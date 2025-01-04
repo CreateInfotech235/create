@@ -7,6 +7,7 @@ const messages = {
     invalidToken: 'Unauthorized user, Token is invalid',
     invalidToken1: 'Token is invalid',
     otpSent: 'Otp send successfully',
+    invalidDefaultLocation: "invalid DefaultLocation",
     otpVerified: 'Opt verified successfully',
     deliveryManInactive: 'Delivery Man is Offline , Please try again later',
     invalidLoginCredentials: 'Invalid Login Credentials',
