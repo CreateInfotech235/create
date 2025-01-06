@@ -32,6 +32,12 @@ declare const _default: mongoose.Model<{
         status: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         description?: string;
@@ -40,6 +46,14 @@ declare const _default: mongoose.Model<{
     };
     services?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -52,6 +66,14 @@ declare const _default: mongoose.Model<{
             description?: string;
             image?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
+            description?: string;
+            image?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
@@ -59,6 +81,12 @@ declare const _default: mongoose.Model<{
     ourDelivery?: {
         isShow: boolean;
         subpart2: mongoose.Types.DocumentArray<{
+            description?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            title?: string;
+        }> & {
             description?: string;
             title?: string;
         }>;
@@ -73,12 +101,26 @@ declare const _default: mongoose.Model<{
         data: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
     };
     whyWeCourier?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -90,6 +132,10 @@ declare const _default: mongoose.Model<{
     };
     bestPartner?: {
         data: mongoose.Types.DocumentArray<{
+            image?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            image?: string;
+        }> & {
             image?: string;
         }>;
         isShow: boolean;
@@ -103,6 +149,12 @@ declare const _default: mongoose.Model<{
         status: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         description?: string;
@@ -111,6 +163,14 @@ declare const _default: mongoose.Model<{
     };
     services?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -123,6 +183,14 @@ declare const _default: mongoose.Model<{
             description?: string;
             image?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
+            description?: string;
+            image?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
@@ -130,6 +198,12 @@ declare const _default: mongoose.Model<{
     ourDelivery?: {
         isShow: boolean;
         subpart2: mongoose.Types.DocumentArray<{
+            description?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            title?: string;
+        }> & {
             description?: string;
             title?: string;
         }>;
@@ -144,12 +218,26 @@ declare const _default: mongoose.Model<{
         data: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
     };
     whyWeCourier?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -161,6 +249,10 @@ declare const _default: mongoose.Model<{
     };
     bestPartner?: {
         data: mongoose.Types.DocumentArray<{
+            image?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            image?: string;
+        }> & {
             image?: string;
         }>;
         isShow: boolean;
@@ -174,6 +266,12 @@ declare const _default: mongoose.Model<{
         status: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         description?: string;
@@ -182,6 +280,14 @@ declare const _default: mongoose.Model<{
     };
     services?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -194,6 +300,14 @@ declare const _default: mongoose.Model<{
             description?: string;
             image?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
+            description?: string;
+            image?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
@@ -201,6 +315,12 @@ declare const _default: mongoose.Model<{
     ourDelivery?: {
         isShow: boolean;
         subpart2: mongoose.Types.DocumentArray<{
+            description?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            title?: string;
+        }> & {
             description?: string;
             title?: string;
         }>;
@@ -215,12 +335,26 @@ declare const _default: mongoose.Model<{
         data: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
     };
     whyWeCourier?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -232,6 +366,10 @@ declare const _default: mongoose.Model<{
     };
     bestPartner?: {
         data: mongoose.Types.DocumentArray<{
+            image?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            image?: string;
+        }> & {
             image?: string;
         }>;
         isShow: boolean;
@@ -251,6 +389,12 @@ declare const _default: mongoose.Model<{
         status: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         description?: string;
@@ -259,6 +403,14 @@ declare const _default: mongoose.Model<{
     };
     services?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -271,6 +423,14 @@ declare const _default: mongoose.Model<{
             description?: string;
             image?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
+            description?: string;
+            image?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
@@ -278,6 +438,12 @@ declare const _default: mongoose.Model<{
     ourDelivery?: {
         isShow: boolean;
         subpart2: mongoose.Types.DocumentArray<{
+            description?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            title?: string;
+        }> & {
             description?: string;
             title?: string;
         }>;
@@ -292,12 +458,26 @@ declare const _default: mongoose.Model<{
         data: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
     };
     whyWeCourier?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -309,6 +489,10 @@ declare const _default: mongoose.Model<{
     };
     bestPartner?: {
         data: mongoose.Types.DocumentArray<{
+            image?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            image?: string;
+        }> & {
             image?: string;
         }>;
         isShow: boolean;
@@ -322,6 +506,12 @@ declare const _default: mongoose.Model<{
         status: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         description?: string;
@@ -330,6 +520,14 @@ declare const _default: mongoose.Model<{
     };
     services?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -342,6 +540,14 @@ declare const _default: mongoose.Model<{
             description?: string;
             image?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
+            description?: string;
+            image?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
@@ -349,6 +555,12 @@ declare const _default: mongoose.Model<{
     ourDelivery?: {
         isShow: boolean;
         subpart2: mongoose.Types.DocumentArray<{
+            description?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            title?: string;
+        }> & {
             description?: string;
             title?: string;
         }>;
@@ -363,12 +575,26 @@ declare const _default: mongoose.Model<{
         data: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
     };
     whyWeCourier?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -380,6 +606,10 @@ declare const _default: mongoose.Model<{
     };
     bestPartner?: {
         data: mongoose.Types.DocumentArray<{
+            image?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            image?: string;
+        }> & {
             image?: string;
         }>;
         isShow: boolean;
@@ -393,6 +623,12 @@ declare const _default: mongoose.Model<{
         status: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         description?: string;
@@ -401,6 +637,14 @@ declare const _default: mongoose.Model<{
     };
     services?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -413,6 +657,14 @@ declare const _default: mongoose.Model<{
             description?: string;
             image?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
+            description?: string;
+            image?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
@@ -420,6 +672,12 @@ declare const _default: mongoose.Model<{
     ourDelivery?: {
         isShow: boolean;
         subpart2: mongoose.Types.DocumentArray<{
+            description?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            title?: string;
+        }> & {
             description?: string;
             title?: string;
         }>;
@@ -434,12 +692,26 @@ declare const _default: mongoose.Model<{
         data: mongoose.Types.DocumentArray<{
             number?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            number?: string;
+            title?: string;
+        }> & {
+            number?: string;
+            title?: string;
         }>;
         isShow: boolean;
         title?: string;
     };
     whyWeCourier?: {
         data: mongoose.Types.DocumentArray<{
+            description?: string;
+            image?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            description?: string;
+            image?: string;
+            title?: string;
+        }> & {
             description?: string;
             image?: string;
             title?: string;
@@ -451,6 +723,10 @@ declare const _default: mongoose.Model<{
     };
     bestPartner?: {
         data: mongoose.Types.DocumentArray<{
+            image?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            image?: string;
+        }> & {
             image?: string;
         }>;
         isShow: boolean;

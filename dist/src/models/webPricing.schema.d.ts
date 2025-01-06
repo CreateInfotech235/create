@@ -29,8 +29,28 @@ declare const _default: mongoose.Model<{
         description?: string;
         title?: string;
         bgImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        title?: string;
+        bgImage?: string;
+    }> & {
+        description?: string;
+        title?: string;
+        bgImage?: string;
     }>;
     Part2: mongoose.Types.DocumentArray<{
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }> & {
         description?: string;
         image?: string;
         title?: string;
@@ -42,8 +62,28 @@ declare const _default: mongoose.Model<{
         description?: string;
         title?: string;
         bgImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        title?: string;
+        bgImage?: string;
+    }> & {
+        description?: string;
+        title?: string;
+        bgImage?: string;
     }>;
     Part2: mongoose.Types.DocumentArray<{
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }> & {
         description?: string;
         image?: string;
         title?: string;
@@ -55,8 +95,28 @@ declare const _default: mongoose.Model<{
         description?: string;
         title?: string;
         bgImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        title?: string;
+        bgImage?: string;
+    }> & {
+        description?: string;
+        title?: string;
+        bgImage?: string;
     }>;
     Part2: mongoose.Types.DocumentArray<{
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }> & {
         description?: string;
         image?: string;
         title?: string;
@@ -72,8 +132,28 @@ declare const _default: mongoose.Model<{
         description?: string;
         title?: string;
         bgImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        title?: string;
+        bgImage?: string;
+    }> & {
+        description?: string;
+        title?: string;
+        bgImage?: string;
     }>;
     Part2: mongoose.Types.DocumentArray<{
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }> & {
         description?: string;
         image?: string;
         title?: string;
@@ -85,8 +165,28 @@ declare const _default: mongoose.Model<{
         description?: string;
         title?: string;
         bgImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        title?: string;
+        bgImage?: string;
+    }> & {
+        description?: string;
+        title?: string;
+        bgImage?: string;
     }>;
     Part2: mongoose.Types.DocumentArray<{
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }> & {
         description?: string;
         image?: string;
         title?: string;
@@ -98,8 +198,28 @@ declare const _default: mongoose.Model<{
         description?: string;
         title?: string;
         bgImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        title?: string;
+        bgImage?: string;
+    }> & {
+        description?: string;
+        title?: string;
+        bgImage?: string;
     }>;
     Part2: mongoose.Types.DocumentArray<{
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        description?: string;
+        image?: string;
+        title?: string;
+        subTitle?: string;
+        subImage?: string;
+    }> & {
         description?: string;
         image?: string;
         title?: string;

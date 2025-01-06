@@ -633,35 +633,291 @@ router.delete('/deleteNotification/:id/:notificationId', deleteNotification);
 //  */
 router.get('/getUnreadNotificationCount/:id', getUnreadNotificationCount);
 
+/**
+ * @swagger
+ * /mobile/auth/getAllDeliveryMans:
+ *   get:
+ *     summary: Get All Delivery Mans
+ *     tags: [ Mobile - Auth ]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved delivery men
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getAllDeliveryMans', getAllDeliveryMans);
+
+/**
+ * @swagger
+ * /mobile/auth/subscriptions:
+ *   get:
+ *     summary: Get Subscriptions
+ *     tags: [ Mobile - Auth ]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved subscriptions
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/subscriptions', getSubscriptions);
 
+/**
+ * @swagger
+ * /mobile/auth/SupportTicketUpdate:
+ *   patch:
+ *     summary: Update Support Ticket
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ticket updated successfully
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.patch('/SupportTicketUpdate', SupportTicketUpdate);
 
 
+/**
+ * @swagger
+ * /mobile/auth/support-tickets:
+ *   get:
+ *     summary: Get All Tickets
+ *     tags: [ Mobile - Auth ]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved tickets
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/support-tickets', getAllTickets);
 
-// Route: GET /api/support-tickets/:id/messages -> Fetch messages for a specific ticket
+/**
+ * @swagger
+ * /mobile/auth/support-tickets/:id/messages:
+ *   get:
+ *     summary: Fetch messages for a specific ticket
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved messages
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/support-tickets/:id/messages', getMessagesByTicketId);
 
-// Route: POST /api/support-tickets/:id/messages -> Add a new message to a ticket
+/**
+ * @swagger
+ * /mobile/auth/support-tickets/:id/messages:
+ *   post:
+ *     summary: Add a new message to a ticket
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *               sender:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Message added successfully
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/support-tickets/:id/messages', addMessageToTicket);
 
+/**
+ * @swagger
+ * /mobile/auth/support-tickets/:ticketId/messages/:messageId:
+ *   delete:
+ *     summary: Delete a message from a ticket
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: ticketId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: messageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Message deleted successfully
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.delete(
   '/support-tickets/:ticketId/messages/:messageId',
   deleteMessageFromTicket
 );
 
+/**
+ * @swagger
+ * /mobile/auth/distance:
+ *   post:
+ *     summary: Get Distance
+ *     tags: [ Mobile - Auth ]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               origin:
+ *                 type: string
+ *               destination:
+ *                 type: string
+ *               apiKey:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved distance
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/distance', getDistance);
 
 
+/**
+ * @swagger
+ * /mobile/auth/forgot-password/send-otp:
+ *   post:
+ *     summary: Send OTP for Forgot Password
+ *     tags: [ Mobile - Auth ]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/forgot-password/send-otp', sendOtp);
 
-// Route to verify OTP
+/**
+ * @swagger
+ * /mobile/auth/forgot-password/verify-otp:
+ *   post:
+ *     summary: Verify OTP for Forgot Password
+ *     tags: [ Mobile - Auth ]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               otp:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/forgot-password/verify-otp', verifyOtp);
 
-// Route to reset password
+/**
+ * @swagger
+ * /mobile/auth/forgot-password/reset-password:
+ *   post:
+ *     summary: Reset Password
+ *     tags: [ Mobile - Auth ]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/forgot-password/reset-password', resetPassword);
 
+/**
+ * @swagger
+ * /mobile/auth/location/:merchantId:
+ *   get:
+ *     summary: Get Delivery Man Location
+ *     tags: [ Mobile - Auth ]
+ *     parameters:
+ *       - in: path
+ *         name: merchantId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: deliveryManId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved delivery man location
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/location/:merchantId' , getDeliveryManLocation)
 export default router;

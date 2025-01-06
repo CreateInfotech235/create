@@ -561,6 +561,7 @@ exports.getAllTickets = getAllTickets;
 // Fetch messages for a specific ticket
 const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log(req.params.id, "fddfdf");
         const ticket = yield SupportTicket_1.default.findById(req.params.id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
@@ -575,6 +576,7 @@ exports.getMessagesByTicketId = getMessagesByTicketId;
 // Add a new message to a specific ticket
 const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log(req.params.id, "fddfdf");
         const { text, sender } = req.body;
         if (!text || !['merchant', 'admin'].includes(sender)) {
             return res.status(400).json({ message: 'Invalid message data' });

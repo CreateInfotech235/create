@@ -37,6 +37,14 @@ declare const Model: mongoose.Model<{
         text: string;
         sender: "merchant" | "admin";
         timestamp: NativeDate;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
+    }> & {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
     }>;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
@@ -51,6 +59,14 @@ declare const Model: mongoose.Model<{
         text: string;
         sender: "merchant" | "admin";
         timestamp: NativeDate;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
+    }> & {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
     }>;
 }> & {
     createdAt: NativeDate;
@@ -62,6 +78,14 @@ declare const Model: mongoose.Model<{
     problem: string;
     problemSolved: boolean;
     messages: mongoose.Types.DocumentArray<{
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
+    }> & {
         text: string;
         sender: "merchant" | "admin";
         timestamp: NativeDate;
@@ -86,6 +110,14 @@ declare const Model: mongoose.Model<{
         text: string;
         sender: "merchant" | "admin";
         timestamp: NativeDate;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
+    }> & {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
     }>;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -100,6 +132,14 @@ declare const Model: mongoose.Model<{
         text: string;
         sender: "merchant" | "admin";
         timestamp: NativeDate;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
+    }> & {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
     }>;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -111,6 +151,14 @@ declare const Model: mongoose.Model<{
     problem: string;
     problemSolved: boolean;
     messages: mongoose.Types.DocumentArray<{
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        text: string;
+        sender: "merchant" | "admin";
+        timestamp: NativeDate;
+    }> & {
         text: string;
         sender: "merchant" | "admin";
         timestamp: NativeDate;

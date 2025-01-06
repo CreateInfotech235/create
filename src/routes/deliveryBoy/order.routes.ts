@@ -217,11 +217,93 @@ router.patch('/deliver', deliverOrder);
  *         description: Something went wrong
  */
 router.post('/sendEmailOrMobileOtp', sendEmailOrMobileOtp);
+
+/**
+ * @swagger
+ * /deliveryBoy/orders/getOrderById/{orderId}:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get Order By Id
+ *     tags: [ Delivery Man - Orders ]
+ *     parameters:
+ *     - name: orderId
+ *       in: path
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getOrderById/:orderId', getOrderById);
+
+/**
+ * @swagger
+ * /deliveryBoy/orders/getOrderForDeliveryMan:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get Order For Delivery Man
+ *     tags: [ Delivery Man - Orders ]
+ *     parameters:
+ *     - name: startDate
+ *       in: query
+ *     - name: endDate
+ *       in: query
+ *     - name: status
+ *       in: query
+ *     - name: pageCount
+ *       in: query
+ *     - name: pageLimit
+ *       in: query
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getOrderForDeliveryMan', getOederForDeliveryMan);
 
+/**
+ * @swagger
+ * /deliveryBoy/orders/getCancelledOrder:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get Cancelled Order
+ *     tags: [ Delivery Man - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getCancelledOrder', getAllCancelledOrders);
 
+/**
+ * @swagger
+ * /deliveryBoy/orders/getPaymentData:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get Payment Data
+ *     tags: [ Delivery Man - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getPaymentData', getPaymentDataForDeliveryBoy);
 
 export default router;
+

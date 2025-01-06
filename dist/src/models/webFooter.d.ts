@@ -31,6 +31,36 @@ declare const _default: mongoose.Model<{
         subLink: mongoose.Types.DocumentArray<{
             link?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }> & {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
         }>;
         title?: string;
     }>;
@@ -44,6 +74,36 @@ declare const _default: mongoose.Model<{
         subLink: mongoose.Types.DocumentArray<{
             link?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }> & {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
         }>;
         title?: string;
     }>;
@@ -55,6 +115,36 @@ declare const _default: mongoose.Model<{
     socialMedia: string[];
     extraLinks: mongoose.Types.DocumentArray<{
         subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }> & {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
             link?: string;
             title?: string;
         }>;
@@ -74,6 +164,36 @@ declare const _default: mongoose.Model<{
         subLink: mongoose.Types.DocumentArray<{
             link?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }> & {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
         }>;
         title?: string;
     }>;
@@ -87,6 +207,36 @@ declare const _default: mongoose.Model<{
         subLink: mongoose.Types.DocumentArray<{
             link?: string;
             title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }> & {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
         }>;
         title?: string;
     }>;
@@ -98,6 +248,36 @@ declare const _default: mongoose.Model<{
     socialMedia: string[];
     extraLinks: mongoose.Types.DocumentArray<{
         subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
+            link?: string;
+            title?: string;
+        }>;
+        title?: string;
+    }> & {
+        subLink: mongoose.Types.DocumentArray<{
+            link?: string;
+            title?: string;
+        }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+            link?: string;
+            title?: string;
+        }> & {
             link?: string;
             title?: string;
         }>;

@@ -47,9 +47,19 @@ const mapApiCreate = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.mapApiCreate = mapApiCreate;
 // Get all map keys
 const getAllmapApi = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const mapKeys = yield mapApi_schema_1.default.find();
-        return res.status(200).json(mapKeys);
+        const mapKeys = yield mapApi_schema_1.default.find({});
+        if (!mapKeys) {
+            return res.status(404).json({ error: "No map key found" });
+        }
+        const data = mapKeys;
+        console.log("mapKeys", data[0]);
+        if (((_a = data[0]) === null || _a === void 0 ? void 0 : _a.status) === false) {
+            data[0].mapKey = "";
+        }
+        console.log("mapKeys", data[0]);
+        return res.status(200).json(data);
     }
     catch (error) {
         console.error('Error fetching map keys:', error);
@@ -60,8 +70,7 @@ exports.getAllmapApi = getAllmapApi;
 // Get a single map key by ID
 const getOneMapApi = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.params;
-        const mapApi = yield mapApi_schema_1.default.findById(id);
+        const mapApi = yield mapApi_schema_1.default.findOne({});
         if (!mapApi) {
             return res.status(404).json({ error: 'Map key not found' });
         }
@@ -76,14 +85,12 @@ exports.getOneMapApi = getOneMapApi;
 // Update a map key by ID
 const updateMapApi = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.params;
         const { mapKey, status } = req.body;
-        console.log(mapKey, status);
+        console.log(req.body);
         if (!mapKey) {
             return res.status(400).json({ error: 'mapKey is required' });
         }
-        const updatedMapApi = yield mapApi_schema_1.default.findByIdAndUpdate(id, {
-            mapKey: mapKey,
+        const updatedMapApi = yield mapApi_schema_1.default.findOneAndUpdate({}, {
             status: status,
         }, { new: true });
         if (!updatedMapApi) {
@@ -100,8 +107,7 @@ exports.updateMapApi = updateMapApi;
 // Delete a map key by ID
 const deleteMapApi = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.params;
-        const deletedMapApi = yield mapApi_schema_1.default.findByIdAndDelete(id);
+        const deletedMapApi = yield mapApi_schema_1.default.findOneAndDelete({});
         if (!deletedMapApi) {
             return res.status(404).json({ error: 'Map key not found' });
         }

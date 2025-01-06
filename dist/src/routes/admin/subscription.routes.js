@@ -30,6 +30,22 @@ const router = express_1.default.Router();
  *         description: Something went wrong
  */
 router.post('/manage', subcription_controller_1.manageSubscriptions);
+/**
+ * @swagger
+ * /admin/subscriptions/Approve:
+ *   get:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Get Approve Subscription
+ *     tags: [ Admin - Subscriptions ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/Approve', subcription_controller_1.getApproveSubscription);
 /**
  * @swagger
@@ -99,7 +115,61 @@ router.get('/pending', subcription_controller_1.getPendingSubscription);
  *         description: Something went wrong
  */
 router.patch('/status', subcription_controller_1.acceptSubscription);
+/**
+ * @swagger
+ * /admin/subscriptions/removeSubscription/{id}:
+ *   delete:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Delete Subscription
+ *     tags: [ Admin - Subscriptions ]
+ *     parameters:
+ *     - name: id
+ *       in: path
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.delete('/removeSubscription/:id', subcription_controller_1.deleteSubscription);
+/**
+ * @swagger
+ * /admin/subscriptions/deletePurchaseSubscription/{id}:
+ *   delete:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Delete Subscription
+ *     tags: [ Admin - Subscriptions ]
+ *     parameters:
+ *     - name: id
+ *       in: path
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.delete('/deletePurchaseSubscription/:id', subcription_controller_1.deletePurchaseSubscription);
+/**
+ * @swagger
+ * /admin/subscriptions/getexportFreeSubscription:
+ *   get:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Get export Free Subscription
+ *     tags: [ Admin - Subscriptions ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getexportFreeSubscription', subcription_controller_1.exportFreeSubscription);
 exports.default = router;

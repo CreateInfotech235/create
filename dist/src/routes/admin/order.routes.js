@@ -90,6 +90,22 @@ router.post('/create', order_controller_2.orderCreation);
  *         description: Something went wrong
  */
 router.get('/', order_controller_1.getOrders);
+/**
+ * @swagger
+ * /admin/orders/getAllOrders:
+ *   get:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Get All Orders
+ *     tags: [ Admin - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getAllOrders', order_controller_1.getAllOrders);
 /**
  * @swagger

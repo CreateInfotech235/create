@@ -36,6 +36,14 @@ declare const Model: mongoose.Model<{
         charge?: number;
         title?: string;
         chargeId?: mongoose.Types.ObjectId;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
+    }> & {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
     distance: number;
@@ -105,6 +113,14 @@ declare const Model: mongoose.Model<{
         charge?: number;
         title?: string;
         chargeId?: mongoose.Types.ObjectId;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
+    }> & {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
     distance: number;
@@ -171,6 +187,14 @@ declare const Model: mongoose.Model<{
     isCustomer: boolean;
     cashOnDelivery: boolean;
     charges: mongoose.Types.DocumentArray<{
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
+    }> & {
         charge?: number;
         title?: string;
         chargeId?: mongoose.Types.ObjectId;
@@ -250,6 +274,14 @@ declare const Model: mongoose.Model<{
         charge?: number;
         title?: string;
         chargeId?: mongoose.Types.ObjectId;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
+    }> & {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
     distance: number;
@@ -319,6 +351,14 @@ declare const Model: mongoose.Model<{
         charge?: number;
         title?: string;
         chargeId?: mongoose.Types.ObjectId;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
+    }> & {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
     }>;
     dayChargeNumber: number;
     distance: number;
@@ -385,6 +425,14 @@ declare const Model: mongoose.Model<{
     isCustomer: boolean;
     cashOnDelivery: boolean;
     charges: mongoose.Types.DocumentArray<{
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        charge?: number;
+        title?: string;
+        chargeId?: mongoose.Types.ObjectId;
+    }> & {
         charge?: number;
         title?: string;
         chargeId?: mongoose.Types.ObjectId;

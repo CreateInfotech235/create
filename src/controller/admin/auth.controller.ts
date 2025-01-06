@@ -686,6 +686,7 @@ export const getAllTickets = async (req: RequestParams, res: Response) => {
 // Fetch messages for a specific ticket
 export const getMessagesByTicketId = async (req: RequestParams, res: Response) => {
   try {
+    console.log(req.params.id , "fddfdf");
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
@@ -699,6 +700,7 @@ export const getMessagesByTicketId = async (req: RequestParams, res: Response) =
 // Add a new message to a specific ticket
 export const addMessageToTicket = async (req: RequestParams, res: Response) => {
   try {
+    console.log(req.params.id , "fddfdf");
     const { text, sender } = req.body;
     if (!text || !['merchant', 'admin'].includes(sender)) {
       return res.status(400).json({ message: 'Invalid message data' });

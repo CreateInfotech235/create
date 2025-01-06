@@ -97,5 +97,24 @@ router.get('/', country_controller_1.getCountries);
  *         description: Something went wrong
  */
 router.get('/names', city_controller_1.getCountryNames);
+/**
+ * @swagger
+ * /admin/country/deleteCountry/{countryId}:
+ *   delete:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Delete Country
+ *     tags: [ Admin - Country ]
+ *     parameters:
+ *     - name: countryId
+ *       in: path
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.delete('/deleteCountry/:countryId', country_controller_1.deleteCountry);
 exports.default = router;

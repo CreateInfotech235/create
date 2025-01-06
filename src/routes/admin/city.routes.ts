@@ -159,6 +159,26 @@ router.put('/day-charges/update', updateDayWiseCharges);
  *         description: Something went wrong
  */
 router.get('/day-charges/:productChargeId', getDayWiseChargesByCity);
+
+/**
+ * @swagger
+ * /admin/city/deleteCity/{cityId}:
+ *   delete:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Delete City
+ *     tags: [ Admin - City ]
+ *     parameters:
+ *     - name: cityId
+ *       in: path
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.delete('/deleteCity/:cityId', deleteCity);
 
 export default router;

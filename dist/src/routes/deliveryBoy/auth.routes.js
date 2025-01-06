@@ -176,7 +176,80 @@ router.patch('/updateDeliveryManProfile/:id', auth_controller_1.updateDeliveryMa
  *         description: Something went wrong
  */
 router.patch('/updateDeliveryManStatus/:id', auth_controller_1.updateDeliveryManStatus);
+/**
+ * @swagger
+ * /deliveryBoy/auth/forgot-password/send-otp:
+ *   post:
+ *     summary: Send OTP for forgot password
+ *     tags: [ Delivery Boy - Auth ]
+ *     requestBody:
+ *       description: Send OTP for forgot password
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/forgot-password/send-otp', auth_controller_1.sendOtp);
+/**
+ * @swagger
+ * /deliveryBoy/auth/forgot-password/verify-otp:
+ *   post:
+ *     summary: Verify OTP for forgot password
+ *     tags: [ Delivery Boy - Auth ]
+ *     requestBody:
+ *       description: Verify OTP for forgot password
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               otp:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/forgot-password/verify-otp', auth_controller_1.verifyOtp);
+/**
+ * @swagger
+ * /deliveryBoy/auth/forgot-password/reset-password:
+ *   post:
+ *     summary: Reset password
+ *     tags: [ Delivery Boy - Auth ]
+ *     requestBody:
+ *       description: Reset password
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/forgot-password/reset-password', auth_controller_1.resetPassword);
 exports.default = router;

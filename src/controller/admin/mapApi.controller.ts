@@ -5,9 +5,9 @@ import { RequestParams } from '../../utils/types/expressTypes';
 // Create a new map key
 export const mapApiCreate = async (req: RequestParams, res: Response) => {
   try {
-    const {mapKey}  = req.body;
+    const { mapKey } = req.body;
     console.log(mapKey);
-    
+
     if (!mapKey) {
       return res.status(400).json({ error: 'mapKey is required' });
     }
@@ -22,17 +22,17 @@ export const mapApiCreate = async (req: RequestParams, res: Response) => {
         },
         { new: true },
       );
-    //   return res.status(200).json(updatedData);
+      //   return res.status(200).json(updatedData);
       return res.ok({
-        data : updatedData,
+        data: updatedData,
       });
     }
 
     const newMapApi = await MapApi.create({ mapKey });
     // return res.status(201).json(newMapApi);
     return res.ok({
-        data : newMapApi,
-      });
+      data: newMapApi,
+    });
   } catch (error) {
     console.error('Error creating map key:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -43,8 +43,18 @@ export const mapApiCreate = async (req: RequestParams, res: Response) => {
 // Get all map keys
 export const getAllmapApi = async (req: RequestParams, res: Response) => {
   try {
-    const mapKeys = await MapApi.find();
-    return res.status(200).json(mapKeys);
+    const mapKeys = await MapApi.find({});
+    if (!mapKeys) {
+      return res.status(404).json({ error: "No map key found" });
+    }
+    const data = mapKeys;
+    console.log("mapKeys", data[0]);
+    if (data[0]?.status === false) {
+      data[0].mapKey = "";
+    }
+    console.log("mapKeys", data[0]);
+
+    return res.status(200).json(data);
   } catch (error) {
     console.error('Error fetching map keys:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -54,8 +64,7 @@ export const getAllmapApi = async (req: RequestParams, res: Response) => {
 // Get a single map key by ID
 export const getOneMapApi = async (req: RequestParams, res: Response) => {
   try {
-    const { id } = req.params;
-    const mapApi = await MapApi.findById(id);
+    const mapApi = await MapApi.findOne({});
 
     if (!mapApi) {
       return res.status(404).json({ error: 'Map key not found' });
@@ -71,19 +80,17 @@ export const getOneMapApi = async (req: RequestParams, res: Response) => {
 // Update a map key by ID
 export const updateMapApi = async (req: RequestParams, res: Response) => {
   try {
-    const { id } = req.params;
     const { mapKey, status } = req.body;
-    console.log(mapKey, status);
-    
+    console.log(req.body);
+
 
     if (!mapKey) {
       return res.status(400).json({ error: 'mapKey is required' });
     }
 
-    const updatedMapApi = await MapApi.findByIdAndUpdate(
-      id,
+    const updatedMapApi = await MapApi.findOneAndUpdate(
+      {},
       {
-        mapKey: mapKey,
         status: status,
       },
       { new: true }, // Return the updated document
@@ -103,8 +110,7 @@ export const updateMapApi = async (req: RequestParams, res: Response) => {
 // Delete a map key by ID
 export const deleteMapApi = async (req: RequestParams, res: Response) => {
   try {
-    const { id } = req.params;
-    const deletedMapApi = await MapApi.findByIdAndDelete(id);
+    const deletedMapApi = await MapApi.findOneAndDelete({});
 
     if (!deletedMapApi) {
       return res.status(404).json({ error: 'Map key not found' });
