@@ -20,6 +20,7 @@ import countrySchema from '../../models/country.schema';
 import deliveryManSchema from '../../models/deliveryMan.schema';
 import extraChargesSchema from '../../models/extraCharges.schema';
 import orderSchema from '../../models/order.schema';
+import orderSchemaMulti from '../../models/orderMulti.schema';
 import OrderAssigneeSchema from '../../models/orderAssignee.schema';
 import OrderHistorySchema from '../../models/orderHistory.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
@@ -35,6 +36,7 @@ import {
   orderCancelValidation,
   orderCreateValidation,
   newOrderCreation,
+  newOrderCreationMulti,
 } from '../../utils/validation/order.validation';
 import { OrderCancelType } from '../deliveryBoy/types/order';
 import {
@@ -180,6 +182,158 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
   }
 };
 
+export const orderCreationMulti = async (req: RequestParams, res: Response) => {
+  try {
+    interface RequestBody {
+      [key: string]: any; // Adjust this type to match the structure of your request body
+    }
+
+    const validKeys = Object.keys(newOrderCreationMulti.describe().keys);
+
+    // Explicitly type cleanedBody as a Record<string, any>
+    const cleanedBody: Record<string, any> = {};
+
+    // Iterate over valid keys and assign values from req.body
+    validKeys.forEach((key) => {
+      if (key in req.body) {
+        cleanedBody[key] = (req.body as RequestBody)[key];
+      }
+    });
+
+    // Validate the cleaned body
+    const validateRequest = validateParamsWithJoi<OrderCreateType>(
+      cleanedBody,
+      newOrderCreationMulti,
+    );
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+    const datamarcent = await merchantSchema.findById(req.id);
+    await merchantSchema.updateOne(
+      { _id: req.id },
+      { $set: { showOrderNumber: datamarcent.showOrderNumber + 1 } },
+    );
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    // console.log(value.merchant, req.id.toString(), 'VAlue');
+
+    // return;
+    // const customerData = await customerSchema.findOne({ address: deliveryDetails.address });
+    // if (!customerData) {
+    //   return res.badRequest({ message: getLanguage('en').invalidCustomer });
+    // }E:\nikunj\create_courier\create_courier
+
+    let checkLastOrder = await orderSchemaMulti
+      .findOne({}, { _id: 0, orderId: 1 })
+      .sort({ orderId: -1 });
+
+    if (checkLastOrder) {
+      checkLastOrder.orderId += 1;
+    } else {
+      checkLastOrder = { orderId: 1 } as any;
+    }
+    value.orderId = checkLastOrder.orderId;
+    // value.customer = req.id.toString();
+    const orderId = checkLastOrder.orderId;
+    value.merchant = req.id.toString();
+    const newOrder = await orderSchemaMulti.create({
+      ...value,
+      showOrderNumber: datamarcent.showOrderNumber,
+    });
+
+    const admin = await AdminSchema.findOne();
+    const deliveryMan = await deliveryManSchema.findById({
+      _id: req.body.deliveryManId,
+    });
+    // const payPerMiles = value.deliveryManCharge;
+    console.log(deliveryMan, 'payPerMiles');
+
+    const totalCharge = Number(
+      ((deliveryMan?.charge || 0) * value.distance).toFixed(2),
+    );
+
+    const adminCharge = deliveryMan?.createdByAdmin
+      ? Number((totalCharge % deliveryMan?.adminCharge || 0).toFixed(2))
+      : 0;
+
+    const createdBy = deliveryMan?.createdByMerchant
+      ? 'MERCHANTDELIVERYMAN'
+      : 'ADMINDELIVERYMAN';
+    const paymentStatus = value?.cashOnDelivery
+      ? 'CASHONDELIVERY'
+      : 'DIRECTPAYMENT';
+    const deliveryManWallet = value?.paymentCollectionRupees
+      ? value.paymentCollectionRupees
+      : 0;
+    const data = {
+      adminId: admin?._id || '',
+      merchantId: req?.id || '',
+      deliveryManId: req.body.deliveryManId,
+      orderId: orderId,
+      orderIdForMerchant: newOrder.showOrderNumber,
+      miles: value.distance,
+      payPerMiles: deliveryMan?.charge || 0,
+      totalPaytoDeliveryMan: totalCharge,
+      totalPaytoAdmin: adminCharge,
+      deliveryManWallet: deliveryManWallet,
+      deliveryManType: createdBy,
+      paymentStatus: paymentStatus,
+      statusOfOrder: 'ASSIGNED',
+      orderPickupTime: new Date(),
+      orderDeleverTime: new Date(),
+    };
+    console.log('data123', data);
+
+    if (value.deliveryManId) {
+      value.isCustomer = true;
+      await OrderAssigneeSchema.create({
+        deliveryBoy: value.deliveryManId,
+        merchant: req.id,
+        order: newOrder.orderId,
+        status: ORDER_HISTORY.ACCEPTED,
+      });
+    }
+    await OrderHistorySchema.create({
+      message: 'New order has been created',
+      order: newOrder.orderId,
+      merchantID: newOrder.merchant,
+      status: ORDER_HISTORY.ACCEPTED,
+    });
+    await OrderHistorySchema.create({
+      message: 'New order has been Assigned',
+      order: newOrder.orderId,
+      merchantID: newOrder.merchant,
+      status: ORDER_HISTORY.ASSIGNED,
+    });
+
+    const paymentData: PaymentInfoType = {
+      // customer: req.id.toString(),
+      merchant: req.id.toString(),
+      paymentThrough: value.paymentCollection,
+      paymentCollectFrom: value.paymentOrderLocation,
+      order: value.orderId,
+    };
+
+    await PaymentInfoSchema.create(paymentData);
+    await paymentGetSchema.create(data);
+    return res.ok({
+      message: getLanguage('en').orderCreatedSuccessfully,
+      data: { orderId: newOrder.orderId },
+    });
+  } catch (error) {
+    console.log('error', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
 export const getAllPaymentInfo = async (req: RequestParams, res: Response) => {
   try {
     const paymentInfo = await PaymentInfoSchema.find();
@@ -198,7 +352,6 @@ export const getAllPaymentInfo = async (req: RequestParams, res: Response) => {
     });
   }
 };
-
 
 export const orderUpdate = async (req: RequestParams, res: Response) => {
   try {
@@ -229,8 +382,7 @@ export const orderUpdate = async (req: RequestParams, res: Response) => {
       { $set: value },
       { new: true }, // Return the updated order object
     );
-console.log(value, 'value');
-
+    console.log(value, 'value');
 
     if (!updatedOrder) {
       return res.failureResponse({
@@ -281,8 +433,11 @@ console.log(value, 'value');
 
       console.log(updatedOrder.orderId, 'orderId');
 
-      await paymentGetSchema.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: data }, { new: true });
-
+      await paymentGetSchema.findOneAndUpdate(
+        { orderId: updatedOrder.orderId },
+        { $set: data },
+        { new: true },
+      );
     }
 
     // If deliveryManId is updated, update the assignee table too
@@ -295,8 +450,11 @@ console.log(value, 'value');
           // { new: true }, // Return the updated order object
         );
 
-
-        await paymentGetSchema.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: { statusOfOrder: "ASSIGNED"} }, { new: true });
+        await paymentGetSchema.findOneAndUpdate(
+          { orderId: updatedOrder.orderId },
+          { $set: { statusOfOrder: 'ASSIGNED' } },
+          { new: true },
+        );
 
         await OrderAssigneeSchema.updateOne(
           { _id: orderId },

@@ -643,12 +643,6 @@ router.get('/mapapi/:id', mapApi_controller_1.getOneMapApi);
  *     summary: Update Map API
  *     tags: [ Admin - Auth ]
  *     description: Update Map API
- *     parameters:
- *      - in: path
- *        name: id
- *        required: true
- *        schema:
- *          type: string
  *     requestBody:
  *      description: update map api
  *      required: true
@@ -669,7 +663,7 @@ router.get('/mapapi/:id', mapApi_controller_1.getOneMapApi);
  *       500:
  *         description: Something went wrong
  */
-router.patch('/mapapi/:id', mapApi_controller_1.updateMapApi);
+router.patch('/mapapi', mapApi_controller_1.updateMapApi);
 /**
  * @swagger
   * /admin/auth/mapapi/{id}:

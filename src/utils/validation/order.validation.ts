@@ -124,6 +124,61 @@ export const newOrderCreation = Joi.object({
     .allow('')
     .default(''),
 });
+export const newOrderCreationMulti = Joi.object({
+  parcelsCount: Joi.number().required(),
+  dateTime: Joi.date().timestamp().required(),
+  paymentCollection: Joi.string(),
+  paymentCollectionRupees: Joi.number(),
+  description: Joi.string(),
+  pickupDetails: Joi.object({
+    location: Joi.object({
+      latitude: Joi.number().required(),
+      longitude: Joi.number().required(),
+    }).required(),
+    dateTime: Joi.date().timestamp().required(),
+    address: Joi.string().required(),
+    merchantId: Joi.string().required(),
+    name: Joi.string().required(),
+    // countryCode: Joi.string().required(),
+    mobileNumber: Joi.number().required(),
+    email: Joi.string(),
+    pickupRequest: Joi.string()
+      .valid(PICKUP_REQUEST.REGULAR, PICKUP_REQUEST.EXPRESS)
+      .default(PICKUP_REQUEST.REGULAR),
+    description: Joi.string().allow(''),
+    postCode: Joi.string()
+      .regex(/^[A-Za-z0-9\s-]+$/)
+      .required(),
+  }),
+  deliveryDetails: Joi.array().items(
+    Joi.object({
+      subOrderId: Joi.number().required(),
+      location: Joi.object({
+        latitude: Joi.number().required(),
+        longitude: Joi.number().required(),
+      }).required(),
+      dateTime: Joi.date().timestamp(),
+      address: Joi.string().required(),
+      name: Joi.string().required(),
+      // countryCode: Joi.string().required(),
+      mobileNumber: Joi.number().required(),
+      email: Joi.string(),
+      description: Joi.string().allow(''),
+      postCode: Joi.string()
+        .regex(/^[A-Za-z0-9\s-]+$/)
+        .required(),
+      cashCollection: Joi.number(),
+    }),
+  ),
+  cashOnDelivery: Joi.boolean().default(false),
+  trashed: Joi.boolean().default(false),
+  duration: Joi.string().required(),
+  distance: Joi.number().required(),
+  deliveryManId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .allow('')
+    .default(''),
+});
 
 export const orderAssignValidation = Joi.object({
   deliveryManId: Joi.string()

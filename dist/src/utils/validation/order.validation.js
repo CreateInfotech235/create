@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.orderAdminListValidation = exports.invoiceValidation = exports.orderCancelValidation = exports.orderIdValidation = exports.orderDeliverValidation = exports.orderPickUpValidation = exports.orderListByDeliveryManValidation = exports.orderArriveValidation = exports.orderAcceptValidation = exports.orderAssignValidation = exports.newOrderCreation = exports.orderCreateValidation = void 0;
+exports.orderAdminListValidation = exports.invoiceValidation = exports.orderCancelValidation = exports.orderIdValidation = exports.orderDeliverValidation = exports.orderPickUpValidation = exports.orderListByDeliveryManValidation = exports.orderArriveValidation = exports.orderAcceptValidation = exports.orderAssignValidation = exports.newOrderCreationMulti = exports.newOrderCreation = exports.orderCreateValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 const enum_1 = require("../../enum");
 exports.orderCreateValidation = joi_1.default.object({
@@ -109,6 +109,59 @@ exports.newOrderCreation = joi_1.default.object({
             .required(),
         cashCollection: joi_1.default.number(),
     }),
+    cashOnDelivery: joi_1.default.boolean().default(false),
+    trashed: joi_1.default.boolean().default(false),
+    duration: joi_1.default.string().required(),
+    distance: joi_1.default.number().required(),
+    deliveryManId: joi_1.default.string()
+        .pattern(/^[0-9a-fA-F]{24}$/)
+        .allow('')
+        .default(''),
+});
+exports.newOrderCreationMulti = joi_1.default.object({
+    parcelsCount: joi_1.default.number().required(),
+    dateTime: joi_1.default.date().timestamp().required(),
+    paymentCollection: joi_1.default.string(),
+    paymentCollectionRupees: joi_1.default.number(),
+    description: joi_1.default.string(),
+    pickupDetails: joi_1.default.object({
+        location: joi_1.default.object({
+            latitude: joi_1.default.number().required(),
+            longitude: joi_1.default.number().required(),
+        }).required(),
+        dateTime: joi_1.default.date().timestamp().required(),
+        address: joi_1.default.string().required(),
+        merchantId: joi_1.default.string().required(),
+        name: joi_1.default.string().required(),
+        // countryCode: Joi.string().required(),
+        mobileNumber: joi_1.default.number().required(),
+        email: joi_1.default.string(),
+        pickupRequest: joi_1.default.string()
+            .valid(enum_1.PICKUP_REQUEST.REGULAR, enum_1.PICKUP_REQUEST.EXPRESS)
+            .default(enum_1.PICKUP_REQUEST.REGULAR),
+        description: joi_1.default.string().allow(''),
+        postCode: joi_1.default.string()
+            .regex(/^[A-Za-z0-9\s-]+$/)
+            .required(),
+    }),
+    deliveryDetails: joi_1.default.array().items(joi_1.default.object({
+        subOrderId: joi_1.default.number().required(),
+        location: joi_1.default.object({
+            latitude: joi_1.default.number().required(),
+            longitude: joi_1.default.number().required(),
+        }).required(),
+        dateTime: joi_1.default.date().timestamp(),
+        address: joi_1.default.string().required(),
+        name: joi_1.default.string().required(),
+        // countryCode: Joi.string().required(),
+        mobileNumber: joi_1.default.number().required(),
+        email: joi_1.default.string(),
+        description: joi_1.default.string().allow(''),
+        postCode: joi_1.default.string()
+            .regex(/^[A-Za-z0-9\s-]+$/)
+            .required(),
+        cashCollection: joi_1.default.number(),
+    })),
     cashOnDelivery: joi_1.default.boolean().default(false),
     trashed: joi_1.default.boolean().default(false),
     duration: joi_1.default.string().required(),

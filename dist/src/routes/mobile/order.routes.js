@@ -205,4 +205,5 @@ router.delete('/deleteOrderFormMerchant/:id', order_controller_1.deleteOrderForm
  *         description: Something went wrong
  */
 router.patch('/moveToTrashFormMerchant/:id', order_controller_1.moveToTrash);
+router.post('/createMulti', order_controller_1.orderCreationMulti);
 exports.default = router;

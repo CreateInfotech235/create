@@ -73,6 +73,70 @@ interface OrderCreateType {
   cashCollection: number;
   isCustomer?: boolean;
 }
+interface OrderCreateTypeMulti {
+  parcelType: string;
+  paymentCollectionRupees: number;
+  parcelsCount: number;
+  weight: number;
+  distance: number;
+  duration: number;
+  description?: string;
+  country: string;
+  city: string;
+  // customer: string;
+  merchant: string;
+  paymentCollection?: PAYMENT_TYPE;
+  paymentOrderLocation?: ORDER_LOCATION;
+  vehicle: string;
+  dateTime: number;
+  startPickupDate: Date;
+  endPickupDate: Date;
+  startDeliveryDate: Date;
+  endDeliveryDate: Date;
+  cashOnDelivery: boolean;
+  trashed: boolean;
+  pickupDetails: {
+    location: { type: string; coordinates: number[] } & {
+      latitude?: number;
+      longitude?: number;
+    };
+    merchantId: string;
+    dateTime: number;
+    orderTimestamp: number;
+    address: string;
+    // countryCode: string;
+    mobileNumber: number;
+    email?: string;
+    name: string;
+    pickupRequest: PICKUP_REQUEST;
+    description: string;
+    postCode: string;
+    cashOnDelivery?: boolean;
+  };
+  deliveryDetails: {
+    location: {
+      latitude: number;
+      longitude: number;
+    };
+    dateTime: number;
+    orderTimestamp: number;
+    address: string;
+    // countryCode: string;
+    mobileNumber: number;
+    email?: string;
+    name: string;
+    pickupRequest: PICKUP_REQUEST;
+    description: string;
+    postCode: string;
+    cashOnDelivery?: boolean;
+  };
+  deliveryLocation?: { type: string; coordinates: number[] };
+  cashOnDelivery: boolean;
+  deliveryManId: string;
+  orderId: number;
+  cashCollection: number;
+  isCustomer?: boolean;
+}
 
 interface IProductCharge {
   _id: ObjectId;

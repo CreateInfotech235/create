@@ -47,19 +47,12 @@ const mapApiCreate = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.mapApiCreate = mapApiCreate;
 // Get all map keys
 const getAllmapApi = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         const mapKeys = yield mapApi_schema_1.default.find({});
         if (!mapKeys) {
             return res.status(404).json({ error: "No map key found" });
         }
-        const data = mapKeys;
-        console.log("mapKeys", data[0]);
-        if (((_a = data[0]) === null || _a === void 0 ? void 0 : _a.status) === false) {
-            data[0].mapKey = "";
-        }
-        console.log("mapKeys", data[0]);
-        return res.status(200).json(data);
+        return res.status(200).json(mapKeys);
     }
     catch (error) {
         console.error('Error fetching map keys:', error);
