@@ -9,6 +9,11 @@ interface OrderAcceptType
   extends Pick<OrderAssignType, 'deliveryManId' | 'orderId'> {
   status: ORDER_REQUEST;
 }
+interface OrderAcceptTypeMulti
+  extends Pick<OrderAssignType, 'deliveryManId' | 'orderId'> {
+  status: ORDER_REQUEST;
+  subOrderId : number;
+}
 interface OrderCancelType
   extends Pick<OrderAssignType, 'deliveryManId' | 'orderId'> {
   status: ORDER_REQUEST;
@@ -24,6 +29,11 @@ interface OrderPickUpType {
 interface OrderDeliverType extends Pick<OrderPickUpType, 'orderId' | 'otp'> {
   deliveryManSignature: string;
   deliverTimestamp: number;
+}
+interface OrderDeliverTypeMulti extends Pick<OrderPickUpType, 'orderId' | 'otp'> {
+  deliveryManSignature: string;
+  deliverTimestamp: number;
+  subOrderId : number;
 }
 
 interface OrderCancelType extends Pick<OrderPickUpType, 'orderId'> {

@@ -206,4 +206,5 @@ router.delete('/deleteOrderFormMerchant/:id', order_controller_1.deleteOrderForm
  */
 router.patch('/moveToTrashFormMerchant/:id', order_controller_1.moveToTrash);
 router.post('/createMulti', order_controller_1.orderCreationMulti);
+router.patch('/orderUpdateMulti/:orderId', order_controller_1.orderUpdateMulti);
 exports.default = router;

@@ -75,11 +75,9 @@ interface OrderCreateType {
 }
 interface OrderCreateTypeMulti {
   parcelType: string;
+  weight: number;
   paymentCollectionRupees: number;
   parcelsCount: number;
-  weight: number;
-  distance: number;
-  duration: number;
   description?: string;
   country: string;
   city: string;
@@ -93,7 +91,8 @@ interface OrderCreateTypeMulti {
   endPickupDate: Date;
   startDeliveryDate: Date;
   endDeliveryDate: Date;
-  cashOnDelivery: boolean;
+  distance: number;
+  duration: number;
   trashed: boolean;
   pickupDetails: {
     location: { type: string; coordinates: number[] } & {
@@ -118,7 +117,12 @@ interface OrderCreateTypeMulti {
       latitude: number;
       longitude: number;
     };
+    paymentCollectionRupees: number;
+    parcelsCount: number;
+    distance: number;
+    duration: number;
     dateTime: number;
+    cashOnDelivery: boolean;
     orderTimestamp: number;
     address: string;
     // countryCode: string;
@@ -137,7 +141,6 @@ interface OrderCreateTypeMulti {
   cashCollection: number;
   isCustomer?: boolean;
 }
-
 interface IProductCharge {
   _id: ObjectId;
   cityId: ObjectId;

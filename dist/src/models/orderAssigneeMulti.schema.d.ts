@@ -28,32 +28,26 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    value?: number;
-    customerEmail?: string;
-    customerMobile?: number;
-    expiry?: NativeDate;
-    subOrderId?: number;
-    action?: string;
+    status: string;
+    merchant?: mongoose.Types.ObjectId;
+    order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    value?: number;
-    customerEmail?: string;
-    customerMobile?: number;
-    expiry?: NativeDate;
-    subOrderId?: number;
-    action?: string;
+    status: string;
+    merchant?: mongoose.Types.ObjectId;
+    order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    value?: number;
-    customerEmail?: string;
-    customerMobile?: number;
-    expiry?: NativeDate;
-    subOrderId?: number;
-    action?: string;
+    status: string;
+    merchant?: mongoose.Types.ObjectId;
+    order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -65,32 +59,26 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    value?: number;
-    customerEmail?: string;
-    customerMobile?: number;
-    expiry?: NativeDate;
-    subOrderId?: number;
-    action?: string;
+    status: string;
+    merchant?: mongoose.Types.ObjectId;
+    order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    value?: number;
-    customerEmail?: string;
-    customerMobile?: number;
-    expiry?: NativeDate;
-    subOrderId?: number;
-    action?: string;
+    status: string;
+    merchant?: mongoose.Types.ObjectId;
+    order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
-    value?: number;
-    customerEmail?: string;
-    customerMobile?: number;
-    expiry?: NativeDate;
-    subOrderId?: number;
-    action?: string;
+    status: string;
+    merchant?: mongoose.Types.ObjectId;
+    order?: number;
+    deliveryBoy?: mongoose.Types.ObjectId;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

@@ -12,15 +12,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrder = exports.sendEmailOrMobileOtp = exports.pickUpOrder = exports.departOrder = exports.cancelOrder = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrders = void 0;
+exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
 const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
 const city_schema_1 = __importDefault(require("../../models/city.schema"));
+const orderMulti_schema_1 = __importDefault(require("../../models/orderMulti.schema"));
 const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.schema"));
 const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
+const orderAssigneeMulti_schema_1 = __importDefault(require("../../models/orderAssigneeMulti.schema"));
 const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory.schema"));
 const otp_schema_1 = __importDefault(require("../../models/otp.schema"));
 const paymentInfo_schema_1 = __importDefault(require("../../models/paymentInfo.schema"));
@@ -197,8 +199,124 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getAssignedOrders = getAssignedOrders;
+const getAssignedOrdersMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b, _c, _d;
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.query, order_validation_1.orderListByDeliveryManValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const query = {
+            deliveryBoy: new mongoose_1.default.Types.ObjectId(req.id),
+        };
+        if (value.status) {
+            query.status = value.status;
+        }
+        if (value.startDate && value.endDate) {
+            const startDate = new Date(value.startDate);
+            const endDate = new Date(value.endDate);
+            endDate.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: startDate, $lte: endDate };
+        }
+        const pageLimit = value.pageLimit || 10;
+        const pageCount = value.pageCount || 1;
+        const skip = (pageCount - 1) * pageLimit;
+        const pipeline = [
+            { $match: query },
+            {
+                $lookup: {
+                    from: 'orderMultis',
+                    localField: 'order',
+                    foreignField: 'orderId',
+                    as: 'orderData',
+                },
+            },
+            { $unwind: { path: '$orderData', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'deliveryMan',
+                    localField: 'deliveryBoy',
+                    foreignField: '_id',
+                    as: 'deliveryManData',
+                    pipeline: [{ $project: { _id: 1, firstName: 1, lastName: 1 } }],
+                },
+            },
+            { $unwind: { path: '$deliveryManData', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1,
+                    deliveryBoy: 1,
+                    status: 1,
+                    createdAt: 1,
+                    order: {
+                        orderId: '$orderData.orderId',
+                        _id: '$orderData._id',
+                        showOrderNumber: '$orderData.showOrderNumber',
+                        parcelsCount: '$orderData.parcelsCount',
+                        customerName: '$orderData.deliveryDetails.name',
+                        customerEmail: '$orderData.deliveryDetails.email',
+                        pickupDetails: '$orderData.pickupDetails',
+                        deliveryDetails: '$orderData.deliveryDetails',
+                        deliveryMan: {
+                            $concat: ['$deliveryManData.firstName', ' ', '$deliveryManData.lastName'],
+                        },
+                        deliveryManId: '$deliveryManData._id',
+                        pickupDate: {
+                            $dateToString: {
+                                format: '%d-%m-%Y , %H:%M',
+                                date: '$orderData.pickupDetails.dateTime',
+                            },
+                        },
+                        deliveryDate: {
+                            $dateToString: {
+                                format: '%d-%m-%Y , %H:%M',
+                                date: '$orderData.deliveryDetails.orderTimestamp',
+                            },
+                        },
+                        createdDate: {
+                            $dateToString: {
+                                format: '%d-%m-%Y , %H:%M',
+                                date: '$orderData.createdAt',
+                            },
+                        },
+                        pickupRequest: '$orderData.pickupDetails.request',
+                        postCode: '$orderData.pickupDetails.postCode',
+                        cashOnDelivery: '$orderData.cashOnDelivery',
+                        status: '$orderData.status',
+                        dateTime: '$orderData.dateTime',
+                        trashed: { $ifNull: ['$orderData.trashed', false] },
+                        distance: '$orderData.distance',
+                        duration: '$orderData.duration',
+                        paymentCollectionRupees: '$orderData.paymentCollectionRupees',
+                    },
+                },
+            },
+            { $sort: { 'order.distance': 1, createdAt: -1 } },
+            {
+                $facet: {
+                    data: [{ $skip: skip }, { $limit: pageLimit }],
+                    totalCount: [{ $count: 'count' }],
+                },
+            },
+        ];
+        const result = yield orderAssigneeMulti_schema_1.default.aggregate(pipeline);
+        const data = {
+            data: ((_b = result[0]) === null || _b === void 0 ? void 0 : _b.data) || [],
+            totalCount: ((_d = (_c = result[0]) === null || _c === void 0 ? void 0 : _c.totalCount[0]) === null || _d === void 0 ? void 0 : _d.count) || 0,
+        };
+        return res.ok({ data });
+    }
+    catch (error) {
+        console.error('Error occurred: ', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getAssignedOrdersMulti = getAssignedOrdersMulti;
 const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _e;
     try {
         const { startDate, endDate, status, pageCount = 1, pageLimit = 10, } = req.query; // Add pageCount and pageLimit params
         // Calculate pagination values
@@ -355,7 +473,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
         ]);
         const data = {
             data: data1[0].data,
-            totalCount: ((_b = data1[0].totalCount[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
+            totalCount: ((_e = data1[0].totalCount[0]) === null || _e === void 0 ? void 0 : _e.count) || 0,
         };
         // Get total count for pagination
         const totalCount = yield order_schema_1.default.countDocuments(matchCondition);
@@ -506,6 +624,79 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.arriveOrder = arriveOrder;
+const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderArriveValidationMulti);
+        // TODO: get distance from google map api
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        console.log(value);
+        value.deliveryManId = req.id.toString();
+        const isCreated = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+            status: { $eq: enum_1.ORDER_HISTORY.ASSIGNED },
+            deliveryDetails: {
+                $elemMatch: {
+                    status: { $eq: enum_1.ORDER_HISTORY.ASSIGNED }, // Match the specific status
+                },
+            },
+        });
+        if (!isCreated) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
+        const isAssigned = yield orderAssigneeMulti_schema_1.default.findOne({
+            order: value.orderId,
+            deliveryBoy: value.deliveryManId,
+        });
+        if (!isAssigned) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').invalidDeliveryMan,
+            });
+        }
+        // TODO: add distance to the order
+        console.log("fgsdfsdfsdhiffh 1");
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ARRIVED" } });
+        yield orderMulti_schema_1.default.updateOne({
+            orderId: value.orderId, // Match the document by `orderId`
+        }, {
+            $set: {
+                status: enum_1.ORDER_HISTORY.ARRIVED,
+                "deliveryDetails.$[].status": enum_1.ORDER_HISTORY.ARRIVED, // Update all elements
+                "deliveryDetails.$[].time.start": Date.now(), // Update all elements' time.start
+            },
+        });
+        console.log("fgsdfsdfsdhiffh");
+        yield orderHistory_schema_1.default.create({
+            message: `Your order ${value.orderId} has been arrived`,
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.ARRIVED,
+            merchantID: isCreated.merchant,
+            deliveryBoy: value.deliveryManId,
+        });
+        yield orderHistory_schema_1.default.deleteOne({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.ASSIGNED,
+        });
+        // await createNotification({
+        //   userId: isCreated.merchant,
+        //   orderId: isCreated.orderId,
+        //   title: 'Order Arrived',
+        //   message: `Your order ${isCreated.orderId} has been arrived`,
+        //   type: 'MERCHANT',
+        // });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.arriveOrderMulti = arriveOrderMulti;
 const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(req.body, 'order cancel');
     try {
@@ -673,6 +864,79 @@ const departOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.departOrder = departOrder;
+const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderArriveValidationMulti);
+        // TODO: get distance from google map api
+        const tampdestens = 3.1;
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        console.log(value);
+        value.deliveryManId = req.id.toString();
+        const isCreated = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+            status: { $eq: enum_1.ORDER_HISTORY.PICKED_UP },
+            deliveryDetails: {
+                $elemMatch: {
+                    status: { $eq: enum_1.ORDER_HISTORY.PICKED_UP },
+                    subOrderId: value.subOrderId
+                },
+            },
+        });
+        if (!isCreated) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
+        const isAssigned = yield orderAssigneeMulti_schema_1.default.findOne({
+            order: value.orderId,
+            deliveryBoy: value.deliveryManId,
+        });
+        if (!isAssigned) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').invalidDeliveryMan,
+            });
+        }
+        yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId, 'deliveryDetails.subOrderId': value.subOrderId }, {
+            $set: {
+                "deliveryDetails.$.status": enum_1.ORDER_HISTORY.DEPARTED, // Update all elements
+                "deliveryDetails.$.time.start": Date.now(), // Update all elements' time.start
+            },
+        });
+        yield orderHistory_schema_1.default.create({
+            message: `Your order ${value.orderId} has been out for delivery`,
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.DEPARTED,
+            merchantID: isCreated.merchant,
+            deliveryBoy: value.deliveryManId,
+        });
+        yield orderHistory_schema_1.default.deleteOne({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.PICKED_UP,
+        });
+        // io.to(`order_${value.orderId}`).emit('locationUpdate', {
+        //   latitude: value.latitude,
+        //   longitude: value.longitude,
+        //   deliveryManId: req.id,
+        // });
+        // await createNotification({
+        //   userId: isCreated.merchant,
+        //   orderId: isCreated.orderId,
+        //   title: 'Order Departed',
+        //   message: `Your order ${isCreated.orderId} has been departed`,
+        //   type: 'MERCHANT',
+        // });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.departOrderMulti = departOrderMulti;
 const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderPickUpValidation);
@@ -750,6 +1014,94 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.pickUpOrder = pickUpOrder;
+const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderPickUpValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        // TODO: get distance from google map api
+        const tampdestens = 1.2;
+        const { value } = validateRequest;
+        console.log(value, 'value');
+        // const isArrived = await orderSchemaMulti.findOne({
+        //   orderId: value.orderId,
+        //   status: ORDER_HISTORY.ARRIVED,
+        // });
+        const isArrived = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+            deliveryDetails: {
+                $elemMatch: {
+                    status: enum_1.ORDER_HISTORY.ARRIVED, // Match status inside deliveryDetails
+                },
+            },
+        });
+        console.log(isArrived);
+        if (!isArrived) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorOrderArrived });
+        }
+        const otpData = yield otp_schema_1.default.findOne({
+            value: value.otp,
+            customerEmail: isArrived.pickupDetails.email,
+            expiry: { $gte: Date.now() },
+        });
+        console.log(otpData);
+        if (!otpData) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
+        }
+        // const signDocs = value.userSignature;
+        // value.userSignature = await uploadFile(
+        //   signDocs[0],
+        //   signDocs[1],
+        //   'USER-SIGNATURE',
+        // );
+        // console.log(value.userSignature, 'value.userSignature');
+        // console.log(value.pickupTimestamp, 'value.pickupTimestamp');
+        yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
+            $set: {
+                status: enum_1.ORDER_HISTORY.PICKED_UP,
+                'pickupDetails.userSignature': value.userSignature,
+                'pickupDetails.orderTimestamp': value.pickupTimestamp,
+                'deliveryDetails.$[].status': enum_1.ORDER_HISTORY.PICKED_UP,
+            },
+            $inc: { distance: tampdestens },
+        });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "PICKED_UP" } }, { new: true });
+        // if (isArrived.cashOnDelivery) {
+        //   await PaymentInfoSchema.updateOne(
+        //     { order: value.orderId },
+        //     { $set: { status: PAYMENT_INFO.SUCCESS } },
+        //   );
+        // }
+        yield orderHistory_schema_1.default.create({
+            message: 'Delivery Person has been arrived at pick up location and waiting for client',
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.PICKED_UP,
+            merchantID: isArrived.merchant,
+        });
+        yield orderHistory_schema_1.default.deleteOne({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.ARRIVED,
+        });
+        // await createNotification({
+        //   userId: isArrived.merchant,
+        //   orderId: isArrived.orderId,
+        //   title: 'Order Picked Up',
+        //   message: `Your order ${isArrived.orderId} has been picked up`,
+        //   type: 'MERCHANT',
+        // });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
+        });
+    }
+    catch (error) {
+        console.log('error', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.pickUpOrderMulti = pickUpOrderMulti;
 const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderIdValidation);
@@ -802,6 +1154,146 @@ const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.sendEmailOrMobileOtp = sendEmailOrMobileOtp;
+const sendEmailOrMobileOtpMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderIdValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const orderExist = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+            deliveryDetails: {
+                $elemMatch: {
+                    status: { $ne: enum_1.ORDER_HISTORY.DELIVERED }, // Match the specific status
+                },
+            },
+        });
+        console.log(orderExist);
+        if (!orderExist) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').invalidOrder,
+            });
+        }
+        const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
+        if (orderExist.status === enum_1.ORDER_HISTORY.ARRIVED) {
+            yield (0, common_1.emailOrMobileOtp)(orderExist.pickupDetails.email, `This is your otp for identity verification ${otp}`);
+        }
+        // else if (orderExist.status === ORDER_HISTORY.DEPARTED) {
+        //   await emailOrMobileOtp(
+        //     orderExist.deliveryDetails.email,
+        //     `This is your otp for identity verification ${otp}`,
+        //   );
+        // }
+        const isAtPickUp = orderExist.status === enum_1.ORDER_HISTORY.ARRIVED;
+        console.log(isAtPickUp);
+        // const email = isAtPickUp
+        //   ? orderExist.pickupDetails.email
+        //   : orderExist.deliveryDetails.email;
+        const email = isAtPickUp
+            ? orderExist.pickupDetails.email : null;
+        // : orderExist.deliveryDetails[].email;
+        // const contactNumber = isAtPickUp
+        //   ? orderExist.pickupDetails.mobileNumber
+        //   : orderExist.deliveryDetails.mobileNumber;
+        const contactNumber = isAtPickUp
+            ? orderExist.pickupDetails.mobileNumber
+            : null;
+        yield otp_schema_1.default.updateOne({
+            value: otp,
+            customerEmail: email,
+            customerMobile: contactNumber,
+        }, {
+            value: otp,
+            customerEmail: email,
+            customerMobile: contactNumber,
+            expiry: Date.now() + 600000,
+        }, { upsert: true });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').otpSentSuccess,
+            data: { otp },
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendEmailOrMobileOtpMulti = sendEmailOrMobileOtpMulti;
+const sendEmailOrMobileOtpMultiForDelivery = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderIdValidationForDelivery);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        console.log(value);
+        const orderExist = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+            deliveryDetails: {
+                $elemMatch: {
+                    subOrderId: value.subOrderId, // Match the specific subOrderId
+                },
+            },
+        });
+        console.log(orderExist, "Dastaaaa");
+        const deliveryEmail = orderExist.deliveryDetails.filter((data) => (data.subOrderId === value.subOrderId));
+        console.log(deliveryEmail[0].email, "Emaillllll");
+        console.log(deliveryEmail[0].
+            mobileNumber, "Emaillllll");
+        if (!orderExist) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').invalidOrder,
+            });
+        }
+        const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
+        if (orderExist.status === enum_1.ORDER_HISTORY.ARRIVED) {
+            yield (0, common_1.emailOrMobileOtp)(orderExist.pickupDetails.email, `This is your otp for identity verification ${otp}`);
+        }
+        // else if (orderExist.status === ORDER_HISTORY.DEPARTED) {
+        //   await emailOrMobileOtp(
+        //     orderExist.deliveryDetails.email,
+        //     `This is your otp for identity verification ${otp}`,
+        //   );
+        // }
+        const isAtPickUp = orderExist.status === enum_1.ORDER_HISTORY.ARRIVED;
+        console.log(isAtPickUp);
+        const email = isAtPickUp
+            ? orderExist.pickupDetails.email
+            : deliveryEmail[0].email;
+        // const email = isAtPickUp
+        // ? orderExist.pickupDetails.email : null
+        // : orderExist.deliveryDetails[].email;
+        const contactNumber = isAtPickUp
+            ? orderExist.pickupDetails.mobileNumber
+            : deliveryEmail[0].mobileNumber;
+        // const contactNumber = isAtPickUp
+        // ? orderExist.pickupDetails.mobileNumber
+        // : null;
+        yield otp_schema_1.default.updateOne({
+            value: otp,
+            customerEmail: email,
+            customerMobile: contactNumber,
+            subOrderId: value.subOrderId
+        }, {
+            value: otp,
+            customerEmail: email,
+            customerMobile: contactNumber,
+            expiry: Date.now() + 600000,
+        }, { upsert: true });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').otpSentSuccess,
+            data: { otp },
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendEmailOrMobileOtpMultiForDelivery = sendEmailOrMobileOtpMultiForDelivery;
 // export const sendEmailOrMobileOtp = async (
 //   req: RequestParams,
 //   res: Response,
@@ -1034,6 +1526,185 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.deliverOrder = deliverOrder;
+const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderDeliverValidationMulti);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        console.log('Request Body:', value);
+        const isArrived = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+            'deliveryDetails.subOrderId': value.subOrderId
+        });
+        console.log('Order Details:', isArrived.deliveryDetails);
+        const deliveryEmail = isArrived.deliveryDetails.filter((data) => (data.subOrderId === value.subOrderId));
+        if (!isArrived) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
+        // otp verification START
+        const otpData = yield otp_schema_1.default.findOne({
+            value: value.otp,
+            subOrderId: value.subOrderId,
+            customerEmail: deliveryEmail[0].email,
+            expiry: { $gte: Date.now() },
+        });
+        console.log('OTP Data:', otpData);
+        if (!otpData) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
+        }
+        // otp verification END
+        // total amount to be paid
+        const endTime = Date.now(); // Current time in milliseconds
+        const startTime = new Date(isArrived.time.start).getTime();
+        var totalAmount = isArrived.paymentCollectionRupees;
+        // delivery boy charge
+        var chargeofDeliveryBoy = 0;
+        // admin balance
+        var adminBalance = 0;
+        // if delivery boy is created by admin
+        // then totalamount - adminCommission
+        //
+        const [paymentInfo] = yield Promise.all([
+            paymentInfo_schema_1.default.findOne({ order: value.orderId }),
+            orderMulti_schema_1.default.updateOne({ orderId: value.orderId, 'deliveryDetails.subOrderId': value.subOrderId }, {
+                $set: {
+                    'deliveryDetails.$.deliveryBoySignature': value.deliveryManSignature,
+                    'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
+                    "deliveryDetails.$.status": enum_1.ORDER_HISTORY.DELIVERED,
+                    'time.end': endTime, // Use dot notation to set only the 'end' field
+                },
+            }, { new: true }),
+        ]);
+        console.log('Payment Info:', paymentInfo);
+        const admin = yield admin_schema_1.default.findOne();
+        console.log('Admin Details:', admin);
+        const assignData = yield orderAssigneeMulti_schema_1.default.findOne({
+            order: value.orderId,
+        });
+        console.log('Order Assignment:', assignData);
+        console.log('Order Assignee details', assignData.deliveryBoy);
+        const deliveryBoyId = new mongoose_1.default.Types.ObjectId(assignData.deliveryBoy);
+        // delivery boy details
+        const DeliveryMan = yield deliveryMan_schema_1.default.findById(deliveryBoyId);
+        // charge of delivery boy
+        console.log(DeliveryMan);
+        if (DeliveryMan.chargeMethod === enum_1.CHARGE_METHOD.TIME) {
+            // time in hours
+            const timeTaken = endTime - startTime;
+            const hour = timeTaken / 3600000;
+            // charge per hour
+            chargeofDeliveryBoy = hour * DeliveryMan.charge;
+            console.log(`Charge: ${chargeofDeliveryBoy}`);
+            console.log(`Time taken: ${timeTaken} ms`);
+        }
+        else if (DeliveryMan.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
+            //  distance in miles
+            const distance = isArrived.distance;
+            chargeofDeliveryBoy = distance * DeliveryMan.charge;
+            console.log(`Charge: ${chargeofDeliveryBoy}`);
+            console.log(`Distance: ${distance} miles`);
+        }
+        // if delivery boy is created by admin
+        if (DeliveryMan.createdByAdmin) {
+            console.log('Processing Cash on Delivery Payment');
+            if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
+                yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
+            }
+            console.log('chargeofDeliveryBoy', chargeofDeliveryBoy);
+            console.log(value.orderId);
+            yield (0, common_1.updateWallet)(chargeofDeliveryBoy, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Delivery Boy Commission`, false);
+        }
+        // Only update delivery boy balance if it's cash on delivery
+        if (isArrived.cashOnDelivery) {
+            const balance = totalAmount;
+            const deliveryBoy = yield deliveryMan_schema_1.default.findByIdAndUpdate(assignData.deliveryBoy, { $inc: { balance: balance } }, { $inc: { earning: chargeofDeliveryBoy } });
+            console.log('Delivery Boy Details', deliveryBoy);
+        }
+        else {
+            console.log('Delivery Boy Details', 'Not updated');
+            console.log('isArrived.cashOnDelivery is false');
+        }
+        const city = yield city_schema_1.default.findById(isArrived.city);
+        console.log('City Details:', city);
+        const chargeData = yield productCharges_schema_1.default.findOne({
+            pickupRequest: isArrived.pickupDetails.request,
+            isCustomer: isArrived.isCustomer,
+        });
+        console.log('Charge Data:', chargeData);
+        const adminCommission = chargeData.adminCommission;
+        console.log('Admin Commission:', adminCommission);
+        const message = `Order ${value.orderId} Amount`;
+        console.log('isArrived.cashOnDelivery', isArrived.cashOnDelivery);
+        if (isArrived.cashOnDelivery) {
+            // if cash on delivery
+            console.log('Processing Cash on Delivery Payment');
+            if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
+                yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
+            }
+            console.log('adminCommission', adminCommission);
+            console.log(value.orderId);
+            yield (0, common_1.updateWallet)(adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Admin Commission`, false);
+        }
+        else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.WALLET) {
+            console.log('Processing Wallet Payment');
+            yield Promise.all([
+                (0, common_1.updateWallet)(isArrived.totalCharge, admin._id.toString(), assignData.merchant.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, message),
+                (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false),
+            ]);
+        }
+        else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.ONLINE) {
+            console.log('Processing Online Payment');
+            const admin = yield admin_schema_1.default.findOneAndUpdate({}, {
+                $inc: { balance: adminCommission },
+            });
+            yield (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false);
+        }
+        else {
+            console.log('Processing Other Payment Type');
+            yield (0, common_1.updateWallet)(adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Admin Commission`, false);
+        }
+        yield orderHistory_schema_1.default.create({
+            message: `Your order ${value.orderId} has been successfully delivered`,
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.DELIVERED,
+            merchantID: isArrived.merchant,
+        });
+        console.log('Order History Created');
+        yield orderHistory_schema_1.default.deleteOne({
+            order: value.orderId,
+            status: enum_1.ORDER_HISTORY.DEPARTED,
+        });
+        console.log('Old Order History Deleted');
+        yield (0, common_1.createNotification)({
+            userId: isArrived.merchant,
+            orderId: isArrived.orderId,
+            title: 'Order Delivered',
+            message: `Your order ${isArrived.orderId} has been delivered`,
+            type: 'MERCHANT',
+        });
+        console.log('Notification Created');
+        console.log('Final Order Details:', {
+            orderId: value.orderId,
+            status: enum_1.ORDER_HISTORY.DELIVERED,
+            paymentInfo: paymentInfo,
+            adminCommission: adminCommission,
+            totalCharge: isArrived.totalCharge,
+        });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
+        });
+    }
+    catch (error) {
+        console.error('Error in deliverOrder:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+            error: (error === null || error === void 0 ? void 0 : error.message) || 'Unknown error',
+        });
+    }
+});
+exports.deliverOrderMulti = deliverOrderMulti;
 const OrderAssigneeSchemaData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield orderAssignee_schema_1.default.find();

@@ -34,6 +34,7 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -42,12 +43,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -56,12 +66,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }> & {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -70,8 +89,16 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }>;
@@ -142,6 +169,7 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -150,12 +178,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -164,12 +201,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }> & {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -178,8 +224,16 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }>;
@@ -250,6 +304,7 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -258,12 +313,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -272,12 +336,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }> & {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -286,8 +359,16 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }>;
@@ -365,6 +446,7 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -373,12 +455,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -387,12 +478,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }> & {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -401,8 +501,16 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }>;
@@ -473,6 +581,7 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -481,12 +590,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -495,12 +613,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }> & {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -509,8 +636,16 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }>;
@@ -581,6 +716,7 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -589,12 +725,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -603,12 +748,21 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }> & {
         type?: {
+            status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
@@ -617,8 +771,16 @@ declare const Model: mongoose.Model<{
             mobileNumber?: number;
             email?: string;
             location?: any;
+            time?: {
+                end?: NativeDate;
+                start?: NativeDate;
+            };
+            parcelsCount?: number;
+            paymentCollectionRupees?: number;
             orderTimestamp?: NativeDate;
             deliveryBoySignature?: string;
+            distance?: number;
+            duration?: string;
             subOrderId?: number;
         };
     }>;

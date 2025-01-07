@@ -106,6 +106,27 @@ const OrderSchema = new mongoose_1.default.Schema({
                 deliveryBoySignature: { type: String },
                 postCode: { type: String },
                 cashOnDelivery: { type: Boolean, default: false },
+                distance: {
+                    type: Number,
+                },
+                duration: {
+                    type: String
+                },
+                parcelsCount: {
+                    type: Number
+                },
+                paymentCollectionRupees: {
+                    type: Number
+                },
+                status: {
+                    type: String,
+                    default: enum_1.ORDER_HISTORY.ASSIGNED,
+                    enum: enum_1.ORDER_HISTORY,
+                },
+                time: {
+                    start: { type: Date },
+                    end: { type: Date },
+                },
             },
         },
     ],
@@ -125,10 +146,6 @@ const OrderSchema = new mongoose_1.default.Schema({
         default: enum_1.ORDER_HISTORY.ASSIGNED,
         enum: enum_1.ORDER_HISTORY,
     },
-    // customer: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'user',
-    // },
     merchant: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: 'merchant',

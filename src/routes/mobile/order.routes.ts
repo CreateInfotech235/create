@@ -9,6 +9,7 @@ import {
   getAllRecentOrdersFromMerchant,
   getAllPaymentInfo,
   orderCreationMulti,
+  orderUpdateMulti,
   // getAllOrdersFromMerchantt,
 } from '../../controller/mobile/order.controller';
 
@@ -227,4 +228,5 @@ router.patch('/moveToTrashFormMerchant/:id', moveToTrash);
 
 
 router.post('/createMulti', orderCreationMulti);
+router.patch('/orderUpdateMulti/:orderId', orderUpdateMulti);
 export default router;

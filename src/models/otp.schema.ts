@@ -15,6 +15,9 @@ const otpSchema = new mongoose.Schema(
     expiry: {
       type: Date,
     },
+    subOrderId : {
+      type : Number
+    },
     action: {
       type: String,
       enum: PERSON_TYPE,

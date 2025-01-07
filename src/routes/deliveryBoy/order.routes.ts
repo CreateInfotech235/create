@@ -2,16 +2,23 @@ import express from 'express';
 import {
   acceptOrder,
   arriveOrder,
+  arriveOrderMulti,
   cancelOrder,
   deliverOrder,
+  deliverOrderMulti,
   departOrder,
+  departOrderMulti,
   getAllCancelledOrders,
   getAssignedOrders,
+  getAssignedOrdersMulti,
   getOederForDeliveryMan,
   getOrderById,
   getPaymentDataForDeliveryBoy,
   pickUpOrder,
+  pickUpOrderMulti,
   sendEmailOrMobileOtp,
+  sendEmailOrMobileOtpMulti,
+  sendEmailOrMobileOtpMultiForDelivery,
 } from '../../controller/deliveryBoy/order.controller';
 
 const router = express.Router();
@@ -50,6 +57,7 @@ const router = express.Router();
  *         description: Something went wrong
  */
 router.get('/', getAssignedOrders);
+router.get('/getAssignedOrdersMulti', getAssignedOrdersMulti);
 
 /**
  * @swagger
@@ -98,6 +106,7 @@ router.patch('/accept', acceptOrder);
  *         description: Something went wrong
  */
 router.patch('/arrive', arriveOrder);
+router.patch('/arriveOrderMulti', arriveOrderMulti);
 /**
  * @swagger
  * /deliveryBoy/orders/cancel:
@@ -145,6 +154,7 @@ router.patch('/cancel', cancelOrder);
  *         description: Something went wrong
  */
 router.patch('/pickUp', pickUpOrder);
+router.patch('/pickUpOrderMulti', pickUpOrderMulti);
 
 /**
  * @swagger
@@ -169,6 +179,7 @@ router.patch('/pickUp', pickUpOrder);
  *         description: Something went wrong
  */
 router.patch('/depart', departOrder);
+router.patch('/departOrderMulti', departOrderMulti);
 
 /**
  * @swagger
@@ -193,6 +204,7 @@ router.patch('/depart', departOrder);
  *         description: Something went wrong
  */
 router.patch('/deliver', deliverOrder);
+router.patch('/deliverOrderMulti', deliverOrderMulti);
 
 /**
  * @swagger
@@ -217,6 +229,8 @@ router.patch('/deliver', deliverOrder);
  *         description: Something went wrong
  */
 router.post('/sendEmailOrMobileOtp', sendEmailOrMobileOtp);
+router.post('/sendEmailOrMobileOtpMulti', sendEmailOrMobileOtpMulti);
+router.post('/sendEmailOrMobileOtpMultiForDelivery', sendEmailOrMobileOtpMultiForDelivery);
 
 /**
  * @swagger

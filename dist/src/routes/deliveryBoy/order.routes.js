@@ -40,6 +40,7 @@ const router = express_1.default.Router();
  *         description: Something went wrong
  */
 router.get('/', order_controller_1.getAssignedOrders);
+router.get('/getAssignedOrdersMulti', order_controller_1.getAssignedOrdersMulti);
 /**
  * @swagger
  * /deliveryBoy/orders/accept:
@@ -86,6 +87,7 @@ router.patch('/accept', order_controller_1.acceptOrder);
  *         description: Something went wrong
  */
 router.patch('/arrive', order_controller_1.arriveOrder);
+router.patch('/arriveOrderMulti', order_controller_1.arriveOrderMulti);
 /**
  * @swagger
  * /deliveryBoy/orders/cancel:
@@ -132,6 +134,7 @@ router.patch('/cancel', order_controller_1.cancelOrder);
  *         description: Something went wrong
  */
 router.patch('/pickUp', order_controller_1.pickUpOrder);
+router.patch('/pickUpOrderMulti', order_controller_1.pickUpOrderMulti);
 /**
  * @swagger
  * /deliveryBoy/orders/depart:
@@ -155,6 +158,7 @@ router.patch('/pickUp', order_controller_1.pickUpOrder);
  *         description: Something went wrong
  */
 router.patch('/depart', order_controller_1.departOrder);
+router.patch('/departOrderMulti', order_controller_1.departOrderMulti);
 /**
  * @swagger
  * /deliveryBoy/orders/deliver:
@@ -178,6 +182,7 @@ router.patch('/depart', order_controller_1.departOrder);
  *         description: Something went wrong
  */
 router.patch('/deliver', order_controller_1.deliverOrder);
+router.patch('/deliverOrderMulti', order_controller_1.deliverOrderMulti);
 /**
  * @swagger
  * /deliveryBoy/orders/sendEmailOrMobileOtp:
@@ -201,6 +206,8 @@ router.patch('/deliver', order_controller_1.deliverOrder);
  *         description: Something went wrong
  */
 router.post('/sendEmailOrMobileOtp', order_controller_1.sendEmailOrMobileOtp);
+router.post('/sendEmailOrMobileOtpMulti', order_controller_1.sendEmailOrMobileOtpMulti);
+router.post('/sendEmailOrMobileOtpMultiForDelivery', order_controller_1.sendEmailOrMobileOtpMultiForDelivery);
 /**
  * @swagger
  * /deliveryBoy/orders/getOrderById/{orderId}:

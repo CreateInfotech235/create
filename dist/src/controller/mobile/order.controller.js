@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderCreationMulti = exports.orderCreation = void 0;
+exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderUpdateMulti = exports.orderCreationMulti = exports.orderCreation = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -21,6 +21,7 @@ const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.s
 const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderMulti_schema_1 = __importDefault(require("../../models/orderMulti.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
+const orderAssigneeMulti_schema_1 = __importDefault(require("../../models/orderAssigneeMulti.schema"));
 const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory.schema"));
 const orderAssignee_schema_2 = __importDefault(require("../../models/orderAssignee.schema"));
 const paymentInfo_schema_1 = __importDefault(require("../../models/paymentInfo.schema"));
@@ -162,12 +163,6 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
-        // console.log(value.merchant, req.id.toString(), 'VAlue');
-        // return;
-        // const customerData = await customerSchema.findOne({ address: deliveryDetails.address });
-        // if (!customerData) {
-        //   return res.badRequest({ message: getLanguage('en').invalidCustomer });
-        // }E:\nikunj\create_courier\create_courier
         let checkLastOrder = yield orderMulti_schema_1.default
             .findOne({}, { _id: 0, orderId: 1 })
             .sort({ orderId: -1 });
@@ -178,20 +173,26 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
             checkLastOrder = { orderId: 1 };
         }
         value.orderId = checkLastOrder.orderId;
-        // value.customer = req.id.toString();
-        const orderId = checkLastOrder.orderId;
         value.merchant = req.id.toString();
         const newOrder = yield orderMulti_schema_1.default.create(Object.assign(Object.assign({}, value), { showOrderNumber: datamarcent.showOrderNumber }));
         const admin = yield admin_schema_1.default.findOne();
         const deliveryMan = yield deliveryMan_schema_1.default.findById({
             _id: req.body.deliveryManId,
         });
-        // const payPerMiles = value.deliveryManCharge;
-        console.log(deliveryMan, 'payPerMiles');
-        const totalCharge = Number((((deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0) * value.distance).toFixed(2));
+        // Ensure charge is a valid number and not NaN
+        const charge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0;
+        const distance = value.distance || 0;
+        // Calculate total charge and admin charge
+        const totalCharge = (charge * distance).toFixed(2);
+        const totalChargeNumber = isNaN(Number(totalCharge))
+            ? 0
+            : Number(totalCharge);
         const adminCharge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByAdmin)
-            ? Number((totalCharge % (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.adminCharge) || 0).toFixed(2))
+            ? (totalChargeNumber % ((deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.adminCharge) || 0)).toFixed(2)
             : 0;
+        const adminChargeNumber = isNaN(Number(adminCharge))
+            ? 0
+            : Number(adminCharge);
         const createdBy = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByMerchant)
             ? 'MERCHANTDELIVERYMAN'
             : 'ADMINDELIVERYMAN';
@@ -205,12 +206,12 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
             adminId: (admin === null || admin === void 0 ? void 0 : admin._id) || '',
             merchantId: (req === null || req === void 0 ? void 0 : req.id) || '',
             deliveryManId: req.body.deliveryManId,
-            orderId: orderId,
+            orderId: checkLastOrder.orderId,
             orderIdForMerchant: newOrder.showOrderNumber,
-            miles: value.distance,
-            payPerMiles: (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0,
-            totalPaytoDeliveryMan: totalCharge,
-            totalPaytoAdmin: adminCharge,
+            miles: distance,
+            payPerMiles: charge,
+            totalPaytoDeliveryMan: totalChargeNumber,
+            totalPaytoAdmin: adminChargeNumber,
             deliveryManWallet: deliveryManWallet,
             deliveryManType: createdBy,
             paymentStatus: paymentStatus,
@@ -221,7 +222,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         console.log('data123', data);
         if (value.deliveryManId) {
             value.isCustomer = true;
-            yield orderAssignee_schema_1.default.create({
+            yield orderAssigneeMulti_schema_1.default.create({
                 deliveryBoy: value.deliveryManId,
                 merchant: req.id,
                 order: newOrder.orderId,
@@ -241,7 +242,6 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
             status: enum_1.ORDER_HISTORY.ASSIGNED,
         });
         const paymentData = {
-            // customer: req.id.toString(),
             merchant: req.id.toString(),
             paymentThrough: value.paymentCollection,
             paymentCollectFrom: value.paymentOrderLocation,
@@ -262,6 +262,106 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.orderCreationMulti = orderCreationMulti;
+const orderUpdateMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderId = req.params.orderId; // Get orderId from request parameters
+        const updateData = req.body; // Get the fields to update from request body
+        console.log(req.body, 'updateData');
+        // Validate the incoming data using Joi (if needed)
+        const validateRequest = (0, validateRequest_1.default)(updateData, order_validation_1.newOrderCreationMulti);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Check if the order exists
+        const existingOrder = yield orderMulti_schema_1.default.findOne({ _id: orderId });
+        if (!existingOrder) {
+            return res.badRequest({ message: 'Order not found' });
+        }
+        // Update fields in the order
+        const updatedOrder = yield orderMulti_schema_1.default.findOneAndUpdate({ _id: orderId }, { $set: value }, { new: true });
+        console.log(value, 'value');
+        if (!updatedOrder) {
+            return res.failureResponse({
+                message: 'Failed to update order',
+            });
+        }
+        else {
+            console.log(updatedOrder, 'updatedOrder');
+            const deliveryMan = yield deliveryMan_schema_1.default.findById({
+                _id: value.deliveryManId,
+            });
+            const admin = yield admin_schema_1.default.findOne();
+            // Ensure valid numeric values for charge and distance
+            const charge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0;
+            const distance = value.distance || 0;
+            // Calculate total charge and admin charge
+            const totalCharge = ((charge * distance) || 0).toFixed(2);
+            const totalChargeNumber = isNaN(Number(totalCharge)) ? 0 : Number(totalCharge);
+            const adminCharge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByAdmin)
+                ? (totalChargeNumber % ((deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.adminCharge) || 0)).toFixed(2)
+                : '0';
+            const adminChargeNumber = isNaN(Number(adminCharge)) ? 0 : Number(adminCharge);
+            const createdBy = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByMerchant)
+                ? 'MERCHANTDELIVERYMAN'
+                : 'ADMINDELIVERYMAN';
+            const paymentStatus = (updatedOrder === null || updatedOrder === void 0 ? void 0 : updatedOrder.cashOnDelivery)
+                ? 'CASHONDELIVERY'
+                : 'DIRECTPAYMENT';
+            const deliveryManWallet = (updatedOrder === null || updatedOrder === void 0 ? void 0 : updatedOrder.paymentCollectionRupees)
+                ? updatedOrder.paymentCollectionRupees
+                : 0;
+            const data = {
+                adminId: (admin === null || admin === void 0 ? void 0 : admin._id) || '',
+                merchantId: (req === null || req === void 0 ? void 0 : req.id) || '',
+                deliveryManId: value.deliveryManId,
+                orderId: updatedOrder.orderId,
+                orderIdForMerchant: updatedOrder.showOrderNumber,
+                miles: distance,
+                payPerMiles: charge,
+                totalPaytoDeliveryMan: totalChargeNumber,
+                totalPaytoAdmin: adminChargeNumber,
+                deliveryManWallet: deliveryManWallet,
+                deliveryManType: createdBy,
+                paymentStatus: paymentStatus,
+                orderPickupTime: new Date(),
+                orderDeleverTime: new Date(),
+            };
+            console.log(data, 'data');
+            console.log(updatedOrder.orderId, 'orderId');
+            // Update paymentGetSchema with the calculated data
+            yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: data }, { new: true });
+        }
+        // If deliveryManId is updated, update the assignee table too
+        if (value.deliveryManId) {
+            if (existingOrder.status === 'UNASSIGNED') {
+                const updatedOrder = yield orderMulti_schema_1.default.findOneAndUpdate({ _id: orderId }, { status: 'ASSIGNED' });
+                yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: { statusOfOrder: 'ASSIGNED' } }, { new: true });
+                yield orderAssigneeMulti_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });
+                yield orderHistory_schema_1.default.create({
+                    message: 'Order has been assigned',
+                    order: updatedOrder.orderId,
+                    merchantID: updatedOrder.merchant,
+                    status: enum_1.ORDER_HISTORY.ASSIGNED,
+                });
+            }
+            else {
+                yield orderAssigneeMulti_schema_1.default.updateOne({ order: existingOrder.orderId }, { deliveryBoy: value.deliveryManId });
+            }
+        }
+        return res.ok({
+            message: 'Order updated successfully',
+            data: { orderId: updatedOrder._id },
+        });
+    }
+    catch (error) {
+        console.log('Error in order update route', error);
+        return res.failureResponse({
+            message: 'Something went wrong, please try again later',
+        });
+    }
+});
+exports.orderUpdateMulti = orderUpdateMulti;
 const getAllPaymentInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const paymentInfo = yield paymentInfo_schema_1.default.find();

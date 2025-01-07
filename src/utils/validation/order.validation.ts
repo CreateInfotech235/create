@@ -125,60 +125,48 @@ export const newOrderCreation = Joi.object({
     .default(''),
 });
 export const newOrderCreationMulti = Joi.object({
-  parcelsCount: Joi.number().required(),
-  dateTime: Joi.date().timestamp().required(),
   paymentCollection: Joi.string(),
   paymentCollectionRupees: Joi.number(),
-  description: Joi.string(),
+  duration: Joi.string(),
+  cashOnDelivery: Joi.boolean().default(false),
+  distance: Joi.number(),
+  dateTime: Joi.date().timestamp().required(),
   pickupDetails: Joi.object({
+    address: Joi.string().required(),
+    dateTime: Joi.date().timestamp().required(),
+    description: Joi.string().allow(''),
+    email: Joi.string().email().optional(),
     location: Joi.object({
       latitude: Joi.number().required(),
       longitude: Joi.number().required(),
     }).required(),
-    dateTime: Joi.date().timestamp().required(),
-    address: Joi.string().required(),
     merchantId: Joi.string().required(),
-    name: Joi.string().required(),
-    // countryCode: Joi.string().required(),
     mobileNumber: Joi.number().required(),
-    email: Joi.string(),
-    pickupRequest: Joi.string()
-      .valid(PICKUP_REQUEST.REGULAR, PICKUP_REQUEST.EXPRESS)
-      .default(PICKUP_REQUEST.REGULAR),
-    description: Joi.string().allow(''),
-    postCode: Joi.string()
-      .regex(/^[A-Za-z0-9\s-]+$/)
-      .required(),
-  }),
+    name: Joi.string().required(),
+    postCode: Joi.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
+  }).required(),
+  deliveryManId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
   deliveryDetails: Joi.array().items(
     Joi.object({
       subOrderId: Joi.number().required(),
+      address: Joi.string().required(),
+      email: Joi.string().email().optional(),
       location: Joi.object({
         latitude: Joi.number().required(),
         longitude: Joi.number().required(),
       }).required(),
-      dateTime: Joi.date().timestamp(),
-      address: Joi.string().required(),
-      name: Joi.string().required(),
-      // countryCode: Joi.string().required(),
       mobileNumber: Joi.number().required(),
-      email: Joi.string(),
-      description: Joi.string().allow(''),
-      postCode: Joi.string()
-        .regex(/^[A-Za-z0-9\s-]+$/)
-        .required(),
-      cashCollection: Joi.number(),
-    }),
-  ),
-  cashOnDelivery: Joi.boolean().default(false),
-  trashed: Joi.boolean().default(false),
-  duration: Joi.string().required(),
-  distance: Joi.number().required(),
-  deliveryManId: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/)
-    .allow('')
-    .default(''),
+      name: Joi.string().required(),
+      postCode: Joi.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
+      distance: Joi.number().required(),
+      duration: Joi.string().required(),
+      parcelsCount: Joi.number().required(),
+      paymentCollectionRupees: Joi.number().required(),
+      cashOnDelivery: Joi.boolean().valid(true, false).required(),
+    })
+  ).required(),
 });
+
 
 export const orderAssignValidation = Joi.object({
   deliveryManId: Joi.string()
@@ -196,6 +184,10 @@ export const orderAcceptValidation = Joi.object({
 
 export const orderArriveValidation = Joi.object({
   orderId: Joi.number().required(),
+});
+export const orderArriveValidationMulti = Joi.object({
+  orderId: Joi.number().required(),
+  subOrderId : Joi.number().optional()
 });
 
 export const orderListByDeliveryManValidation = Joi.object({
@@ -234,9 +226,22 @@ export const orderDeliverValidation = Joi.object({
   deliverTimestamp: Joi.date().timestamp().required(),
   otp: Joi.number(),
 });
+export const orderDeliverValidationMulti = Joi.object({
+  orderId: Joi.number().required(),
+  subOrderId : Joi.number().required(),
+  deliveryManSignature: Joi.string()
+    .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
+    .required(),
+  deliverTimestamp: Joi.date().timestamp().required(),
+  otp: Joi.number(),
+});
 
 export const orderIdValidation = Joi.object({
   orderId: Joi.number().required(),
+});
+export const orderIdValidationForDelivery = Joi.object({
+  orderId: Joi.number().required(),
+  subOrderId : Joi.number().required(),
 });
 
 export const orderCancelValidation = Joi.object({

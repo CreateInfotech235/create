@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { RequestParams } from '../../utils/types/expressTypes';
 export declare const orderCreation: (req: RequestParams, res: Response) => Promise<void>;
 export declare const orderCreationMulti: (req: RequestParams, res: Response) => Promise<void>;
+export declare const orderUpdateMulti: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getAllPaymentInfo: (req: RequestParams, res: Response) => Promise<void>;
 export declare const orderUpdate: (req: RequestParams, res: Response) => Promise<void>;
 export declare const cancelOrder: (req: RequestParams, res: Response) => Promise<void>;
