@@ -2417,32 +2417,24 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
 
 
 export const getMultiOrderById = async (req: RequestParams, res: Response) => {
-  console.log("ENTER");
+  // console.log("ENTER");
+  
+  
+  // console.log("id", id);
+  
+  // const data2 = await orderSchemaMulti.find({orderId: id})
+  // console.log("data2", data2);
+  
   try {
-
     const id = req.params.id
 
-    console.log("id", id);
-    const multiOrder = await OrderAssigneeSchemaMulti.findById(id)
+    const multiOrder = await orderSchemaMulti.findById(id)
     console.log("multiOrder", multiOrder);
-    if (multiOrder) {
-      const orderData = await orderSchemaMulti.find({ orderId: multiOrder.order });
-      console.log("orderData", orderData);
-      const data = {
-        _id: multiOrder._id,
-        deliveryBoy: multiOrder.deliveryBoy,
-        merchant: multiOrder.merchant,
-        order: multiOrder.order,
-        status: multiOrder.status,
-        createdAt: multiOrder.createdAt,
-        updatedAt: multiOrder.updatedAt,
-        orderData: orderData[0]
-      };
-      return res.ok({ data: data });
-    }
-    else{
-      return res.ok({ data: [] });
-    }
+   
+   
+   
+      return res.ok({ data: multiOrder });
+    
     
   } catch (error) {
     return res.failureResponse({

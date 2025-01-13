@@ -52,6 +52,7 @@ import {
 import { verifyPassword } from '../deliveryBoy/auth.controller';
 import axios from 'axios';
 
+
 export const signUp = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
@@ -79,11 +80,17 @@ export const signUp = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: validateRequest.message });
     }
 
-    // const assetsFile = req.file;
 
     const { value } = validateRequest;
     console.log(value);
-    
+    var merchantUserId;
+    var listoftext = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+    do {
+      merchantUserId = listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))]
+
+      console.log("merchantUserId", merchantUserId);
+    } while (await merchantSchema.findOne({ merchantUserId: merchantUserId }));
+
 
     const userExist = await merchantSchema.findOne({ email: value.email });
 
@@ -132,7 +139,7 @@ export const signUp = async (req: RequestParams, res: Response) => {
 
     value.password = await encryptPassword({ password: value.password });
 
-    await merchantSchema.create(value);
+    await merchantSchema.create({ ...value, merchantUserId });
 
     return res.ok({ message: getLanguage('en').userRegistered });
   } catch (error) {
@@ -411,7 +418,7 @@ export const sendEmailOrMobileOtp = async (
     }
     const { value } = validateRequest;
     console.log(value);
-    
+
 
     let userExist;
 
@@ -1519,7 +1526,7 @@ export const SupportTicketUpdate = async (req: RequestParams, res: Response) => 
   try {
     const { id, userId } = req.query;
     const data = await SupportTicket.findById(id);
-    console.log(data.userid , "User", userId);
+    console.log(data.userid, "User", userId);
     if (data.userid == userId) {
       const updateData = await SupportTicket.updateOne({ _id: id }, req.body, { new: true });
       return res.status(200).json({
@@ -1584,7 +1591,7 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
 
     res.json(ticket.messages);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to add message' }); 
+    res.status(500).json({ message: 'Failed to add message' });
   }
 };
 
@@ -1592,7 +1599,7 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
 export const deleteMessageFromTicket = async (req: RequestParams, res: Response) => {
   try {
     console.log("Gfgeguefg");
-    
+
     const { ticketId, messageId } = req.params;
 
     // Find the ticket by ID
@@ -1622,123 +1629,123 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
   }
 };
 
-  export const getDistance = async (req: RequestParams, res: Response) => {
-    const { origin, destination, apiKey } = req.query;
-    console.log(origin , "Origin", destination , "Destination", apiKey , "Api Key");
-    try {
-      const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
-        params: {
-          origins: origin,
-          destinations: destination,
-          key: apiKey
-        }
-      });
-      console.log(response , "Sdsdhdsfbsfsdfbf");
-      res.json(response.data.rows[0].elements[0]);
-    } catch (error) {
-      res.status(500).json({ error: 'Error calling Google Maps API' });
-    }
+export const getDistance = async (req: RequestParams, res: Response) => {
+  const { origin, destination, apiKey } = req.query;
+  console.log(origin, "Origin", destination, "Destination", apiKey, "Api Key");
+  try {
+    const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
+      params: {
+        origins: origin,
+        destinations: destination,
+        key: apiKey
+      }
+    });
+    console.log(response, "Sdsdhdsfbsfsdfbf");
+    res.json(response.data.rows[0].elements[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Error calling Google Maps API' });
   }
+}
 
-  // export const forgotPassword = async (req: RequestParams, res: Response) => {
-  //   try {
-  //     const validateRequest = validateParamsWithJoi<{
-  //       email: string;
-  //       otp: number;
-  //       newPassword: string;
-  //     }>(req.body, forgotPasswordValidation);
-  
-  //     if (!validateRequest.isValid) {
-  //       return res.badRequest({ message: validateRequest.message });
-  //     }
-  
-  //     const { value } = validateRequest;
-  
-  //     // Check if the user exists
-  //     const user = await merchantSchema.findOne({ email: value.email });
-  
-  //     if (!user) {
-  //       return res.badRequest({ message: getLanguage('en').emailNotRegistered });
-  //     }
-  
-  //     // Validate the OTP
-  //     const otpData = await otpSchema.findOne({
-  //       value: value.otp,
-  //       customerEmail: value.email,
-  //       expiry: { $gte: Date.now() },
-  //     });
-  
-  //     if (!otpData) {
-  //       return res.badRequest({ message: getLanguage('en').otpExpired });
-  //     }
-  
-  //     // Encrypt the new password
-  //     const encryptedPassword = await encryptPassword({ password: value.newPassword });
-  
-  //     // Update the user's password
-  //     await merchantSchema.updateOne(
-  //       { email: value.email },
-  //       { $set: { password: encryptedPassword } }
-  //     );
-  
-  //     // Optionally delete the OTP record after use
-  //     await otpSchema.deleteOne({ _id: otpData._id });
-  
-  //     return res.ok({ message: getLanguage('en').passwordResetSuccess });
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     return res.failureResponse({
-  //       message: getLanguage('en').somethingWentWrong,
-  //     });
-  //   }
-  // };
-  
+// export const forgotPassword = async (req: RequestParams, res: Response) => {
+//   try {
+//     const validateRequest = validateParamsWithJoi<{
+//       email: string;
+//       otp: number;
+//       newPassword: string;
+//     }>(req.body, forgotPasswordValidation);
+
+//     if (!validateRequest.isValid) {
+//       return res.badRequest({ message: validateRequest.message });
+//     }
+
+//     const { value } = validateRequest;
+
+//     // Check if the user exists
+//     const user = await merchantSchema.findOne({ email: value.email });
+
+//     if (!user) {
+//       return res.badRequest({ message: getLanguage('en').emailNotRegistered });
+//     }
+
+//     // Validate the OTP
+//     const otpData = await otpSchema.findOne({
+//       value: value.otp,
+//       customerEmail: value.email,
+//       expiry: { $gte: Date.now() },
+//     });
+
+//     if (!otpData) {
+//       return res.badRequest({ message: getLanguage('en').otpExpired });
+//     }
+
+//     // Encrypt the new password
+//     const encryptedPassword = await encryptPassword({ password: value.newPassword });
+
+//     // Update the user's password
+//     await merchantSchema.updateOne(
+//       { email: value.email },
+//       { $set: { password: encryptedPassword } }
+//     );
+
+//     // Optionally delete the OTP record after use
+//     await otpSchema.deleteOne({ _id: otpData._id });
+
+//     return res.ok({ message: getLanguage('en').passwordResetSuccess });
+//   } catch (error) {
+//     console.error('Error:', error);
+//     return res.failureResponse({
+//       message: getLanguage('en').somethingWentWrong,
+//     });
+//   }
+// };
+
 
 export const sendOtp = async (req: RequestParams, res: Response) => {
-    try {
-      
-      const validateRequest = validateParamsWithJoi<{ email: string }>(req.body, sendOtpValidation);
-  
-      if (!validateRequest.isValid) {
-        return res.badRequest({ message: validateRequest.message });
-      }
-  
-      const { value } = validateRequest;
-      console.log(value);
-      
-      // Check if the user exists
-      const user = await merchantSchema.findOne({ email: value.email });
-      console.log(user);
-      
-      if (!user) {
-        return res.badRequest({ message: getLanguage('en').emailNotRegistered });
-      }
-      console.log("dfsad");
-   
-  
-      // Generate OTP
-      const otp = Math.floor(1000 + Math.random() * 9000); 
-      const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
-      await emailOrMobileOtp(
-        value.email,
-        `This is your otp for Reset Password ${otp}`,
-      );
-      await otpSchema.create({
-        value: otp,
-        customerEmail: value.email,
-        expiry: otpExpiry,
-      });
-  
-      // Send OTP (mock or use an actual email/SMS service)
-      console.log(`OTP for ${value.email}: ${otp}`);
-  
-      return res.ok({ message: getLanguage('en').otpSent });
-    } catch (error) {
-      console.error('Error:', error);
-      return res.failureResponse({
-        message: getLanguage('en').somethingWentWrong,
-      });
+  try {
+
+    const validateRequest = validateParamsWithJoi<{ email: string }>(req.body, sendOtpValidation);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
     }
+
+    const { value } = validateRequest;
+    console.log(value);
+
+    // Check if the user exists
+    const user = await merchantSchema.findOne({ email: value.email });
+    console.log(user);
+
+    if (!user) {
+      return res.badRequest({ message: getLanguage('en').emailNotRegistered });
+    }
+    console.log("dfsad");
+
+
+    // Generate OTP
+    const otp = Math.floor(1000 + Math.random() * 9000);
+    const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+    await emailOrMobileOtp(
+      value.email,
+      `This is your otp for Reset Password ${otp}`,
+    );
+    await otpSchema.create({
+      value: otp,
+      customerEmail: value.email,
+      expiry: otpExpiry,
+    });
+
+    // Send OTP (mock or use an actual email/SMS service)
+    console.log(`OTP for ${value.email}: ${otp}`);
+
+    return res.ok({ message: getLanguage('en').otpSent });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
 };
 
 export const verifyOtp = async (req: RequestParams, res: Response) => {
@@ -1771,7 +1778,7 @@ export const verifyOtp = async (req: RequestParams, res: Response) => {
       message: getLanguage('en').somethingWentWrong,
     });
   }
-};  
+};
 
 export const resetPassword = async (req: RequestParams, res: Response) => {
   try {

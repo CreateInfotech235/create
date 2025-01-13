@@ -56,9 +56,14 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
-        // const assetsFile = req.file;
         const { value } = validateRequest;
         console.log(value);
+        var merchantUserId;
+        var listoftext = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+        do {
+            merchantUserId = listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))];
+            console.log("merchantUserId", merchantUserId);
+        } while (yield user_schema_1.default.findOne({ merchantUserId: merchantUserId }));
         const userExist = yield user_schema_1.default.findOne({ email: value.email });
         if (userExist) {
             return res.badRequest({
@@ -97,7 +102,7 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //   value.medicalCertificate = await uploadFile(Image[0], Image[1], 'MERCHANT-MEDICALCER');
         // }
         value.password = yield (0, common_1.encryptPassword)({ password: value.password });
-        yield user_schema_1.default.create(value);
+        yield user_schema_1.default.create(Object.assign(Object.assign({}, value), { merchantUserId }));
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').userRegistered });
     }
     catch (error) {

@@ -57,9 +57,9 @@ export const getApproveSubscription = async (
   }
 };
 export const stripPayment = async (req: RequestParams, res: Response) => {
-  const { amount, planId, duration, expiryDate } = req.body;
+  const { amount, planId, duration, expiryDate, merchantId } = req.body;
 
-  console.log("Received Payment Data:", amount, planId, duration, expiryDate);
+  console.log("Received Payment Data:", amount, planId, duration, expiryDate, merchantId);
 
   try {
     // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
@@ -73,7 +73,16 @@ export const stripPayment = async (req: RequestParams, res: Response) => {
         planId,
         duration,
         expiryDate,
+        merchantId
       },
+    });
+
+    // Create subscription purchase record
+    await subcriptionPurchaseSchema.create({
+      subcriptionId: planId,
+      merchant: merchantId,
+      expiry: expiryDate,
+      status: 'APPROVED'
     });
 
     console.log("Payment Intent Created:", paymentIntent);

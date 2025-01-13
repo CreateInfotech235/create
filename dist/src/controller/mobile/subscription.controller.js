@@ -61,8 +61,8 @@ const getApproveSubscription = (req, res) => __awaiter(void 0, void 0, void 0, f
 });
 exports.getApproveSubscription = getApproveSubscription;
 const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { amount, planId, duration, expiryDate } = req.body;
-    console.log("Received Payment Data:", amount, planId, duration, expiryDate);
+    const { amount, planId, duration, expiryDate, merchantId } = req.body;
+    console.log("Received Payment Data:", amount, planId, duration, expiryDate, merchantId);
     try {
         // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
         const formattedAmount = Math.round(amount * 100);
@@ -74,7 +74,15 @@ const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 planId,
                 duration,
                 expiryDate,
+                merchantId
             },
+        });
+        // Create subscription purchase record
+        yield subcriptionPurchase_schema_1.default.create({
+            subcriptionId: planId,
+            merchant: merchantId,
+            expiry: expiryDate,
+            status: 'APPROVED'
         });
         console.log("Payment Intent Created:", paymentIntent);
         res.send({

@@ -22,6 +22,10 @@ const merchantSchema = new mongoose.Schema(
     countryCode: {
       type: String,
     },
+    merchantUserId: {
+      type: String,
+    },
+    
     // country: {
     //   type: String,
     //   unique: true,

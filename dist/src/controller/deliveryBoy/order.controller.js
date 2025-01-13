@@ -1887,30 +1887,15 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.getMultiOrder = getMultiOrder;
 const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("ENTER");
+    // console.log("ENTER");
+    // console.log("id", id);
+    // const data2 = await orderSchemaMulti.find({orderId: id})
+    // console.log("data2", data2);
     try {
         const id = req.params.id;
-        console.log("id", id);
-        const multiOrder = yield orderAssigneeMulti_schema_1.default.findById(id);
+        const multiOrder = yield orderMulti_schema_1.default.findById(id);
         console.log("multiOrder", multiOrder);
-        if (multiOrder) {
-            const orderData = yield orderMulti_schema_1.default.find({ orderId: multiOrder.order });
-            console.log("orderData", orderData);
-            const data = {
-                _id: multiOrder._id,
-                deliveryBoy: multiOrder.deliveryBoy,
-                merchant: multiOrder.merchant,
-                order: multiOrder.order,
-                status: multiOrder.status,
-                createdAt: multiOrder.createdAt,
-                updatedAt: multiOrder.updatedAt,
-                orderData: orderData[0]
-            };
-            return res.ok({ data: data });
-        }
-        else {
-            return res.ok({ data: [] });
-        }
+        return res.ok({ data: multiOrder });
     }
     catch (error) {
         return res.failureResponse({

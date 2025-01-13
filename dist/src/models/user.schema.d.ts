@@ -58,6 +58,7 @@ declare const Model: mongoose.Model<{
     image?: string;
     providerId?: string;
     countryCode?: string;
+    merchantUserId?: string;
     medicalCertificateNumber?: number;
     medicalCertificate?: string;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
@@ -94,6 +95,7 @@ declare const Model: mongoose.Model<{
     image?: string;
     providerId?: string;
     countryCode?: string;
+    merchantUserId?: string;
     medicalCertificateNumber?: number;
     medicalCertificate?: string;
 }> & {
@@ -130,6 +132,7 @@ declare const Model: mongoose.Model<{
     image?: string;
     providerId?: string;
     countryCode?: string;
+    merchantUserId?: string;
     medicalCertificateNumber?: number;
     medicalCertificate?: string;
 } & {
@@ -173,6 +176,7 @@ declare const Model: mongoose.Model<{
     image?: string;
     providerId?: string;
     countryCode?: string;
+    merchantUserId?: string;
     medicalCertificateNumber?: number;
     medicalCertificate?: string;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
@@ -209,6 +213,7 @@ declare const Model: mongoose.Model<{
     image?: string;
     providerId?: string;
     countryCode?: string;
+    merchantUserId?: string;
     medicalCertificateNumber?: number;
     medicalCertificate?: string;
 }>> & mongoose.FlatRecord<{
@@ -245,6 +250,7 @@ declare const Model: mongoose.Model<{
     image?: string;
     providerId?: string;
     countryCode?: string;
+    merchantUserId?: string;
     medicalCertificateNumber?: number;
     medicalCertificate?: string;
 }> & {
