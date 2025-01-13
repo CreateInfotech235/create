@@ -14,13 +14,12 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
     },
     email: {
         type: String,
-        unique: true,
     },
     password: {
         type: String,
     },
     contactNumber: {
-        type: Number,
+        type: String,
     },
     isVerified: {
         type: Boolean,

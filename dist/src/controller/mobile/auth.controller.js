@@ -196,8 +196,12 @@ const activateFreeSubcription = (req, res) => __awaiter(void 0, void 0, void 0, 
                 message: (0, languageHelper_1.getLanguage)('en').errorSubcriptionAlreadyExist,
             });
         }
-        const document = value.medicalCertificate.split(',');
-        value.medicalCertificate = yield (0, common_1.uploadFile)(document[0], document[1], 'USER-CERTIFICATE');
+        // const document = value.medicalCertificate.split(',');
+        // value.medicalCertificate = await uploadFile(
+        //   document[0],
+        //   document[1],
+        //   'USER-CERTIFICATE',
+        // );
         const data = yield subcription_schema_1.default.findOne({ amount: 0, isActive: true });
         if (!data) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorDataNotFound });

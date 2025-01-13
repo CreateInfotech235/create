@@ -53,6 +53,7 @@ import {
 import { date } from 'joi';
 
 import paymentGetSchema from '../../models/paymentGet.schema';
+
 export const orderCreation = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<OrderCreateType>(
@@ -70,6 +71,7 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
+    console.log(req.id, 'req.id');
 
     // console.log(value.merchant, req.id.toString(), 'VAlue');
 
@@ -186,9 +188,19 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
 
 export const orderCreationMulti = async (req: RequestParams, res: Response) => {
   try {
+    // Check if merchantId is provided and is a valid string
+    const merchantId = req.id
+    // console.log(merchantId, 'merchantId');
+
+    if (!merchantId) {
+      return res.badRequest({ message: 'missing merchant ID' });
+    }
+
+
     interface RequestBody {
       [key: string]: any; // Adjust this type to match the structure of your request body
     }
+    // console.log("enter in orderCreationMulti");
 
     const validKeys = Object.keys(newOrderCreationMulti.describe().keys);
 
@@ -201,26 +213,35 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
         cleanedBody[key] = (req.body as RequestBody)[key];
       }
     });
+    // console.log("enter in orderCreationMulti2");
+
 
     // Validate the cleaned body
     const validateRequest = validateParamsWithJoi<OrderCreateTypeMulti>(
       cleanedBody,
       newOrderCreationMulti,
     );
+    // console.log("enter in orderCreationMulti3");
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
     }
-
-    const datamarcent = await merchantSchema.findById(req.id);
+    // console.log("enter in orderCreationMulti4");
+    const datamarcent = await merchantSchema.findById(merchantId);
+    if (!datamarcent) {
+      return res.badRequest({ message: 'Merchant not found' });
+    }
+    // console.log("enter in orderCreationMulti5");
     await merchantSchema.updateOne(
-      { _id: req.id },
+      { _id: merchantId },
+
       { $set: { showOrderNumber: datamarcent.showOrderNumber + 1 } },
     );
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
     }
+    // console.log("enter in orderCreationMulti6");
 
     const { value } = validateRequest;
 
@@ -234,9 +255,11 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
       checkLastOrder = { orderId: 1 } as any;
     }
     value.orderId = checkLastOrder.orderId;
-    value.merchant = req.id.toString();
+    value.pickupDetails.merchantId = merchantId.toString();
+
     const newOrder = await orderSchemaMulti.create({
       ...value,
+      merchant: merchantId.toString(),
       showOrderNumber: datamarcent.showOrderNumber,
     });
 
@@ -244,61 +267,100 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
     const deliveryMan = await deliveryManSchema.findById({
       _id: req.body.deliveryManId,
     });
-
+    // console.log(deliveryMan, 'deliveryMan');
     // Ensure charge is a valid number and not NaN
     const charge = deliveryMan?.charge || 0;
-    const distance = value.distance || 0;
+    var distancelist = [];
 
+    for (let i = 0; i < JSON.parse(JSON.stringify(value.deliveryDetails)).length; i++) {
+      distancelist.push(JSON.parse(JSON.stringify(value.deliveryDetails))[i].distance);
+    }
+    // console.log(distancelist, 'distancelist');
+
+    var totalChargelist = [];
+    for (let i = 0; i < distancelist.length; i++) {
+      totalChargelist.push(Number((charge * distancelist[i]).toFixed(2)));
+    }
+    // console.log(totalChargelist, 'totalChargelist');
+
+    var adminChargelist = [];
+    for (let i = 0; i < totalChargelist.length; i++) {
+
+      const totalChargeNumber = isNaN(Number(totalChargelist[i]))
+        ? 0
+        : Number(totalChargelist[i]);
+      // console.log(totalChargeNumber, 'totalChargeNumber');
+      // console.log(deliveryMan, 'deliveryMan?.adminCharge');
+      // console.log(((totalChargeNumber * deliveryMan?.adminCharge) / 100));
+      adminChargelist.push(Number(((totalChargeNumber * deliveryMan?.adminCharge) / 100).toFixed(2)));
+    }
+    // console.log(adminChargelist, 'adminChargelist');
+
+
+    // const distance = value.deliveryDetails[0].distance || 0;
+    var distanceList = [];
+    for (let i = 0; i < value.deliveryDetails.length; i++) {
+      distanceList.push(value.deliveryDetails[i].distance);
+    }
+    // console.log(distanceList, 'distanceList');
     // Calculate total charge and admin charge
-    const totalCharge = (charge * distance).toFixed(2);
-    const totalChargeNumber = isNaN(Number(totalCharge))
-      ? 0
-      : Number(totalCharge);
-
-    const adminCharge = deliveryMan?.createdByAdmin
-      ? (totalChargeNumber % (deliveryMan?.adminCharge || 0)).toFixed(2)
-      : 0;
-    const adminChargeNumber = isNaN(Number(adminCharge))
-      ? 0
-      : Number(adminCharge);
 
     const createdBy = deliveryMan?.createdByMerchant
       ? 'MERCHANTDELIVERYMAN'
       : 'ADMINDELIVERYMAN';
 
-    const paymentStatus = value?.cashOnDelivery
-      ? 'CASHONDELIVERY'
-      : 'DIRECTPAYMENT';
+    var paymentStatuslist = [];
+    for (let i = 0; i < totalChargelist.length; i++) {
+      paymentStatuslist.push(value?.cashOnDelivery ? 'CASHONDELIVERY' : 'DIRECTPAYMENT');
+    }
+    // console.log(paymentStatuslist, 'paymentStatuslist');
 
-    const deliveryManWallet = value?.paymentCollectionRupees
-      ? value.paymentCollectionRupees
-      : 0;
+    var deliveryManWalletlist = [];
+    for (let i = 0; i < totalChargelist.length; i++) {
+      deliveryManWalletlist.push(value?.deliveryDetails[i]?.paymentCollectionRupees ? value.deliveryDetails[i]?.paymentCollectionRupees : 0);
+    }
+    // console.log(deliveryManWalletlist, 'deliveryManWalletlist');
 
     const data = {
       adminId: admin?._id || '',
-      merchantId: req?.id || '',
+      merchantId: merchantId,
       deliveryManId: req.body.deliveryManId,
       orderId: checkLastOrder.orderId,
       orderIdForMerchant: newOrder.showOrderNumber,
-      miles: distance,
+      // miles: distanceList,
       payPerMiles: charge,
-      totalPaytoDeliveryMan: totalChargeNumber,
-      totalPaytoAdmin: adminChargeNumber,
-      deliveryManWallet: deliveryManWallet,
+      // totalPaytoDeliveryMan: totalChargeNumber,
+      // totalPaytoAdmin: adminChargeNumber,
+      // deliveryManWallet: deliveryManWallet,
       deliveryManType: createdBy,
-      paymentStatus: paymentStatus,
+      // paymentStatus: paymentStatus,
       statusOfOrder: 'ASSIGNED',
       orderPickupTime: new Date(),
       orderDeleverTime: new Date(),
     };
 
-    console.log('data123', data);
+    var newData = [];
+    for (let i = 0; i < totalChargelist.length; i++) {
+      newData.push({
+        ...data,
+        miles: distanceList[i],
+        subOrderId: (i + 1).toString(),
+        totalPaytoDeliveryMan: totalChargelist[i],
+        totalPaytoAdmin: adminChargelist[i],
+        deliveryManWallet: deliveryManWalletlist[i],
+        paymentStatus: paymentStatuslist[i]
+      });
+    }
+    // console.log(newData, 'newData');
+    // await paymentGetSchema.insertMany(newData);
+    // console.log('data123', data);
 
     if (value.deliveryManId) {
       value.isCustomer = true;
-      await OrderAssigneeSchemaMulti.create({
+      console.log('value.deliveryManId', value.deliveryManId);
+      OrderAssigneeSchemaMulti.create({
         deliveryBoy: value.deliveryManId,
-        merchant: req.id,
+        merchant: merchantId,
         order: newOrder.orderId,
         status: ORDER_HISTORY.ACCEPTED,
       });
@@ -318,15 +380,15 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
       status: ORDER_HISTORY.ASSIGNED,
     });
 
-    const paymentData: PaymentInfoType = {
-      merchant: req.id.toString(),
-      paymentThrough: value.paymentCollection,
-      paymentCollectFrom: value.paymentOrderLocation,
-      order: value.orderId,
-    };
+    // const paymentData: PaymentInfoType = {
+    //   merchant: req.params.id.toString(),
+    //   paymentThrough: value.paymentCollection,
+    //   paymentCollectFrom: value.paymentOrderLocation,
+    //   order: value.orderId,
+    // };
 
-    await PaymentInfoSchema.create(paymentData);
-    await paymentGetSchema.create(data);
+    // await PaymentInfoSchema.create(paymentData);
+    await paymentGetSchema.insertMany(newData);
 
     return res.ok({
       message: getLanguage('en').orderCreatedSuccessfully,
@@ -386,7 +448,7 @@ export const orderUpdateMulti = async (req: RequestParams, res: Response) => {
 
       // Ensure valid numeric values for charge and distance
       const charge = deliveryMan?.charge || 0;
-      const distance = value.distance || 0;
+      const distance = 10;
 
       // Calculate total charge and admin charge
       const totalCharge = ((charge * distance) || 0).toFixed(2);
@@ -1290,13 +1352,183 @@ export const getAllOrdersFromMerchant = async (
   }
 };
 
+
+export const getAllOrdersFromMerchantMulti = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  console.log("ENTER");
+  try {
+    
+    const { startDate, endDate } = req.query; // Get startDate and endDate from query params
+
+    // Initialize dateFilter object
+    let dateFilter = {};
+
+    // If startDate and endDate are provided, convert them to Date objects with time set to the start and end of the day
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      // Adjust start and end dates to include the full day (UTC time)
+      start.setUTCHours(0, 0, 0, 0); // Set startDate to 00:00:00 UTC
+      end.setUTCHours(23, 59, 59, 999); // Set endDate to 23:59:59 UTC
+
+      // Add date range filter
+      dateFilter = {
+        dateTime: {
+          $gte: start, // Greater than or equal to start date
+          $lte: end, // Less than or equal to end date
+        },
+      };
+    }
+
+    console.log(req.params.id);
+
+    const data = await orderSchemaMulti.aggregate([
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $match: {
+          // customer: new mongoose.Types.ObjectId(req.params.id),
+          'pickupDetails.merchantId': new mongoose.Types.ObjectId(
+            req.params.id,
+          ),
+          ...dateFilter, // Apply the date filter if it's set
+        },
+      },
+      {
+        $lookup: {
+          from: 'orderAssigneeMulti',
+          localField: 'orderId',
+          foreignField: 'order',
+          as: 'orderAssignData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                deliveryBoy: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$orderAssignData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          deliveryBoy: '$orderAssignData.deliveryBoy',
+        },
+      },
+      {
+        $project: {
+          orderAssignData: 0,
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'deliveryMan',
+          localField: 'deliveryBoy',
+          foreignField: '_id',
+          as: 'deliveryManData',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$deliveryManData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          orderId: 1,
+          // parcelsCount: 1,
+          // customerName: '$deliveryDetails.name',
+          // cutomerEmail: '$deliveryDetails.email',
+          pickupAddress: '$pickupDetails',
+          deliveryAddress: '$deliveryDetails',
+          deliveryMan: {
+            $concat: [
+              '$deliveryManData.firstName',
+              ' ',
+              '$deliveryManData.lastName',
+            ],
+          },
+          deliveryManId: '$deliveryManData._id',
+          pickupDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$pickupDetails.dateTime',
+            },
+          },
+          merchantId: '$pickupDetails.merchantId',
+          // deliveryDate: {
+          //   $dateToString: {
+          //     format: '%d-%m-%Y , %H:%M',
+          //     date: '$deliveryDetails.orderTimestamp',
+          //   },
+          // },
+          createdDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$createdAt',
+            },
+          },
+          pickupRequest: '$pickupDetails.request',
+          postCode: '$pickupDetails.postCode',
+          // cashOnDelivery: 1,
+          status: 1,
+          dateTime: 1,
+          // distance: {
+          //   $ifNull: ['$distance', '-'],
+          // },
+          // duration: {
+          //   $ifNull: ['$duration', '-'],
+          // },
+          trashed: {
+            $ifNull: ['$trashed', false],
+          },
+          showOrderNumber: 1,
+          // paymentCollectionRupees: 1,
+        },
+      },
+    ]);
+    console.log('data', data);
+    return res.ok({ data });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
 export const getAllRecentOrdersFromMerchant = async (
   req: RequestParams,
   res: Response,
 ) => {
   try {
     const { startDate, endDate } = req.query; // Get startDate and endDate from query params
-
+    console.log("startDate", startDate);
+    console.log("endDate", endDate);
     // Initialize dateFilter object
     let dateFilter = {};
 
@@ -1544,3 +1776,193 @@ export const moveToTrash = async (req: RequestParams, res: Response) => {
 //     });
 //   }
 // }
+
+
+export const deleteOrderFormMerchantMulti = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const { subOrderId } = req.query;
+
+    if (!id) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+    const OrderData = await orderSchemaMulti.findById(id);
+
+    if (!OrderData) {
+      return res.badRequest({ message: getLanguage('en').orderNotFound });
+    }
+
+    if (!subOrderId) {
+      // Delete entire order if no subOrderId specified
+      await orderSchemaMulti.findByIdAndDelete(id);
+      await OrderHistorySchema.deleteMany({ order: OrderData.orderId });
+      console.log("OrderData.orderId", OrderData.orderId);
+
+      await OrderAssigneeSchemaMulti.deleteMany({ order: OrderData.orderId });
+
+      await createNotification({
+        userId: OrderData.merchant,
+        orderId: OrderData.orderId,
+        title: 'Order Deleted',
+        message: `Your order ${OrderData.orderId} has been deleted`,
+        type: 'MERCHANT',
+      });
+    } else {
+      // Remove specific delivery detail with matching subOrderId
+      await orderSchemaMulti.updateOne(
+        { _id: id },
+        { $pull: { deliveryDetails: { subOrderId: Number(subOrderId) } } },
+      );
+
+      // If no more delivery details left, delete the entire order
+      const updatedOrder = await orderSchemaMulti.findById(id);
+      if (updatedOrder.deliveryDetails.length === 0) {
+        await orderSchemaMulti.findByIdAndDelete(id);
+        await OrderHistorySchema.deleteMany({ order: OrderData.orderId });
+        await OrderAssigneeSchemaMulti.deleteMany({ order: OrderData.orderId });
+      }
+
+      await createNotification({
+        userId: OrderData.merchant,
+        orderId: OrderData.orderId,
+        title: 'Order Deleted',
+        message: `Your sub-order ${subOrderId} has been deleted from order ${OrderData.orderId}`,
+        type: 'MERCHANT',
+      });
+    }
+
+    return res.ok({ message: getLanguage('en').orderDeleted });
+  } catch (error) {
+    console.log('🚀 ~ deleteDeliveryMan ~ error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
+
+export const moveToTrashMulti = async (req: RequestParams, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+    const OrderData = await orderSchemaMulti.findById(id);
+
+    if (!OrderData) {
+      return res.badRequest({ message: getLanguage('en').orderNotFound });
+    }
+
+    const trash = OrderData.trashed === true ? false : true;
+
+    // Update main order trashed status and all delivery details trashed status
+    await orderSchemaMulti.findByIdAndUpdate(id, {
+      trashed: trash,
+      'deliveryDetails.$[].trashed': trash
+    });
+
+    await createNotification({
+      userId: OrderData.merchant,
+      orderId: OrderData.orderId,
+      title: trash ? 'Order Moved to Trash' : 'Order Undo to Trash',
+      message: trash ? 'Order Moved to Trash' : 'Order Undo to Trash',
+      type: 'MERCHANT',
+    });
+
+    return res.ok({
+      message: trash
+        ? getLanguage('en').orderMoveToTrash
+        : getLanguage('en').orderUndoToTrash,
+    });
+  } catch (error) {
+    console.log('🚀 ~ deleteDeliveryMan ~ error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
+export const moveToTrashSubOrderMulti = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const subOrderId = Number(req.query.subOrderId);
+
+    if (!id || isNaN(subOrderId)) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+    const OrderData = await orderSchemaMulti.findById(id);
+
+    if (!OrderData) {
+      return res.badRequest({ message: getLanguage('en').orderNotFound });
+    }
+
+    const deliveryDetail = OrderData.deliveryDetails.find(
+      (detail: any) => detail.subOrderId === subOrderId
+    );
+
+    if (!deliveryDetail) {
+      return res.badRequest({ message: getLanguage('en').orderNotFound });
+    }
+
+    // Get current trashed status from deliveryDetail
+    console.log('🚀 ~ moveToTrashSubOrderMulti ~ deliveryDetail:', deliveryDetail);
+    const currentTrashed = (deliveryDetail as { trashed?: boolean })?.trashed;
+
+    console.log('🚀 ~ moveToTrashSubOrderMulti ~ currentTrashed:', currentTrashed);
+    // Toggle trashed status - if true make false, if false make true
+    const trash = currentTrashed ? false : true;
+
+    console.log('🚀 ~ moveToTrashSubOrderMulti ~ trash:', trash);
+
+    // Update trashed status for the specific suborder
+    const updateResult = await orderSchemaMulti.updateOne(
+      {
+        _id: id,
+        'deliveryDetails.subOrderId': subOrderId,
+      },
+      {
+        $set: {
+          'deliveryDetails.$.trashed': trash,
+        },
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return res.failureResponse({
+        message: getLanguage('en').somethingWentWrong,
+      });
+    }
+
+    // Create notification
+    await createNotification({
+      userId: OrderData.merchant,
+      orderId: OrderData.orderId,
+      title: trash ? 'Sub Order Moved to Trash' : 'Sub Order Restored from Trash',
+      message: `Sub Order ${subOrderId} ${trash ? 'moved to trash' : 'restored from trash'}`,
+      type: 'MERCHANT',
+    });
+
+    return res.ok({
+      message: trash
+        ? getLanguage('en').orderMoveToTrash
+        : getLanguage('en').orderUndoToTrash,
+    });
+  } catch (error) {
+    console.error('🚀 ~ moveToTrashSubOrderMulti ~ error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};

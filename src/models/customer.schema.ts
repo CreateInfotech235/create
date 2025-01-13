@@ -35,7 +35,7 @@ const CustomerSchema = new Schema(
     },
     postCode: { type: String, required: true },
     mobileNumber: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true },
     trashed: { type: Boolean, default: false },
     location: {
       type: { type: String, default: 'Point' },

@@ -359,4 +359,5 @@ router.delete('/deleteDeliveryMan/:deliveryManId', deliveryMan_controller_1.dele
  *         description: Something went wrong
  */
 router.patch('/updateDeliveryManProfile/:id', deliveryMan_controller_1.updateDeliveryManProfileAndPassword);
+router.get('/location/:deliveryManId', deliveryMan_controller_1.getDeliveryManLocation);
 exports.default = router;

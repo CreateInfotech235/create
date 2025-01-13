@@ -20,7 +20,7 @@ const merchantSchema = new mongoose_1.default.Schema({
         type: String,
     },
     contactNumber: {
-        type: Number,
+        type: String,
     },
     countryCode: {
         type: String,

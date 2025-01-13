@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDeliveryManProfileAndPassword = exports.deleteDeliveryMan = exports.addDeliveryMan = exports.getUserWithdrawHistory = exports.getDeliveryManWalletHistory = exports.getUserNames = exports.getDeliveryManNames = exports.getDeliveryManInfo = exports.getDeliveryManOrders = exports.getAllDeliveryMansFromAdmin = exports.getAllDeliveryMans = exports.getDeliveryMans = exports.getDeliveryManProfileById = exports.getOrderLocations = exports.getDeliveryManLocations = exports.getDeliveryManDocuments = exports.updateVerificationStatus = void 0;
+exports.getDeliveryManLocation = exports.updateDeliveryManProfileAndPassword = exports.deleteDeliveryMan = exports.addDeliveryMan = exports.getUserWithdrawHistory = exports.getDeliveryManWalletHistory = exports.getUserNames = exports.getDeliveryManNames = exports.getDeliveryManInfo = exports.getDeliveryManOrders = exports.getAllDeliveryMansFromAdmin = exports.getAllDeliveryMans = exports.getDeliveryMans = exports.getDeliveryManProfileById = exports.getOrderLocations = exports.getDeliveryManLocations = exports.getDeliveryManDocuments = exports.updateVerificationStatus = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -222,7 +222,9 @@ const getDeliveryManLocations = (req, res) => __awaiter(void 0, void 0, void 0, 
                 $project: {
                     deliveryManId: '$_id',
                     location: 1,
+                    defaultLocation: 1,
                     firstName: 1,
+                    status: 1,
                     lastName: 1,
                     // location: {
                     //   latitude: { $arrayElemAt: ['$location.coordinates', 1] },
@@ -1222,3 +1224,26 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
     }
 });
 exports.updateDeliveryManProfileAndPassword = updateDeliveryManProfileAndPassword;
+const getDeliveryManLocation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const deliveryManId = req.params.deliveryManId;
+        console.log(deliveryManId);
+        // Fetch only specific fields, for example: name, location, and contact
+        const deliveryBoys = yield deliveryMan_schema_1.default.find({ _id: deliveryManId }, { email: 1, location: 1, defaultLocation: 1, status: 1 } // Projection: only fetch these fields
+        );
+        if (!deliveryBoys || deliveryBoys.length === 0) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').noDeliveryBoysFound });
+        }
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').deliveryBoysFetched,
+            data: deliveryBoys,
+        });
+    }
+    catch (error) {
+        console.log('🚀 ~ getDeliveryBoysForMerchant ~ error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getDeliveryManLocation = getDeliveryManLocation;

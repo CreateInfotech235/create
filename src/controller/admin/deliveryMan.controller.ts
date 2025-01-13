@@ -275,7 +275,9 @@ export const getDeliveryManLocations = async (
         $project: {
           deliveryManId: '$_id',
           location: 1,
+          defaultLocation: 1,
           firstName: 1,
+          status: 1,
           lastName: 1,
           // location: {
           //   latitude: { $arrayElemAt: ['$location.coordinates', 1] },
@@ -1414,6 +1416,37 @@ export const updateDeliveryManProfileAndPassword = async (
     });
   } catch (error) {
     console.error('Error updating delivery man profile or password:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
+export const getDeliveryManLocation = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const deliveryManId = req.params.deliveryManId;
+    console.log(deliveryManId);
+    
+    // Fetch only specific fields, for example: name, location, and contact
+    const deliveryBoys = await deliveryManSchema.find(
+      { _id : deliveryManId},
+      { email: 1, location: 1, defaultLocation: 1 , status : 1} // Projection: only fetch these fields
+    );
+
+    if (!deliveryBoys || deliveryBoys.length === 0) {
+      return res.badRequest({ message: getLanguage('en').noDeliveryBoysFound });
+    }
+
+    return res.ok({
+      message: getLanguage('en').deliveryBoysFetched,
+      data: deliveryBoys,
+    });
+  } catch (error) {
+    console.log('🚀 ~ getDeliveryBoysForMerchant ~ error:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

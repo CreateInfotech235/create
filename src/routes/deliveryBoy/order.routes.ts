@@ -14,11 +14,13 @@ import {
   getOederForDeliveryMan,
   getOrderById,
   getPaymentDataForDeliveryBoy,
+  getMultiOrder,
   pickUpOrder,
   pickUpOrderMulti,
   sendEmailOrMobileOtp,
   sendEmailOrMobileOtpMulti,
   sendEmailOrMobileOtpMultiForDelivery,
+  getMultiOrderById,
 } from '../../controller/deliveryBoy/order.controller';
 
 const router = express.Router();
@@ -319,5 +321,7 @@ router.get('/getCancelledOrder', getAllCancelledOrders);
  */
 router.get('/getPaymentData', getPaymentDataForDeliveryBoy);
 
+router.get('/getMultiOrder', getMultiOrder);
+router.get('/getMultiOrderById/:id', getMultiOrderById);
 export default router;
 

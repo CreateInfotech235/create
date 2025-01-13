@@ -47,7 +47,7 @@ declare const Model: mongoose.Model<{
     };
     email?: string;
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -83,7 +83,7 @@ declare const Model: mongoose.Model<{
     };
     email?: string;
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -119,7 +119,7 @@ declare const Model: mongoose.Model<{
     };
     email?: string;
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -162,7 +162,7 @@ declare const Model: mongoose.Model<{
     };
     email?: string;
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -198,7 +198,7 @@ declare const Model: mongoose.Model<{
     };
     email?: string;
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     bankData?: {
         name?: string;
         accountNumber?: number;
@@ -234,7 +234,7 @@ declare const Model: mongoose.Model<{
     };
     email?: string;
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     bankData?: {
         name?: string;
         accountNumber?: number;

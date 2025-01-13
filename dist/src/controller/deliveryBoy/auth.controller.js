@@ -68,11 +68,11 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
         const userExist = yield deliveryMan_schema_1.default.findOne({ email: value.email });
-        if (userExist) {
-            return res.badRequest({
-                message: (0, languageHelper_1.getLanguage)('en').emailRegisteredAlready,
-            });
-        }
+        // if (userExist) {
+        //   return res.badRequest({
+        //     message: getLanguage('en').emailRegisteredAlready,
+        //   });
+        // }
         if (!isFromMerchantPanel && (value === null || value === void 0 ? void 0 : value.otp)) {
             const otpData = yield otp_schema_1.default.findOne({
                 value: value.otp,

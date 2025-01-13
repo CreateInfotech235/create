@@ -34,13 +34,14 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -57,13 +58,14 @@ declare const Model: mongoose.Model<{
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -80,13 +82,14 @@ declare const Model: mongoose.Model<{
         };
     }> & {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -138,14 +141,13 @@ declare const Model: mongoose.Model<{
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
     pickupDetails?: {
-        cashOnDelivery: boolean;
         request: string;
         name?: string;
         description?: string;
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -169,13 +171,14 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -192,13 +195,14 @@ declare const Model: mongoose.Model<{
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -215,13 +219,14 @@ declare const Model: mongoose.Model<{
         };
     }> & {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -273,14 +278,13 @@ declare const Model: mongoose.Model<{
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
     pickupDetails?: {
-        cashOnDelivery: boolean;
         request: string;
         name?: string;
         description?: string;
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -304,13 +308,14 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -327,13 +332,14 @@ declare const Model: mongoose.Model<{
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -350,13 +356,14 @@ declare const Model: mongoose.Model<{
         };
     }> & {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -408,14 +415,13 @@ declare const Model: mongoose.Model<{
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
     pickupDetails?: {
-        cashOnDelivery: boolean;
         request: string;
         name?: string;
         description?: string;
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -446,13 +452,14 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -469,13 +476,14 @@ declare const Model: mongoose.Model<{
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -492,13 +500,14 @@ declare const Model: mongoose.Model<{
         };
     }> & {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -550,14 +559,13 @@ declare const Model: mongoose.Model<{
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
     pickupDetails?: {
-        cashOnDelivery: boolean;
         request: string;
         name?: string;
         description?: string;
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -581,13 +589,14 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -604,13 +613,14 @@ declare const Model: mongoose.Model<{
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -627,13 +637,14 @@ declare const Model: mongoose.Model<{
         };
     }> & {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -685,14 +696,13 @@ declare const Model: mongoose.Model<{
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
     pickupDetails?: {
-        cashOnDelivery: boolean;
         request: string;
         name?: string;
         description?: string;
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -716,13 +726,14 @@ declare const Model: mongoose.Model<{
     cashOnDelivery: boolean;
     deliveryDetails: mongoose.Types.DocumentArray<{
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -739,13 +750,14 @@ declare const Model: mongoose.Model<{
         };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -762,13 +774,14 @@ declare const Model: mongoose.Model<{
         };
     }> & {
         type?: {
+            trashed: boolean;
             status: string;
             cashOnDelivery: boolean;
             name?: string;
             description?: string;
             address?: string;
             postCode?: string;
-            mobileNumber?: number;
+            mobileNumber?: string;
             email?: string;
             location?: any;
             time?: {
@@ -820,14 +833,13 @@ declare const Model: mongoose.Model<{
     paymentCollectionRupees?: number;
     dateTime?: NativeDate;
     pickupDetails?: {
-        cashOnDelivery: boolean;
         request: string;
         name?: string;
         description?: string;
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;

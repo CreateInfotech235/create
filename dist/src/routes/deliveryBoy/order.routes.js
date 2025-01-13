@@ -291,4 +291,6 @@ router.get('/getCancelledOrder', order_controller_1.getAllCancelledOrders);
  *         description: Something went wrong
  */
 router.get('/getPaymentData', order_controller_1.getPaymentDataForDeliveryBoy);
+router.get('/getMultiOrder', order_controller_1.getMultiOrder);
+router.get('/getMultiOrderById/:id', order_controller_1.getMultiOrderById);
 exports.default = router;

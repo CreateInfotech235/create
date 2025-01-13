@@ -267,13 +267,13 @@ export const activateFreeSubcription = async (
       });
     }
 
-    const document = value.medicalCertificate.split(',');
+    // const document = value.medicalCertificate.split(',');
 
-    value.medicalCertificate = await uploadFile(
-      document[0],
-      document[1],
-      'USER-CERTIFICATE',
-    );
+    // value.medicalCertificate = await uploadFile(
+    //   document[0],
+    //   document[1],
+    //   'USER-CERTIFICATE',
+    // );
 
     const data = await subcriptionSchema.findOne({ amount: 0, isActive: true });
 

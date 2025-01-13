@@ -29,18 +29,23 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
         }
         const { value } = validateRequest;
         const userExist = yield customer_schema_1.default.findOne({ email: value.email });
-        if (userExist) {
-            return res.badRequest({
-                message: (0, languageHelper_1.getLanguage)('en').emailRegisteredAlready,
-            });
-        }
+        // if (userExist) {
+        //   return res.badRequest({
+        //     message: getLanguage('en').emailRegisteredAlready,
+        //   });
+        // }
+        console.log(value.email, 'value.email');
         const datamarcent = yield user_schema_1.default.findById(req.body.merchantId);
         yield user_schema_1.default.updateOne({ _id: req.body.merchantId }, { $set: { showCustomerNumber: datamarcent.showCustomerNumber + 1 } });
+        console.log(value.email, 'value.email');
+        console.log(datamarcent.showCustomerNumber, value, 'datamarcent.showCustomerNumber');
         const data = yield customer_schema_1.default.create(Object.assign(Object.assign({}, value), { showCustomerNumber: datamarcent.showCustomerNumber }));
-        console.log(data);
+        console.log(value.email, 'value.email');
+        console.log(data, "safdsdgsfdgdfhdghfgh");
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').userRegistered, data });
     }
     catch (error) {
+        console.log(error, "safdsdgsfdgdfhdghfgh");
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });

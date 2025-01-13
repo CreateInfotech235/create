@@ -61,7 +61,7 @@ declare const Model: mongoose.Model<{
         type?: string;
     };
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
     defaultLocation?: {
@@ -118,7 +118,7 @@ declare const Model: mongoose.Model<{
         type?: string;
     };
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
     defaultLocation?: {
@@ -175,7 +175,7 @@ declare const Model: mongoose.Model<{
         type?: string;
     };
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
     defaultLocation?: {
@@ -239,7 +239,7 @@ declare const Model: mongoose.Model<{
         type?: string;
     };
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
     defaultLocation?: {
@@ -296,7 +296,7 @@ declare const Model: mongoose.Model<{
         type?: string;
     };
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
     defaultLocation?: {
@@ -353,7 +353,7 @@ declare const Model: mongoose.Model<{
         type?: string;
     };
     password?: string;
-    contactNumber?: number;
+    contactNumber?: string;
     countryId?: mongoose.Types.ObjectId;
     cityId?: mongoose.Types.ObjectId;
     defaultLocation?: {

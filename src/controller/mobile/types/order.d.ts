@@ -36,12 +36,12 @@ interface OrderCreateType {
       latitude?: number;
       longitude?: number;
     };
-    merchantId: string;
+    // merchantId: string;
     dateTime: number;
     orderTimestamp: number;
     address: string;
     // countryCode: string;
-    mobileNumber: number;
+    mobileNumber: string;
     email?: string;
     name: string;
     pickupRequest: PICKUP_REQUEST;
@@ -58,7 +58,7 @@ interface OrderCreateType {
     orderTimestamp: number;
     address: string;
     // countryCode: string;
-    mobileNumber: number;
+    mobileNumber: string;
     email?: string;
     name: string;
     pickupRequest: PICKUP_REQUEST;
@@ -74,26 +74,7 @@ interface OrderCreateType {
   isCustomer?: boolean;
 }
 interface OrderCreateTypeMulti {
-  parcelType: string;
-  weight: number;
-  paymentCollectionRupees: number;
-  parcelsCount: number;
-  description?: string;
-  country: string;
-  city: string;
-  // customer: string;
-  merchant: string;
-  paymentCollection?: PAYMENT_TYPE;
-  paymentOrderLocation?: ORDER_LOCATION;
-  vehicle: string;
   dateTime: number;
-  startPickupDate: Date;
-  endPickupDate: Date;
-  startDeliveryDate: Date;
-  endDeliveryDate: Date;
-  distance: number;
-  duration: number;
-  trashed: boolean;
   pickupDetails: {
     location: { type: string; coordinates: number[] } & {
       latitude?: number;
@@ -104,7 +85,7 @@ interface OrderCreateTypeMulti {
     orderTimestamp: number;
     address: string;
     // countryCode: string;
-    mobileNumber: number;
+    mobileNumber: string;
     email?: string;
     name: string;
     pickupRequest: PICKUP_REQUEST;
@@ -112,7 +93,7 @@ interface OrderCreateTypeMulti {
     postCode: string;
     cashOnDelivery?: boolean;
   };
-  deliveryDetails: {
+  deliveryDetails: Array<{
     location: {
       latitude: number;
       longitude: number;
@@ -126,14 +107,14 @@ interface OrderCreateTypeMulti {
     orderTimestamp: number;
     address: string;
     // countryCode: string;
-    mobileNumber: number;
+    mobileNumber: string;
     email?: string;
     name: string;
     pickupRequest: PICKUP_REQUEST;
     description: string;
     postCode: string;
     cashOnDelivery?: boolean;
-  };
+  }>;
   deliveryLocation?: { type: string; coordinates: number[] };
   cashOnDelivery: boolean;
   deliveryManId: string;

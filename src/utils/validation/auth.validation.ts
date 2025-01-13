@@ -79,7 +79,7 @@ export const deliveryManSignUpValidation = Joi.object().keys({
   password: Joi.string()
     .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
     .required(),
-  contactNumber: Joi.number().required(),
+  contactNumber: Joi.string().required(),
   // countryCode: Joi.string().required(),
   address: Joi.string(),
   postCode: Joi.string()

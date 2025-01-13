@@ -21,3 +21,5 @@ export declare const allPaymentInfo: (req: RequestParams, res: Response) => Prom
 export declare const getOrderById: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getAllCancelledOrders: (req: RequestParams, res: Response) => Promise<void | Response<any, Record<string, any>>>;
 export declare const getPaymentDataForDeliveryBoy: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getMultiOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getMultiOrderById: (req: RequestParams, res: Response) => Promise<void>;

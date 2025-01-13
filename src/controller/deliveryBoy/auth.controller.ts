@@ -45,7 +45,7 @@ export const signUp = async (req: RequestParams, res: Response) => {
       lastName: string;
       email: string;
       password: string;
-      contactNumber: number;
+      contactNumber: string;
       otp?: number;
       // countryCode: string;
       address: String;
@@ -110,11 +110,11 @@ export const signUp = async (req: RequestParams, res: Response) => {
     }
 
     const userExist = await deliveryManSchema.findOne({ email: value.email });
-    if (userExist) {
-      return res.badRequest({
-        message: getLanguage('en').emailRegisteredAlready,
-      });
-    }
+    // if (userExist) {
+    //   return res.badRequest({
+    //     message: getLanguage('en').emailRegisteredAlready,
+    //   });
+    // }
 
     if (!isFromMerchantPanel && value?.otp) {
       const otpData = await otpSchema.findOne({

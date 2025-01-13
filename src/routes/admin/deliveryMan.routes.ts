@@ -14,6 +14,7 @@ import {
   addDeliveryMan,
   deleteDeliveryMan,
   updateDeliveryManProfileAndPassword,
+  getDeliveryManLocation,
 } from '../../controller/admin/deliveryMan.controller';
 
 const router = Router();
@@ -391,4 +392,6 @@ router.patch(
   updateDeliveryManProfileAndPassword,
 );
 
+
+router.get('/location/:deliveryManId' , getDeliveryManLocation)
 export default router;

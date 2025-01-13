@@ -11,13 +11,12 @@ const DeliveryManSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      unique: true,
     },
     password: {
       type: String,
     },
     contactNumber: {
-      type: Number,
+      type: String,
     },
    
     isVerified: {

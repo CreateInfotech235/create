@@ -77,7 +77,7 @@ exports.deliveryManSignUpValidation = joi_1.default.object().keys({
     password: joi_1.default.string()
         .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
         .required(),
-    contactNumber: joi_1.default.number().required(),
+    contactNumber: joi_1.default.string().required(),
     // countryCode: Joi.string().required(),
     address: joi_1.default.string(),
     postCode: joi_1.default.string()

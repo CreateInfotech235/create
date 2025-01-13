@@ -17,3 +17,4 @@ export declare const getUserWithdrawHistory: (req: RequestParams, res: Response)
 export declare const addDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
 export declare const deleteDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
 export declare const updateDeliveryManProfileAndPassword: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDeliveryManLocation: (req: RequestParams, res: Response) => Promise<void>;

@@ -72,7 +72,7 @@ const OrderSchema = new mongoose_1.default.Schema({
             dateTime: { type: Date },
             orderTimestamp: { type: Date },
             address: { type: String },
-            mobileNumber: { type: Number },
+            mobileNumber: { type: String },
             name: { type: String },
             email: { type: String },
             description: { type: String },
@@ -83,7 +83,7 @@ const OrderSchema = new mongoose_1.default.Schema({
                 default: enum_1.PICKUP_REQUEST.REGULAR,
             },
             postCode: { type: String },
-            cashOnDelivery: { type: Boolean, default: false },
+            // cashOnDelivery: { type: Boolean, default: false },
         },
     },
     deliveryDetails: [
@@ -99,7 +99,7 @@ const OrderSchema = new mongoose_1.default.Schema({
                 subOrderId: { type: Number },
                 orderTimestamp: { type: Date },
                 address: { type: String },
-                mobileNumber: { type: Number },
+                mobileNumber: { type: String },
                 name: { type: String },
                 email: { type: String },
                 description: { type: String },
@@ -127,6 +127,10 @@ const OrderSchema = new mongoose_1.default.Schema({
                     start: { type: Date },
                     end: { type: Date },
                 },
+                trashed: {
+                    type: Boolean,
+                    default: false
+                }
             },
         },
     ],

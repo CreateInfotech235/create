@@ -113,7 +113,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
 
     // Aggregation pipeline with pagination
     const data1 = await OrderAssigneeSchema.aggregate([
-      
+
       {
         $match: query,
       },
@@ -620,7 +620,7 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
     await OrderAssigneeSchema.findByIdAndUpdate(isAssigned._id, {
       $set: { status: value.status },
     });
-    await paymentGetSchema.findOneAndUpdate({orderId:value.orderId},{$set:{statusOfOrder:"ACCEPTED"}})
+    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ACCEPTED" } })
     if (value.status === ORDER_REQUEST.ACCEPTED) {
       await orderSchema.findOneAndUpdate(
         { orderId: value.orderId },
@@ -699,7 +699,7 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
     }
     // TODO: add distance to the order
 
-    await paymentGetSchema.findOneAndUpdate({orderId:value.orderId},{$set:{statusOfOrder:"ARRIVED"}})
+    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ARRIVED" } })
     await orderSchema.findOneAndUpdate(
       { orderId: value.orderId },
       {
@@ -756,7 +756,7 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
 
     const { value } = validateRequest;
     console.log(value);
-    
+
 
     value.deliveryManId = req.id.toString();
 
@@ -769,9 +769,9 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
         },
       },
     });
-    
-    
-    
+
+
+
     if (!isCreated) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
@@ -789,7 +789,7 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
     // TODO: add distance to the order
     console.log("fgsdfsdfsdhiffh 1");
 
-    await paymentGetSchema.findOneAndUpdate({orderId:value.orderId},{$set:{statusOfOrder:"ARRIVED"}})
+    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ARRIVED" } })
     await orderSchemaMulti.updateOne(
       {
         orderId: value.orderId, // Match the document by `orderId`
@@ -802,10 +802,10 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
         },
       }
     );
-    
+
     console.log("fgsdfsdfsdhiffh");
-    
-    
+
+
 
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been arrived`,
@@ -943,7 +943,7 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
     });
 
-    await paymentGetSchema.findOneAndUpdate({orderId:value.orderId},{$set:{statusOfOrder:"CANCELLED"}})
+    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "CANCELLED" } })
     await sendMailService(
       existingOrder.pickupDetails.email,
       'Cancel Order ',
@@ -1062,7 +1062,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
 
     const { value } = validateRequest;
     console.log(value);
-    
+
     value.deliveryManId = req.id.toString();
 
     const isCreated = await orderSchemaMulti.findOne({
@@ -1092,7 +1092,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
     }
 
     await orderSchemaMulti.findOneAndUpdate(
-      { orderId: value.orderId , 'deliveryDetails.subOrderId' : value.subOrderId},
+      { orderId: value.orderId, 'deliveryDetails.subOrderId': value.subOrderId },
       {
         $set: {
           "deliveryDetails.$.status": ORDER_HISTORY.DEPARTED, // Update all elements
@@ -1193,7 +1193,7 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
       },
     );
 
-    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder:"PICKED_UP" } }, { new: true });
+    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "PICKED_UP" } }, { new: true });
 
     // if (isArrived.cashOnDelivery) {
     //   await PaymentInfoSchema.updateOne(
@@ -1262,7 +1262,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       },
     });
     console.log(isArrived);
-    
+
     if (!isArrived) {
       return res.badRequest({ message: getLanguage('en').errorOrderArrived });
     }
@@ -1273,7 +1273,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       expiry: { $gte: Date.now() },
     });
     console.log(otpData);
-    
+
     if (!otpData) {
       return res.badRequest({ message: getLanguage('en').otpExpired });
     }
@@ -1301,7 +1301,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       },
     );
 
-    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder:"PICKED_UP" } }, { new: true });
+    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "PICKED_UP" } }, { new: true });
 
     // if (isArrived.cashOnDelivery) {
     //   await PaymentInfoSchema.updateOne(
@@ -1441,7 +1441,7 @@ export const sendEmailOrMobileOtpMulti = async (
 
 
     console.log(orderExist);
-    
+
 
     if (!orderExist) {
       return res.badRequest({
@@ -1456,7 +1456,7 @@ export const sendEmailOrMobileOtpMulti = async (
         orderExist.pickupDetails.email,
         `This is your otp for identity verification ${otp}`,
       );
-    } 
+    }
     // else if (orderExist.status === ORDER_HISTORY.DEPARTED) {
     //   await emailOrMobileOtp(
     //     orderExist.deliveryDetails.email,
@@ -1466,20 +1466,20 @@ export const sendEmailOrMobileOtpMulti = async (
 
     const isAtPickUp = orderExist.status === ORDER_HISTORY.ARRIVED;
     console.log(isAtPickUp);
-    
+
     // const email = isAtPickUp
     //   ? orderExist.pickupDetails.email
     //   : orderExist.deliveryDetails.email;
     const email = isAtPickUp
-    ? orderExist.pickupDetails.email : null
+      ? orderExist.pickupDetails.email : null
     // : orderExist.deliveryDetails[].email;
 
     // const contactNumber = isAtPickUp
     //   ? orderExist.pickupDetails.mobileNumber
     //   : orderExist.deliveryDetails.mobileNumber;
     const contactNumber = isAtPickUp
-    ? orderExist.pickupDetails.mobileNumber
-    : null;
+      ? orderExist.pickupDetails.mobileNumber
+      : null;
 
     await otpSchema.updateOne(
       {
@@ -1514,7 +1514,7 @@ export const sendEmailOrMobileOtpMultiForDelivery = async (
   try {
     const validateRequest = validateParamsWithJoi<{
       orderId: number;
-      subOrderId : number;
+      subOrderId: number;
     }>(req.body, orderIdValidationForDelivery);
 
     if (!validateRequest.isValid) {
@@ -1523,7 +1523,7 @@ export const sendEmailOrMobileOtpMultiForDelivery = async (
 
     const { value } = validateRequest;
     console.log(value);
-    
+
     const orderExist = await orderSchemaMulti.findOne({
       orderId: value.orderId,
       deliveryDetails: {
@@ -1532,17 +1532,18 @@ export const sendEmailOrMobileOtpMultiForDelivery = async (
         },
       },
     });
-    
 
-    console.log(orderExist , "Dastaaaa");
-    
+
+    console.log(orderExist, "Dastaaaa");
+
     const deliveryEmail = orderExist.deliveryDetails.filter((data) => ((data as { subOrderId?: number }).subOrderId === value.subOrderId));
-    console.log((deliveryEmail[0] as { email?: string }).email , "Emaillllll");
-    console.log((deliveryEmail[0] as { 
-      mobileNumber?: string }).
-      mobileNumber , "Emaillllll");
+    console.log((deliveryEmail[0] as { email?: string }).email, "Emaillllll");
+    console.log((deliveryEmail[0] as {
+      mobileNumber?: string
+    }).
+      mobileNumber, "Emaillllll");
 
-    
+
     if (!orderExist) {
       return res.badRequest({
         message: getLanguage('en').invalidOrder,
@@ -1556,7 +1557,7 @@ export const sendEmailOrMobileOtpMultiForDelivery = async (
         orderExist.pickupDetails.email,
         `This is your otp for identity verification ${otp}`,
       );
-    } 
+    }
     // else if (orderExist.status === ORDER_HISTORY.DEPARTED) {
     //   await emailOrMobileOtp(
     //     orderExist.deliveryDetails.email,
@@ -1566,7 +1567,7 @@ export const sendEmailOrMobileOtpMultiForDelivery = async (
 
     const isAtPickUp = orderExist.status === ORDER_HISTORY.ARRIVED;
     console.log(isAtPickUp);
-    
+
     const email = isAtPickUp
       ? orderExist.pickupDetails.email
       : (deliveryEmail[0] as { email?: string }).email;
@@ -1586,7 +1587,7 @@ export const sendEmailOrMobileOtpMultiForDelivery = async (
         value: otp,
         customerEmail: email,
         customerMobile: contactNumber,
-        subOrderId : value.subOrderId
+        subOrderId: value.subOrderId
       },
       {
         value: otp,
@@ -1956,7 +1957,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
 
     const isArrived = await orderSchemaMulti.findOne({
       orderId: value.orderId,
-      'deliveryDetails.subOrderId' : value.subOrderId
+      'deliveryDetails.subOrderId': value.subOrderId
     });
     console.log('Order Details:', isArrived.deliveryDetails);
     const deliveryEmail = isArrived.deliveryDetails.filter((data) => ((data as { subOrderId?: number }).subOrderId === value.subOrderId));
@@ -1968,7 +1969,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     // otp verification START
     const otpData = await otpSchema.findOne({
       value: value.otp,
-      subOrderId : value.subOrderId,
+      subOrderId: value.subOrderId,
       customerEmail: (deliveryEmail[0] as { email?: string }).email,
       expiry: { $gte: Date.now() },
     });
@@ -1998,7 +1999,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     const [paymentInfo] = await Promise.all([
       PaymentInfoSchema.findOne({ order: value.orderId }),
       orderSchemaMulti.updateOne(
-        { orderId: value.orderId  , 'deliveryDetails.subOrderId' : value.subOrderId},
+        { orderId: value.orderId, 'deliveryDetails.subOrderId': value.subOrderId },
         {
           $set: {
             'deliveryDetails.$.deliveryBoySignature': value.deliveryManSignature,
@@ -2029,7 +2030,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     );
     // charge of delivery boy
     console.log(DeliveryMan);
-    
+
     if (DeliveryMan.chargeMethod === CHARGE_METHOD.TIME) {
       // time in hours
       const timeTaken = endTime - startTime;
@@ -2331,17 +2332,121 @@ export const getAllCancelledOrders = async (
 
 
 export const getPaymentDataForDeliveryBoy = async (req: RequestParams, res: Response) => {
-    try {
-        const paymentData = await paymentGetSchema
-            .find({ deliveryManId: req.id })
-            .populate('merchantId', 'name email contactNumber')
-            .populate('adminId', 'name email contactNumber');
-        console.log(paymentData, 'paymentData');
-        return res.ok({ data: paymentData });
-    } catch (error) {
-        return res.failureResponse({
-            message: getLanguage('en').somethingWentWrong,
-        });
-    }
+  try {
+    const paymentData = await paymentGetSchema
+      .find({ deliveryManId: req.id })
+      .populate('merchantId', 'name email contactNumber')
+      .populate('adminId', 'name email contactNumber');
+    console.log(paymentData, 'paymentData');
+    return res.ok({ data: paymentData });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
 };
 
+
+
+export const getMultiOrder = async (req: RequestParams, res: Response) => {
+  try {
+    const { startDate, endDate } = req.query; // Get startDate and endDate from query params
+
+    // Initialize dateFilter object
+    let dateFilter = {};
+
+    // If startDate and endDate are provided, convert them to Date objects with time set to the start and end of the day
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      // Adjust start and end dates to include the full day (UTC time)
+      start.setUTCHours(0, 0, 0, 0); // Set startDate to 00:00:00 UTC
+      end.setUTCHours(23, 59, 59, 999); // Set endDate to 23:59:59 UTC
+
+      // Add date range filter
+      dateFilter = {
+        dateTime: {
+          $gte: start, // Greater than or equal to start date
+          $lte: end, // Less than or equal to end date
+        },
+      };
+    }
+    console.log("req.id", req.id);
+
+
+    const data1 = await OrderAssigneeSchemaMulti.aggregate([
+      {
+        $match: {
+          'deliveryBoy': req.id,
+          ...dateFilter
+        },
+      },
+
+    ])
+    console.log("dateFilter", dateFilter);
+
+    console.log("data1", data1);
+
+    const newData: any[] = []; // Explicitly declare the type of newData as any[]
+
+    for (const order of data1) {
+      const orderData = await orderSchemaMulti.find({ orderId: order.order });
+      console.log("orderData", orderData);
+      const data = {
+        _id: order._id,
+        deliveryBoy: order.deliveryBoy,
+        merchant: order.merchant,
+        order: order.order,
+        status: order.status,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        orderData: orderData[0]
+      };
+      newData.push(data);
+    }
+    console.log("data1", newData);
+
+    return res.ok({ data: newData });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+
+export const getMultiOrderById = async (req: RequestParams, res: Response) => {
+  console.log("ENTER");
+  try {
+
+    const id = req.params.id
+
+    console.log("id", id);
+    const multiOrder = await OrderAssigneeSchemaMulti.findById(id)
+    console.log("multiOrder", multiOrder);
+    if (multiOrder) {
+      const orderData = await orderSchemaMulti.find({ orderId: multiOrder.order });
+      console.log("orderData", orderData);
+      const data = {
+        _id: multiOrder._id,
+        deliveryBoy: multiOrder.deliveryBoy,
+        merchant: multiOrder.merchant,
+        order: multiOrder.order,
+        status: multiOrder.status,
+        createdAt: multiOrder.createdAt,
+        updatedAt: multiOrder.updatedAt,
+        orderData: orderData[0]
+      };
+      return res.ok({ data: data });
+    }
+    else{
+      return res.ok({ data: [] });
+    }
+    
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};

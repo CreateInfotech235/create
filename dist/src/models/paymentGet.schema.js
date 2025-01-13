@@ -9,6 +9,7 @@ const PaymentGetSchema = new mongoose_1.default.Schema({
     merchantId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'merchant' },
     deliveryManId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'deliveryMan' },
     orderId: { type: String },
+    subOrderId: { type: String, default: null },
     orderIdForMerchant: { type: String },
     miles: { type: Number },
     payPerMiles: { type: Number },

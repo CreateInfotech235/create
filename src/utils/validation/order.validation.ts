@@ -88,7 +88,7 @@ export const newOrderCreation = Joi.object({
     merchantId: Joi.string().required(),
     name: Joi.string().required(),
     // countryCode: Joi.string().required(),
-    mobileNumber: Joi.number().required(),
+    mobileNumber: Joi.string().required(),
     email: Joi.string(),
     pickupRequest: Joi.string()
       .valid(PICKUP_REQUEST.REGULAR, PICKUP_REQUEST.EXPRESS)
@@ -107,7 +107,7 @@ export const newOrderCreation = Joi.object({
     address: Joi.string().required(),
     name: Joi.string().required(),
     // countryCode: Joi.string().required(),
-    mobileNumber: Joi.number().required(),
+    mobileNumber: Joi.string().required(),
     email: Joi.string(),
     description: Joi.string().allow(''),
     postCode: Joi.string()
@@ -124,12 +124,8 @@ export const newOrderCreation = Joi.object({
     .allow('')
     .default(''),
 });
+
 export const newOrderCreationMulti = Joi.object({
-  paymentCollection: Joi.string(),
-  paymentCollectionRupees: Joi.number(),
-  duration: Joi.string(),
-  cashOnDelivery: Joi.boolean().default(false),
-  distance: Joi.number(),
   dateTime: Joi.date().timestamp().required(),
   pickupDetails: Joi.object({
     address: Joi.string().required(),
@@ -141,7 +137,7 @@ export const newOrderCreationMulti = Joi.object({
       longitude: Joi.number().required(),
     }).required(),
     merchantId: Joi.string().required(),
-    mobileNumber: Joi.number().required(),
+    mobileNumber: Joi.string().required(),
     name: Joi.string().required(),
     postCode: Joi.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
   }).required(),
@@ -155,7 +151,7 @@ export const newOrderCreationMulti = Joi.object({
         latitude: Joi.number().required(),
         longitude: Joi.number().required(),
       }).required(),
-      mobileNumber: Joi.number().required(),
+      mobileNumber: Joi.string().required(),
       name: Joi.string().required(),
       postCode: Joi.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
       distance: Joi.number().required(),

@@ -38,17 +38,19 @@ export const createCustomer = async (req: RequestParams, res: Response) => {
 
     const { value } = validateRequest;
     const userExist = await customerSchema.findOne({ email: value.email });
-    if (userExist) {
-      return res.badRequest({
-        message: getLanguage('en').emailRegisteredAlready,
-      });
-    }
+    // if (userExist) {
+    //   return res.badRequest({
+    //     message: getLanguage('en').emailRegisteredAlready,
+    //   });
+    // }
+    console.log(value.email, 'value.email');
     const datamarcent = await merchantSchema.findById(req.body.merchantId);
     await merchantSchema.updateOne(
       { _id: req.body.merchantId },
       { $set: { showCustomerNumber: datamarcent.showCustomerNumber + 1 } },
     );
-
+    console.log(value.email, 'value.email');
+    console.log(datamarcent.showCustomerNumber , value, 'datamarcent.showCustomerNumber');
     const data = await customerSchema.create({
       ...value,
       showCustomerNumber: datamarcent.showCustomerNumber,
@@ -57,10 +59,12 @@ export const createCustomer = async (req: RequestParams, res: Response) => {
       //     coordinates: [value.location.longitude, value.location.latitude],
       //   },
     });
-    console.log(data);
+    console.log(value.email, 'value.email');
+    console.log(data , "safdsdgsfdgdfhdghfgh");
 
     return res.ok({ message: getLanguage('en').userRegistered, data });
   } catch (error) {
+    console.log(error , "safdsdgsfdgdfhdghfgh");
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
+exports.getMultiOrderById = exports.getMultiOrder = exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -1832,3 +1832,90 @@ const getPaymentDataForDeliveryBoy = (req, res) => __awaiter(void 0, void 0, voi
     }
 });
 exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
+const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { startDate, endDate } = req.query; // Get startDate and endDate from query params
+        // Initialize dateFilter object
+        let dateFilter = {};
+        // If startDate and endDate are provided, convert them to Date objects with time set to the start and end of the day
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            // Adjust start and end dates to include the full day (UTC time)
+            start.setUTCHours(0, 0, 0, 0); // Set startDate to 00:00:00 UTC
+            end.setUTCHours(23, 59, 59, 999); // Set endDate to 23:59:59 UTC
+            // Add date range filter
+            dateFilter = {
+                dateTime: {
+                    $gte: start, // Greater than or equal to start date
+                    $lte: end, // Less than or equal to end date
+                },
+            };
+        }
+        console.log("req.id", req.id);
+        const data1 = yield orderAssigneeMulti_schema_1.default.aggregate([
+            {
+                $match: Object.assign({ 'deliveryBoy': req.id }, dateFilter),
+            },
+        ]);
+        console.log("dateFilter", dateFilter);
+        console.log("data1", data1);
+        const newData = []; // Explicitly declare the type of newData as any[]
+        for (const order of data1) {
+            const orderData = yield orderMulti_schema_1.default.find({ orderId: order.order });
+            console.log("orderData", orderData);
+            const data = {
+                _id: order._id,
+                deliveryBoy: order.deliveryBoy,
+                merchant: order.merchant,
+                order: order.order,
+                status: order.status,
+                createdAt: order.createdAt,
+                updatedAt: order.updatedAt,
+                orderData: orderData[0]
+            };
+            newData.push(data);
+        }
+        console.log("data1", newData);
+        return res.ok({ data: newData });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getMultiOrder = getMultiOrder;
+const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("ENTER");
+    try {
+        const id = req.params.id;
+        console.log("id", id);
+        const multiOrder = yield orderAssigneeMulti_schema_1.default.findById(id);
+        console.log("multiOrder", multiOrder);
+        if (multiOrder) {
+            const orderData = yield orderMulti_schema_1.default.find({ orderId: multiOrder.order });
+            console.log("orderData", orderData);
+            const data = {
+                _id: multiOrder._id,
+                deliveryBoy: multiOrder.deliveryBoy,
+                merchant: multiOrder.merchant,
+                order: multiOrder.order,
+                status: multiOrder.status,
+                createdAt: multiOrder.createdAt,
+                updatedAt: multiOrder.updatedAt,
+                orderData: orderData[0]
+            };
+            return res.ok({ data: data });
+        }
+        else {
+            return res.ok({ data: [] });
+        }
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getMultiOrderById = getMultiOrderById;

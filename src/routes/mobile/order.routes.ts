@@ -10,6 +10,10 @@ import {
   getAllPaymentInfo,
   orderCreationMulti,
   orderUpdateMulti,
+  getAllOrdersFromMerchantMulti,
+  deleteOrderFormMerchantMulti,
+  moveToTrashMulti,
+  moveToTrashSubOrderMulti,
   // getAllOrdersFromMerchantt,
 } from '../../controller/mobile/order.controller';
 
@@ -176,6 +180,24 @@ router.get('/getAllOrdersFromMerchant/:id', getAllOrdersFromMerchant);
  *       500:
  *         description: Something went wrong
  */
+
+router.get('/getAllOrdersFromMerchantMulti/:id', getAllOrdersFromMerchantMulti);
+/**
+ * @swagger
+ * /mobile/order/getAllOrdersFromMerchantMulti:
+ *   get:
+ *     summary: Get All Orders From Merchant Multi
+ *     tags: [ Mobile - Orders ]
+ *     responses:
+ *       200:
+ *         description: Orders retrieved successfully
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ * 
+ */
+
 router.get(
   '/getAllRecentOrdersFromMerchant/:id',
   getAllRecentOrdersFromMerchant,
@@ -203,6 +225,9 @@ router.get(
  */
 router.delete('/deleteOrderFormMerchant/:id', deleteOrderFormMerchant);
 
+
+
+router.delete('/deleteOrderFormMerchantMulti/:id', deleteOrderFormMerchantMulti);
 /**
  * @swagger
  * /mobile/order/moveToTrashFormMerchant/{id}:
@@ -226,7 +251,11 @@ router.delete('/deleteOrderFormMerchant/:id', deleteOrderFormMerchant);
 router.patch('/moveToTrashFormMerchant/:id', moveToTrash);
 
 
+router.patch('/moveToTrashFormMerchantMulti/:id', moveToTrashMulti);
+router.patch('/moveToTrashSubOrderMulti/:id', moveToTrashSubOrderMulti);
 
+
+router.get('/getAllRecentOrdersFromMerchant', getAllRecentOrdersFromMerchant);
 router.post('/createMulti', orderCreationMulti);
 router.patch('/orderUpdateMulti/:orderId', orderUpdateMulti);
 export default router;

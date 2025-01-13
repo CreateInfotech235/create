@@ -82,7 +82,7 @@ exports.newOrderCreation = joi_1.default.object({
         merchantId: joi_1.default.string().required(),
         name: joi_1.default.string().required(),
         // countryCode: Joi.string().required(),
-        mobileNumber: joi_1.default.number().required(),
+        mobileNumber: joi_1.default.string().required(),
         email: joi_1.default.string(),
         pickupRequest: joi_1.default.string()
             .valid(enum_1.PICKUP_REQUEST.REGULAR, enum_1.PICKUP_REQUEST.EXPRESS)
@@ -101,7 +101,7 @@ exports.newOrderCreation = joi_1.default.object({
         address: joi_1.default.string().required(),
         name: joi_1.default.string().required(),
         // countryCode: Joi.string().required(),
-        mobileNumber: joi_1.default.number().required(),
+        mobileNumber: joi_1.default.string().required(),
         email: joi_1.default.string(),
         description: joi_1.default.string().allow(''),
         postCode: joi_1.default.string()
@@ -119,11 +119,6 @@ exports.newOrderCreation = joi_1.default.object({
         .default(''),
 });
 exports.newOrderCreationMulti = joi_1.default.object({
-    paymentCollection: joi_1.default.string(),
-    paymentCollectionRupees: joi_1.default.number(),
-    duration: joi_1.default.string(),
-    cashOnDelivery: joi_1.default.boolean().default(false),
-    distance: joi_1.default.number(),
     dateTime: joi_1.default.date().timestamp().required(),
     pickupDetails: joi_1.default.object({
         address: joi_1.default.string().required(),
@@ -135,7 +130,7 @@ exports.newOrderCreationMulti = joi_1.default.object({
             longitude: joi_1.default.number().required(),
         }).required(),
         merchantId: joi_1.default.string().required(),
-        mobileNumber: joi_1.default.number().required(),
+        mobileNumber: joi_1.default.string().required(),
         name: joi_1.default.string().required(),
         postCode: joi_1.default.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
     }).required(),
@@ -148,7 +143,7 @@ exports.newOrderCreationMulti = joi_1.default.object({
             latitude: joi_1.default.number().required(),
             longitude: joi_1.default.number().required(),
         }).required(),
-        mobileNumber: joi_1.default.number().required(),
+        mobileNumber: joi_1.default.string().required(),
         name: joi_1.default.string().required(),
         postCode: joi_1.default.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
         distance: joi_1.default.number().required(),

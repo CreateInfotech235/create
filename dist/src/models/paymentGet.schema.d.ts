@@ -28,6 +28,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    subOrderId: string;
     isPaid: boolean;
     statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
@@ -48,6 +49,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    subOrderId: string;
     isPaid: boolean;
     statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
@@ -68,6 +70,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    subOrderId: string;
     isPaid: boolean;
     statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
@@ -95,6 +98,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    subOrderId: string;
     isPaid: boolean;
     statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
@@ -115,6 +119,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    subOrderId: string;
     isPaid: boolean;
     statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;
@@ -135,6 +140,7 @@ declare const Model: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
+    subOrderId: string;
     isPaid: boolean;
     statusOfOrder: "ASSIGNED" | "UNASSIGNED" | "ACCEPTED" | "CANCELLED" | "DELIVERED" | "PICKED_UP" | "DEPARTED" | "ARRIVED" | "REJECTED";
     merchantId?: mongoose.Types.ObjectId;

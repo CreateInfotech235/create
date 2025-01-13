@@ -75,7 +75,7 @@ declare const Model: mongoose.Model<{
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -88,7 +88,7 @@ declare const Model: mongoose.Model<{
         description?: string;
         address?: string;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         orderTimestamp?: NativeDate;
@@ -152,7 +152,7 @@ declare const Model: mongoose.Model<{
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -165,7 +165,7 @@ declare const Model: mongoose.Model<{
         description?: string;
         address?: string;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         orderTimestamp?: NativeDate;
@@ -229,7 +229,7 @@ declare const Model: mongoose.Model<{
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -242,7 +242,7 @@ declare const Model: mongoose.Model<{
         description?: string;
         address?: string;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         orderTimestamp?: NativeDate;
@@ -313,7 +313,7 @@ declare const Model: mongoose.Model<{
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -326,7 +326,7 @@ declare const Model: mongoose.Model<{
         description?: string;
         address?: string;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         orderTimestamp?: NativeDate;
@@ -390,7 +390,7 @@ declare const Model: mongoose.Model<{
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -403,7 +403,7 @@ declare const Model: mongoose.Model<{
         description?: string;
         address?: string;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         orderTimestamp?: NativeDate;
@@ -467,7 +467,7 @@ declare const Model: mongoose.Model<{
         address?: string;
         merchantId?: mongoose.Types.ObjectId;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         dateTime?: NativeDate;
@@ -480,7 +480,7 @@ declare const Model: mongoose.Model<{
         description?: string;
         address?: string;
         postCode?: string;
-        mobileNumber?: number;
+        mobileNumber?: string;
         email?: string;
         location?: any;
         orderTimestamp?: NativeDate;
