@@ -15,6 +15,7 @@ import {
   IParcelTypeDelete,
   IParcelTypeUpdate,
 } from './types/charges';
+import mongoose from 'mongoose';
 
 export const createParcelTypes = async (req: RequestParams, res: Response) => {
   try {
@@ -28,9 +29,11 @@ export const createParcelTypes = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
+    const merchant = req.id;
 
     const checkParcelType = await parcelSchema.findOne({
       label: { $regex: value.label, $options: 'i' },
+      merchant: merchant,
     });
 
     if (checkParcelType) {
@@ -39,9 +42,9 @@ export const createParcelTypes = async (req: RequestParams, res: Response) => {
       });
     }
 
-    await parcelSchema.create(value);
+    await parcelSchema.create({ ...value,merchant :  merchant });
 
-    return res.ok({});
+    return res.ok({ message: getLanguage('en').parcelTypeCreated });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -62,6 +65,7 @@ export const updateParcelTypes = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
+    const merchant = req.id;
 
     const checkParcelTypeExist = await parcelSchema.findById(
       value.parcelTypeId,
@@ -71,9 +75,9 @@ export const updateParcelTypes = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').errorDataNotFound });
     }
 
-    await parcelSchema.updateOne({ _id: value.parcelTypeId }, { $set: value });
+    await parcelSchema.updateOne({ _id: value.parcelTypeId }, { $set: { ...value, merchant } });
 
-    return res.ok({});
+    return res.ok({ message: getLanguage('en').parcelTypeUpdated });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -94,6 +98,7 @@ export const deleteParcelType = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
+    const merchant = req.id;
 
     const checkParcelTypeExist = await parcelSchema.findById(
       value.parcelTypeId,
@@ -103,9 +108,9 @@ export const deleteParcelType = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').errorDataNotFound });
     }
 
-    await parcelSchema.updateOne({ _id: value.parcelTypeId }, { $set: value });
+    await parcelSchema.findByIdAndDelete(value.parcelTypeId);
 
-    return res.ok({});
+    return res.ok({ message: getLanguage('en').parcelTypeDeleted });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
@@ -115,21 +120,31 @@ export const deleteParcelType = async (req: RequestParams, res: Response) => {
 
 export const getParcelTypes = async (req: RequestParams, res: Response) => {
   try {
-    const validateRequest = validateParamsWithJoi<IPagination>(
-      req.query,
-      paginationValidation,
-    );
+    // const validateRequest = validateParamsWithJoi<IPagination>(
+    //   req.query,
+    //   paginationValidation,
+    // );
 
-    if (!validateRequest.isValid) {
-      return res.badRequest({ message: validateRequest.message });
+    // if (!validateRequest.isValid) {
+    //   return res.badRequest({ message: validateRequest.message });
+    // }
+
+    // const { value } = validateRequest;
+    const merchant = req.params.merchantId;
+    console.log(merchant);
+    if (!merchant) {
+      return res.badRequest({ message: getLanguage('en').merchantNotFound });
     }
-
-    const { value } = validateRequest;
 
     const data = await parcelSchema.aggregate([
       {
         $sort: {
           createdAt: -1,
+        },
+      },
+      {
+        $match: {
+          merchant: new mongoose.Types.ObjectId(merchant),
         },
       },
       {
@@ -141,10 +156,10 @@ export const getParcelTypes = async (req: RequestParams, res: Response) => {
           createdDate: '$createdAt',
         },
       },
-      ...getMongoCommonPagination({
-        pageCount: value.pageCount,
-        pageLimit: value.pageLimit,
-      }),
+      // ...getMongoCommonPagination({
+      //   pageCount: value.pageCount,
+      //   pageLimit: value.pageLimit,
+      // }),
     ]);
 
     return res.ok({ data });

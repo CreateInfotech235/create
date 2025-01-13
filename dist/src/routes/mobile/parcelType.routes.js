@@ -104,5 +104,5 @@ router.delete('/:parcelTypeId', parcelType_controller_1.deleteParcelType);
  *       500:
  *         description: Something went wrong
  */
-router.get('/', parcelType_controller_1.getParcelTypes);
+router.get('/:merchantId', parcelType_controller_1.getParcelTypes);
 exports.default = router;

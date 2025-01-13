@@ -44,6 +44,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -68,6 +69,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -92,6 +94,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -125,7 +128,6 @@ declare const Model: mongoose.Model<{
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
-    parcelType?: string;
     showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
@@ -181,6 +183,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -205,6 +208,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -229,6 +233,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -262,7 +267,6 @@ declare const Model: mongoose.Model<{
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
-    parcelType?: string;
     showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
@@ -318,6 +322,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -342,6 +347,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -366,6 +372,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -399,7 +406,6 @@ declare const Model: mongoose.Model<{
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
-    parcelType?: string;
     showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
@@ -462,6 +468,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -486,6 +493,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -510,6 +518,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -543,7 +552,6 @@ declare const Model: mongoose.Model<{
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
-    parcelType?: string;
     showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
@@ -599,6 +607,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -623,6 +632,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -647,6 +657,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -680,7 +691,6 @@ declare const Model: mongoose.Model<{
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
-    parcelType?: string;
     showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;
@@ -736,6 +746,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -760,6 +771,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -784,6 +796,7 @@ declare const Model: mongoose.Model<{
             mobileNumber?: string;
             email?: string;
             location?: any;
+            parcelType?: mongoose.Types.ObjectId;
             time?: {
                 end?: NativeDate;
                 start?: NativeDate;
@@ -817,7 +830,6 @@ declare const Model: mongoose.Model<{
     city?: mongoose.Types.ObjectId;
     merchant?: mongoose.Types.ObjectId;
     orderId?: number;
-    parcelType?: string;
     showOrderNumber?: number;
     parcel?: mongoose.Types.ObjectId;
     weight?: number;

@@ -159,6 +159,7 @@ export const newOrderCreationMulti = Joi.object({
       parcelsCount: Joi.number().required(),
       paymentCollectionRupees: Joi.number().required(),
       cashOnDelivery: Joi.boolean().valid(true, false).required(),
+      parcelType: Joi.string().required(),
     })
   ).required(),
 });

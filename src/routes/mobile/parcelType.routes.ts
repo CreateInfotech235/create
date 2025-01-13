@@ -105,6 +105,6 @@ router.delete('/:parcelTypeId', deleteParcelType);
  *       500:
  *         description: Something went wrong
  */
-router.get('/', getParcelTypes);
+router.get('/:merchantId', getParcelTypes);
 
 export default router;

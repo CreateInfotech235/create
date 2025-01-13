@@ -28,6 +28,7 @@ const router = express_1.default.Router();
  *         description: Something went wrong
  */
 router.post('/signUp', auth_controller_1.createCustomer);
+router.post('/signUpExal', auth_controller_1.createCustomerExal);
 /**
  * @swagger
  * /customer/auth/customerUpdate/{id}:

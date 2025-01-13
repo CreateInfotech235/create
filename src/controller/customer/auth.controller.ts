@@ -4,6 +4,7 @@ import { getLanguage } from '../../language/languageHelper';
 import { RequestParams } from '../../utils/types/expressTypes';
 import citySchema from '../../models/city.schema';
 import countrySchema from '../../models/country.schema';
+import FailedCustomerSchema from '../../models/failedCustomer.schema';
 import validateParamsWithJoi from '../../utils/validateRequest';
 import {
   customerSignUpValidation,
@@ -65,6 +66,127 @@ export const createCustomer = async (req: RequestParams, res: Response) => {
     return res.ok({ message: getLanguage('en').userRegistered, data });
   } catch (error) {
     console.log(error , "safdsdgsfdgdfhdghfgh");
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const createCustomerExal = async (req: RequestParams, res: Response) => {
+  try {
+    const customers = req.body;
+
+    // Ensure the input is an array
+    if (!Array.isArray(customers)) {
+      return res.badRequest({ message: 'Request body must be an array of customers' });
+    }
+
+    const successful = []; // Array to store successfully added customers
+    const failed = [];     // Array to store failed customer data with errors
+
+    for (const customerData of customers) {
+      try {
+        // Validate the customer data
+        const validateRequest = validateParamsWithJoi<{
+          firstName: string;
+          lastName: string;
+          customerId: string;
+          country: string;
+          city: string;
+          address: string;
+          postCode: string;
+          mobileNumber: string;
+          email: string;
+          location: {
+            latitude: number;
+            longitude: number;
+          };
+          merchantId: string;
+          trashed: boolean;
+        }>(customerData, customerSignUpValidation);
+
+        // Handle validation failure
+        if (!validateRequest.isValid) {
+          const failedCustomer = await FailedCustomerSchema.create({
+            data: customerData,
+            error: validateRequest.message,
+            attemptedAt: new Date(),
+            resolved: false
+          });
+          failed.push(failedCustomer);
+          continue; // Skip to the next customer
+        }
+
+        const { value } = validateRequest;
+
+        // Check if customer already exists with same email and merchantId
+        const existingCustomer = await customerSchema.findOne({
+          email: value.email,
+          merchantId: value.merchantId
+        });
+
+        if (existingCustomer) {
+          const failedCustomer = await FailedCustomerSchema.create({
+            data: customerData,
+            error: 'Customer with this email already exists for this merchant',
+            attemptedAt: new Date(),
+            resolved: false
+          });
+          failed.push(failedCustomer);
+          continue;
+        }
+
+        // Find the merchant and update their customer count
+        const merchant = await merchantSchema.findById(value.merchantId);
+        if (!merchant) {
+          const failedCustomer = await FailedCustomerSchema.create({
+            data: customerData,
+            error: 'Merchant not found',
+            attemptedAt: new Date(),
+            resolved: false
+          });
+          failed.push(failedCustomer);
+          continue;
+        }
+
+        // Increment the merchant's customer count
+        await merchantSchema.updateOne(
+          { _id: value.merchantId },
+          { $set: { showCustomerNumber: merchant.showCustomerNumber + 1 } },
+        );
+
+        // Create the customer
+        const newCustomer = await customerSchema.create({
+          ...value,
+          showCustomerNumber: merchant.showCustomerNumber,
+        });
+
+        // Add the successful customer data to the results array
+        successful.push(newCustomer);
+      } catch (error) {
+        // Handle unexpected errors during processing
+        const failedCustomer = await FailedCustomerSchema.create({
+          data: customerData,
+          error: 'Unexpected error occurred while creating customer',
+          attemptedAt: new Date(),
+          resolved: false
+        });
+        failed.push(failedCustomer);
+      }
+    }
+
+    // Send the response with both successful and failed data
+    return res.ok({
+      message: getLanguage('en').userRegistered,
+      data: {
+        successful, // Successfully added customers
+        failed,     // Failed customers with error details
+      },
+    });
+  } catch (error) {
+    console.error('Error creating customers:', error);
+
+    // Handle any unexpected error in the main flow
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

@@ -8,6 +8,7 @@ import {
   deleteCustomerById,
   moveToTrashCustomer,
   updateCustomer,
+  createCustomerExal,
 } from '../../controller/customer/auth.controller';
 
 const router = express.Router();
@@ -34,6 +35,7 @@ const router = express.Router();
  *         description: Something went wrong
  */
 router.post('/signUp', createCustomer);
+router.post('/signUpExal', createCustomerExal);
 
 /**
  * @swagger

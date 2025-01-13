@@ -16,6 +16,7 @@ export declare const getLanguage: (lang: language) => {
     userNotFound: string;
     userDeleted: string;
     invalidData: string;
+    merchantNotFound: string;
     countedData: string;
     invalidOldPassword: string;
     passwordUpdated: string;
@@ -54,6 +55,8 @@ export declare const getLanguage: (lang: language) => {
     errorOrderArrived: string;
     orderCancelledSuccessfully: string;
     errorDataNotFound: string;
+    parcelTypeDeleted: string;
+    parcelTypeUpdated: string;
     errorActivation: string;
     errorDocumentAlreadyExist: string;
     errorDocumentNotFound: string;
@@ -63,6 +66,7 @@ export declare const getLanguage: (lang: language) => {
     errorCityFieldRequired: string;
     errorSubcriptionAlreadyExist: string;
     errorParcelTypeAlreadyRegistered: string;
+    parcelTypeCreated: string;
     countryCreated: string;
     countryUpdated: string;
     noCountryFound: string;

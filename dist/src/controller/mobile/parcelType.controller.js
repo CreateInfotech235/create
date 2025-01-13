@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getParcelTypes = exports.deleteParcelType = exports.updateParcelTypes = exports.createParcelTypes = void 0;
 const languageHelper_1 = require("../../language/languageHelper");
 const parcel_schema_1 = __importDefault(require("../../models/parcel.schema"));
-const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
+const mongoose_1 = __importDefault(require("mongoose"));
 const createParcelTypes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, adminSide_validation_1.createParcelValidation);
@@ -25,16 +25,18 @@ const createParcelTypes = (req, res) => __awaiter(void 0, void 0, void 0, functi
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        const merchant = req.id;
         const checkParcelType = yield parcel_schema_1.default.findOne({
             label: { $regex: value.label, $options: 'i' },
+            merchant: merchant,
         });
         if (checkParcelType) {
             return res.badRequest({
                 message: (0, languageHelper_1.getLanguage)('en').errorParcelTypeAlreadyRegistered,
             });
         }
-        yield parcel_schema_1.default.create(value);
-        return res.ok({});
+        yield parcel_schema_1.default.create(Object.assign(Object.assign({}, value), { merchant: merchant }));
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').parcelTypeCreated });
     }
     catch (error) {
         return res.failureResponse({
@@ -51,12 +53,13 @@ const updateParcelTypes = (req, res) => __awaiter(void 0, void 0, void 0, functi
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        const merchant = req.id;
         const checkParcelTypeExist = yield parcel_schema_1.default.findById(value.parcelTypeId);
         if (!checkParcelTypeExist) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorDataNotFound });
         }
-        yield parcel_schema_1.default.updateOne({ _id: value.parcelTypeId }, { $set: value });
-        return res.ok({});
+        yield parcel_schema_1.default.updateOne({ _id: value.parcelTypeId }, { $set: Object.assign(Object.assign({}, value), { merchant }) });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').parcelTypeUpdated });
     }
     catch (error) {
         return res.failureResponse({
@@ -73,12 +76,13 @@ const deleteParcelType = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        const merchant = req.id;
         const checkParcelTypeExist = yield parcel_schema_1.default.findById(value.parcelTypeId);
         if (!checkParcelTypeExist) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorDataNotFound });
         }
-        yield parcel_schema_1.default.updateOne({ _id: value.parcelTypeId }, { $set: value });
-        return res.ok({});
+        yield parcel_schema_1.default.findByIdAndDelete(value.parcelTypeId);
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').parcelTypeDeleted });
     }
     catch (error) {
         return res.failureResponse({
@@ -89,15 +93,28 @@ const deleteParcelType = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.deleteParcelType = deleteParcelType;
 const getParcelTypes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const validateRequest = (0, validateRequest_1.default)(req.query, adminSide_validation_1.paginationValidation);
-        if (!validateRequest.isValid) {
-            return res.badRequest({ message: validateRequest.message });
+        // const validateRequest = validateParamsWithJoi<IPagination>(
+        //   req.query,
+        //   paginationValidation,
+        // );
+        // if (!validateRequest.isValid) {
+        //   return res.badRequest({ message: validateRequest.message });
+        // }
+        // const { value } = validateRequest;
+        const merchant = req.params.merchantId;
+        console.log(merchant);
+        if (!merchant) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').merchantNotFound });
         }
-        const { value } = validateRequest;
         const data = yield parcel_schema_1.default.aggregate([
             {
                 $sort: {
                     createdAt: -1,
+                },
+            },
+            {
+                $match: {
+                    merchant: new mongoose_1.default.Types.ObjectId(merchant),
                 },
             },
             {
@@ -109,10 +126,10 @@ const getParcelTypes = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     createdDate: '$createdAt',
                 },
             },
-            ...(0, common_1.getMongoCommonPagination)({
-                pageCount: value.pageCount,
-                pageLimit: value.pageLimit,
-            }),
+            // ...getMongoCommonPagination({
+            //   pageCount: value.pageCount,
+            //   pageLimit: value.pageLimit,
+            // }),
         ]);
         return res.ok({ data });
     }

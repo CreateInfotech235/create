@@ -151,6 +151,7 @@ exports.newOrderCreationMulti = joi_1.default.object({
         parcelsCount: joi_1.default.number().required(),
         paymentCollectionRupees: joi_1.default.number().required(),
         cashOnDelivery: joi_1.default.boolean().valid(true, false).required(),
+        parcelType: joi_1.default.string().required(),
     })).required(),
 });
 exports.orderAssignValidation = joi_1.default.object({

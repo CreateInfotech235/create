@@ -10,9 +10,6 @@ const OrderSchema = new mongoose_1.default.Schema({
         type: Number,
         unique: true,
     },
-    parcelType: {
-        type: String,
-    },
     showOrderNumber: {
         type: Number,
         required: false,
@@ -130,7 +127,11 @@ const OrderSchema = new mongoose_1.default.Schema({
                 trashed: {
                     type: Boolean,
                     default: false
-                }
+                },
+                parcelType: {
+                    type: mongoose_1.default.Schema.Types.ObjectId,
+                    ref: 'parcel',
+                },
             },
         },
     ],

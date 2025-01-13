@@ -8,12 +8,15 @@ const joi_1 = __importDefault(require("joi"));
 const enum_1 = require("../../enum");
 exports.createParcelValidation = joi_1.default.object({
     label: joi_1.default.string().required(),
+    merchant: joi_1.default.string(),
+    status: joi_1.default.string().valid(enum_1.SWITCH.ENABLE, enum_1.SWITCH.DISABLE)
 });
 exports.updateParcelValidation = joi_1.default.object({
     label: joi_1.default.string(),
     parcelTypeId: joi_1.default.string()
         .regex(/^[0-9a-fA-F]{24}$/)
         .required(),
+    status: joi_1.default.string().valid(enum_1.SWITCH.ENABLE, enum_1.SWITCH.DISABLE),
 });
 exports.deleteParcelValidation = joi_1.default.object({
     status: joi_1.default.string().valid(enum_1.SWITCH.ENABLE, enum_1.SWITCH.DISABLE),

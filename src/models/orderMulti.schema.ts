@@ -8,9 +8,6 @@ const OrderSchema = new mongoose.Schema(
       type: Number,
       unique: true,
     },
-    parcelType: {
-      type: String,
-    },
     showOrderNumber: {
       type: Number,
       required: false,
@@ -130,7 +127,11 @@ const OrderSchema = new mongoose.Schema(
           trashed : {
             type : Boolean,
             default : false
-          }
+          },
+          parcelType: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'parcel',
+          },
         },
       },
     ],

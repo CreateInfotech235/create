@@ -114,6 +114,7 @@ interface OrderCreateTypeMulti {
     description: string;
     postCode: string;
     cashOnDelivery?: boolean;
+    parcelType: string;
   }>;
   deliveryLocation?: { type: string; coordinates: number[] };
   cashOnDelivery: boolean;

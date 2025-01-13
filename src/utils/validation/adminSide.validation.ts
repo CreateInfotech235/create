@@ -9,6 +9,8 @@ import {
 
 export const createParcelValidation = Joi.object({
   label: Joi.string().required(),
+  merchant: Joi.string(),
+  status: Joi.string().valid(SWITCH.ENABLE, SWITCH.DISABLE)
 });
 
 export const updateParcelValidation = Joi.object({
@@ -16,6 +18,8 @@ export const updateParcelValidation = Joi.object({
   parcelTypeId: Joi.string()
     .regex(/^[0-9a-fA-F]{24}$/)
     .required(),
+  status: Joi.string().valid(SWITCH.ENABLE, SWITCH.DISABLE),
+
 });
 
 export const deleteParcelValidation = Joi.object({
