@@ -57,9 +57,6 @@ import {
 } from './types/order';
 import paymentGetSchema from '../../models/paymentGet.schema';
 
-
-
-
 export const getAssignedOrders = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<
@@ -113,7 +110,6 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
 
     // Aggregation pipeline with pagination
     const data1 = await OrderAssigneeSchema.aggregate([
-
       {
         $match: query,
       },
@@ -246,7 +242,10 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
   }
 };
 
-export const getAssignedOrdersMulti = async (req: RequestParams, res: Response) => {
+export const getAssignedOrdersMulti = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const validateRequest = validateParamsWithJoi<
       {
@@ -302,7 +301,9 @@ export const getAssignedOrdersMulti = async (req: RequestParams, res: Response) 
           pipeline: [{ $project: { _id: 1, firstName: 1, lastName: 1 } }],
         },
       },
-      { $unwind: { path: '$deliveryManData', preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: { path: '$deliveryManData', preserveNullAndEmptyArrays: true },
+      },
       {
         $project: {
           _id: 1,
@@ -319,7 +320,11 @@ export const getAssignedOrdersMulti = async (req: RequestParams, res: Response) 
             pickupDetails: '$orderData.pickupDetails',
             deliveryDetails: '$orderData.deliveryDetails',
             deliveryMan: {
-              $concat: ['$deliveryManData.firstName', ' ', '$deliveryManData.lastName'],
+              $concat: [
+                '$deliveryManData.firstName',
+                ' ',
+                '$deliveryManData.lastName',
+              ],
             },
             deliveryManId: '$deliveryManData._id',
             pickupDate: {
@@ -620,7 +625,10 @@ export const acceptOrder = async (req: RequestParams, res: Response) => {
     await OrderAssigneeSchema.findByIdAndUpdate(isAssigned._id, {
       $set: { status: value.status },
     });
-    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ACCEPTED" } })
+    await paymentGetSchema.findOneAndUpdate(
+      { orderId: value.orderId },
+      { $set: { statusOfOrder: 'ACCEPTED' } },
+    );
     if (value.status === ORDER_REQUEST.ACCEPTED) {
       await orderSchema.findOneAndUpdate(
         { orderId: value.orderId },
@@ -699,7 +707,10 @@ export const arriveOrder = async (req: RequestParams, res: Response) => {
     }
     // TODO: add distance to the order
 
-    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ARRIVED" } })
+    await paymentGetSchema.findOneAndUpdate(
+      { orderId: value.orderId },
+      { $set: { statusOfOrder: 'ARRIVED' } },
+    );
     await orderSchema.findOneAndUpdate(
       { orderId: value.orderId },
       {
@@ -757,7 +768,6 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
     const { value } = validateRequest;
     console.log(value);
 
-
     value.deliveryManId = req.id.toString();
 
     const isCreated = await orderSchemaMulti.findOne({
@@ -769,8 +779,6 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
         },
       },
     });
-
-
 
     if (!isCreated) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
@@ -787,9 +795,12 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       });
     }
     // TODO: add distance to the order
-    console.log("fgsdfsdfsdhiffh 1");
+    console.log('fgsdfsdfsdhiffh 1');
 
-    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ARRIVED" } })
+    await paymentGetSchema.findOneAndUpdate(
+      { orderId: value.orderId },
+      { $set: { statusOfOrder: 'ARRIVED' } },
+    );
     await orderSchemaMulti.updateOne(
       {
         orderId: value.orderId, // Match the document by `orderId`
@@ -797,15 +808,13 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       {
         $set: {
           status: ORDER_HISTORY.ARRIVED,
-          "deliveryDetails.$[].status": ORDER_HISTORY.ARRIVED, // Update all elements
-          "deliveryDetails.$[].time.start": Date.now(), // Update all elements' time.start
+          'deliveryDetails.$[].status': ORDER_HISTORY.ARRIVED, // Update all elements
+          'deliveryDetails.$[].time.start': Date.now(), // Update all elements' time.start
         },
-      }
+      },
     );
 
-    console.log("fgsdfsdfsdhiffh");
-
-
+    console.log('fgsdfsdfsdhiffh');
 
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been arrived`,
@@ -840,7 +849,6 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
 export const cancelOrder = async (req: RequestParams, res: Response) => {
   console.log(req.body, 'order cancel');
   try {
-
     const validateRequest = validateParamsWithJoi<OrderCancelType>(
       req.body,
       orderCancelValidation, // Ensure you have a validation schema for order cancellation
@@ -943,7 +951,10 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
       order: value.orderId,
     });
 
-    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "CANCELLED" } })
+    await paymentGetSchema.findOneAndUpdate(
+      { orderId: value.orderId },
+      { $set: { statusOfOrder: 'CANCELLED' } },
+    );
     await sendMailService(
       existingOrder.pickupDetails.email,
       'Cancel Order ',
@@ -1071,7 +1082,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       deliveryDetails: {
         $elemMatch: {
           status: { $eq: ORDER_HISTORY.PICKED_UP },
-          subOrderId: value.subOrderId
+          subOrderId: value.subOrderId,
         },
       },
     });
@@ -1092,13 +1103,16 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
     }
 
     await orderSchemaMulti.findOneAndUpdate(
-      { orderId: value.orderId, 'deliveryDetails.subOrderId': value.subOrderId },
+      {
+        orderId: value.orderId,
+        'deliveryDetails.subOrderId': value.subOrderId,
+      },
       {
         $set: {
-          "deliveryDetails.$.status": ORDER_HISTORY.DEPARTED, // Update all elements
-          "deliveryDetails.$.time.start": Date.now(), // Update all elements' time.start
+          'deliveryDetails.$.status': ORDER_HISTORY.DEPARTED, // Update all elements
+          'deliveryDetails.$.time.start': Date.now(), // Update all elements' time.start
         },
-      }
+      },
     );
 
     await OrderHistorySchema.create({
@@ -1193,7 +1207,11 @@ export const pickUpOrder = async (req: RequestParams, res: Response) => {
       },
     );
 
-    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "PICKED_UP" } }, { new: true });
+    await paymentGetSchema.findOneAndUpdate(
+      { orderId: value.orderId },
+      { $set: { statusOfOrder: 'PICKED_UP' } },
+      { new: true },
+    );
 
     // if (isArrived.cashOnDelivery) {
     //   await PaymentInfoSchema.updateOne(
@@ -1301,7 +1319,11 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       },
     );
 
-    await paymentGetSchema.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "PICKED_UP" } }, { new: true });
+    await paymentGetSchema.findOneAndUpdate(
+      { orderId: value.orderId },
+      { $set: { statusOfOrder: 'PICKED_UP' } },
+      { new: true },
+    );
 
     // if (isArrived.cashOnDelivery) {
     //   await PaymentInfoSchema.updateOne(
@@ -1439,9 +1461,7 @@ export const sendEmailOrMobileOtpMulti = async (
       },
     });
 
-
     console.log(orderExist);
-
 
     if (!orderExist) {
       return res.badRequest({
@@ -1470,8 +1490,7 @@ export const sendEmailOrMobileOtpMulti = async (
     // const email = isAtPickUp
     //   ? orderExist.pickupDetails.email
     //   : orderExist.deliveryDetails.email;
-    const email = isAtPickUp
-      ? orderExist.pickupDetails.email : null
+    const email = isAtPickUp ? orderExist.pickupDetails.email : null;
     // : orderExist.deliveryDetails[].email;
 
     // const contactNumber = isAtPickUp
@@ -1533,16 +1552,21 @@ export const sendEmailOrMobileOtpMultiForDelivery = async (
       },
     });
 
+    console.log(orderExist, 'Dastaaaa');
 
-    console.log(orderExist, "Dastaaaa");
-
-    const deliveryEmail = orderExist.deliveryDetails.filter((data) => ((data as { subOrderId?: number }).subOrderId === value.subOrderId));
-    console.log((deliveryEmail[0] as { email?: string }).email, "Emaillllll");
-    console.log((deliveryEmail[0] as {
-      mobileNumber?: string
-    }).
-      mobileNumber, "Emaillllll");
-
+    const deliveryEmail = orderExist.deliveryDetails.filter(
+      (data) =>
+        (data as { subOrderId?: number }).subOrderId === value.subOrderId,
+    );
+    console.log((deliveryEmail[0] as { email?: string }).email, 'Emaillllll');
+    console.log(
+      (
+        deliveryEmail[0] as {
+          mobileNumber?: string;
+        }
+      ).mobileNumber,
+      'Emaillllll',
+    );
 
     if (!orderExist) {
       return res.badRequest({
@@ -1587,7 +1611,7 @@ export const sendEmailOrMobileOtpMultiForDelivery = async (
         value: otp,
         customerEmail: email,
         customerMobile: contactNumber,
-        subOrderId: value.subOrderId
+        subOrderId: value.subOrderId,
       },
       {
         value: otp,
@@ -1943,6 +1967,7 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
 
 export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
   try {
+    console.log('req.body', req.body);
     const validateRequest = validateParamsWithJoi<OrderDeliverTypeMulti>(
       req.body,
       orderDeliverValidationMulti,
@@ -1957,10 +1982,13 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
 
     const isArrived = await orderSchemaMulti.findOne({
       orderId: value.orderId,
-      'deliveryDetails.subOrderId': value.subOrderId
+      'deliveryDetails.subOrderId': value.subOrderId,
     });
     console.log('Order Details:', isArrived.deliveryDetails);
-    const deliveryEmail = isArrived.deliveryDetails.filter((data) => ((data as { subOrderId?: number }).subOrderId === value.subOrderId));
+    const deliveryEmail = isArrived.deliveryDetails.filter(
+      (data) =>
+        (data as { subOrderId?: number }).subOrderId === value.subOrderId,
+    );
 
     if (!isArrived) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
@@ -1999,12 +2027,16 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     const [paymentInfo] = await Promise.all([
       PaymentInfoSchema.findOne({ order: value.orderId }),
       orderSchemaMulti.updateOne(
-        { orderId: value.orderId, 'deliveryDetails.subOrderId': value.subOrderId },
+        {
+          orderId: value.orderId,
+          'deliveryDetails.subOrderId': value.subOrderId,
+        },
         {
           $set: {
-            'deliveryDetails.$.deliveryBoySignature': value.deliveryManSignature,
+            'deliveryDetails.$.deliveryBoySignature':
+              value.deliveryManSignature,
             'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
-            "deliveryDetails.$.status": ORDER_HISTORY.DELIVERED,
+            'deliveryDetails.$.status': ORDER_HISTORY.DELIVERED,
             'time.end': endTime, // Use dot notation to set only the 'end' field
           },
         },
@@ -2025,9 +2057,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     const deliveryBoyId = new mongoose.Types.ObjectId(assignData.deliveryBoy);
 
     // delivery boy details
-    const DeliveryMan = await DeliveryManSchema.findById(
-      deliveryBoyId
-    );
+    const DeliveryMan = await DeliveryManSchema.findById(deliveryBoyId);
     // charge of delivery boy
     console.log(DeliveryMan);
 
@@ -2329,9 +2359,10 @@ export const getAllCancelledOrders = async (
   }
 };
 
-
-
-export const getPaymentDataForDeliveryBoy = async (req: RequestParams, res: Response) => {
+export const getPaymentDataForDeliveryBoy = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const paymentData = await paymentGetSchema
       .find({ deliveryManId: req.id })
@@ -2345,8 +2376,6 @@ export const getPaymentDataForDeliveryBoy = async (req: RequestParams, res: Resp
     });
   }
 };
-
-
 
 export const getMultiOrder = async (req: RequestParams, res: Response) => {
   try {
@@ -2372,27 +2401,62 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         },
       };
     }
-    console.log("req.id", req.id);
-
+    console.log('req.id', req.id);
 
     const data1 = await OrderAssigneeSchemaMulti.aggregate([
       {
         $match: {
-          'deliveryBoy': req.id,
-          ...dateFilter
+          deliveryBoy: req.id,
+          ...dateFilter,
         },
       },
+    ]);
+    console.log('dateFilter', dateFilter);
 
-    ])
-    console.log("dateFilter", dateFilter);
-
-    console.log("data1", data1);
+    console.log('data1', data1);
 
     const newData: any[] = []; // Explicitly declare the type of newData as any[]
 
     for (const order of data1) {
-      const orderData = await orderSchemaMulti.find({ orderId: order.order });
-      console.log("orderData", orderData);
+      const orderData = await orderSchemaMulti.findOne({
+        orderId: order.order,
+      });
+      console.log('orderData', orderData);
+
+      const newData2 = {
+        time: orderData?.time,
+        _id: orderData?._id,
+        orderId: orderData?.orderId,
+        showOrderNumber: orderData?.showOrderNumber,
+        cashOnDelivery: orderData?.cashOnDelivery,
+        dateTime: orderData?.dateTime,
+        pickupDetails: orderData?.pickupDetails,
+        deliveryDetails: orderData?.deliveryDetails,
+        status: orderData?.status,
+        merchant: orderData?.merchant,
+        trashed: orderData?.trashed,
+        dayChargeNumber: orderData?.dayChargeNumber,
+        distance: orderData?.distance,
+        isCustomer: orderData?.isCustomer,
+        charges: orderData?.charges,
+        createdAt: orderData?.createdAt,
+        updatedAt: orderData?.updatedAt,
+        totalDeliveredOrders:
+          orderData?.deliveryDetails?.filter(
+            (detail: any) => detail.status === ORDER_HISTORY.DELIVERED,
+          ).length || 0,
+        totalOrders: orderData?.deliveryDetails?.length || 0,
+        totalUnDeliveredOrders:
+          (orderData?.deliveryDetails?.length || 0) -
+          (orderData?.deliveryDetails?.filter(
+            (detail: any) => detail.status === ORDER_HISTORY.DELIVERED,
+          ).length || 0),
+        totalParcelsCount: orderData?.deliveryDetails?.reduce(
+          (sum: number, detail: any) => sum + detail.parcelsCount,
+          0,
+        ),
+      };
+      console.log('newData2', newData2);
       const data = {
         _id: order._id,
         deliveryBoy: order.deliveryBoy,
@@ -2401,11 +2465,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         status: order.status,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
-        orderData: orderData[0]
+        orderData: newData2,
       };
       newData.push(data);
     }
-    console.log("data1", newData);
+    console.log('data1', newData);
 
     return res.ok({ data: newData });
   } catch (error) {
@@ -2415,27 +2479,52 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
   }
 };
 
-
 export const getMultiOrderById = async (req: RequestParams, res: Response) => {
-  // console.log("ENTER");
-  
-  
-  // console.log("id", id);
-  
-  // const data2 = await orderSchemaMulti.find({orderId: id})
-  // console.log("data2", data2);
-  
   try {
-    const id = req.params.id
+    const id = req.params.id;
+    console.log('id', id);
 
-    const multiOrder = await orderSchemaMulti.findById(id)
-    console.log("multiOrder", multiOrder);
-   
-   
-   
-      return res.ok({ data: multiOrder });
-    
-    
+    const [multiOrder] = await orderSchemaMulti
+      .aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(id) } },
+        {
+          $addFields: {
+            totalDeliveredOrders: {
+              $size: {
+                $filter: {
+                  input: '$deliveryDetails',
+                  as: 'detail',
+                  cond: { $eq: ['$$detail.status', ORDER_HISTORY.DELIVERED] },
+                },
+              },
+            },
+            totalOrders: {
+              $size: '$deliveryDetails',
+            },
+            totalParcelsCount: {
+              $sum: '$deliveryDetails.parcelsCount',
+            },
+          },
+        },
+        {
+          $addFields: {
+            totalUnDeliveredOrders: {
+              $subtract: ['$totalOrders', '$totalDeliveredOrders'],
+            },
+          },
+        },
+      ])
+      .exec();
+
+    const oder = await OrderAssigneeSchemaMulti.findOne({
+      order: multiOrder.orderId,
+    });
+
+    if (oder.deliveryBoy.toString() != req.id.toString()) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+    return res.ok({ data: multiOrder });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,

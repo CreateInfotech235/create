@@ -242,7 +242,9 @@ const getAssignedOrdersMulti = (req, res) => __awaiter(void 0, void 0, void 0, f
                     pipeline: [{ $project: { _id: 1, firstName: 1, lastName: 1 } }],
                 },
             },
-            { $unwind: { path: '$deliveryManData', preserveNullAndEmptyArrays: true } },
+            {
+                $unwind: { path: '$deliveryManData', preserveNullAndEmptyArrays: true },
+            },
             {
                 $project: {
                     _id: 1,
@@ -259,7 +261,11 @@ const getAssignedOrdersMulti = (req, res) => __awaiter(void 0, void 0, void 0, f
                         pickupDetails: '$orderData.pickupDetails',
                         deliveryDetails: '$orderData.deliveryDetails',
                         deliveryMan: {
-                            $concat: ['$deliveryManData.firstName', ' ', '$deliveryManData.lastName'],
+                            $concat: [
+                                '$deliveryManData.firstName',
+                                ' ',
+                                '$deliveryManData.lastName',
+                            ],
                         },
                         deliveryManId: '$deliveryManData._id',
                         pickupDate: {
@@ -523,7 +529,7 @@ const acceptOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         yield orderAssignee_schema_1.default.findByIdAndUpdate(isAssigned._id, {
             $set: { status: value.status },
         });
-        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ACCEPTED" } });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'ACCEPTED' } });
         if (value.status === enum_1.ORDER_REQUEST.ACCEPTED) {
             yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
                 $set: {
@@ -586,7 +592,7 @@ const arriveOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
         }
         // TODO: add distance to the order
-        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ARRIVED" } });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'ARRIVED' } });
         yield order_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
                 status: enum_1.ORDER_HISTORY.ARRIVED,
@@ -656,18 +662,18 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             });
         }
         // TODO: add distance to the order
-        console.log("fgsdfsdfsdhiffh 1");
-        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "ARRIVED" } });
+        console.log('fgsdfsdfsdhiffh 1');
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'ARRIVED' } });
         yield orderMulti_schema_1.default.updateOne({
             orderId: value.orderId, // Match the document by `orderId`
         }, {
             $set: {
                 status: enum_1.ORDER_HISTORY.ARRIVED,
-                "deliveryDetails.$[].status": enum_1.ORDER_HISTORY.ARRIVED, // Update all elements
-                "deliveryDetails.$[].time.start": Date.now(), // Update all elements' time.start
+                'deliveryDetails.$[].status': enum_1.ORDER_HISTORY.ARRIVED, // Update all elements
+                'deliveryDetails.$[].time.start': Date.now(), // Update all elements' time.start
             },
         });
-        console.log("fgsdfsdfsdhiffh");
+        console.log('fgsdfsdfsdhiffh');
         yield orderHistory_schema_1.default.create({
             message: `Your order ${value.orderId} has been arrived`,
             order: value.orderId,
@@ -779,7 +785,7 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             deliveryBoy: value.deliveryManId,
             order: value.orderId,
         });
-        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "CANCELLED" } });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'CANCELLED' } });
         yield (0, common_1.sendMailService)(existingOrder.pickupDetails.email, 'Cancel Order ', 'Your order is cancelled by deliveryman plz assign order other deliveryman');
         console.log('Seaven');
         yield (0, common_1.createNotification)({
@@ -881,7 +887,7 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             deliveryDetails: {
                 $elemMatch: {
                     status: { $eq: enum_1.ORDER_HISTORY.PICKED_UP },
-                    subOrderId: value.subOrderId
+                    subOrderId: value.subOrderId,
                 },
             },
         });
@@ -897,10 +903,13 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 message: (0, languageHelper_1.getLanguage)('en').invalidDeliveryMan,
             });
         }
-        yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId, 'deliveryDetails.subOrderId': value.subOrderId }, {
+        yield orderMulti_schema_1.default.findOneAndUpdate({
+            orderId: value.orderId,
+            'deliveryDetails.subOrderId': value.subOrderId,
+        }, {
             $set: {
-                "deliveryDetails.$.status": enum_1.ORDER_HISTORY.DEPARTED, // Update all elements
-                "deliveryDetails.$.time.start": Date.now(), // Update all elements' time.start
+                'deliveryDetails.$.status': enum_1.ORDER_HISTORY.DEPARTED, // Update all elements
+                'deliveryDetails.$.time.start': Date.now(), // Update all elements' time.start
             },
         });
         yield orderHistory_schema_1.default.create({
@@ -978,7 +987,7 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             },
             $inc: { distance: tampdestens },
         });
-        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "PICKED_UP" } }, { new: true });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'PICKED_UP' } }, { new: true });
         // if (isArrived.cashOnDelivery) {
         //   await PaymentInfoSchema.updateOne(
         //     { order: value.orderId },
@@ -1066,7 +1075,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             },
             $inc: { distance: tampdestens },
         });
-        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: "PICKED_UP" } }, { new: true });
+        yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'PICKED_UP' } }, { new: true });
         // if (isArrived.cashOnDelivery) {
         //   await PaymentInfoSchema.updateOne(
         //     { order: value.orderId },
@@ -1190,8 +1199,7 @@ const sendEmailOrMobileOtpMulti = (req, res) => __awaiter(void 0, void 0, void 0
         // const email = isAtPickUp
         //   ? orderExist.pickupDetails.email
         //   : orderExist.deliveryDetails.email;
-        const email = isAtPickUp
-            ? orderExist.pickupDetails.email : null;
+        const email = isAtPickUp ? orderExist.pickupDetails.email : null;
         // : orderExist.deliveryDetails[].email;
         // const contactNumber = isAtPickUp
         //   ? orderExist.pickupDetails.mobileNumber
@@ -1237,11 +1245,10 @@ const sendEmailOrMobileOtpMultiForDelivery = (req, res) => __awaiter(void 0, voi
                 },
             },
         });
-        console.log(orderExist, "Dastaaaa");
-        const deliveryEmail = orderExist.deliveryDetails.filter((data) => (data.subOrderId === value.subOrderId));
-        console.log(deliveryEmail[0].email, "Emaillllll");
-        console.log(deliveryEmail[0].
-            mobileNumber, "Emaillllll");
+        console.log(orderExist, 'Dastaaaa');
+        const deliveryEmail = orderExist.deliveryDetails.filter((data) => data.subOrderId === value.subOrderId);
+        console.log(deliveryEmail[0].email, 'Emaillllll');
+        console.log(deliveryEmail[0].mobileNumber, 'Emaillllll');
         if (!orderExist) {
             return res.badRequest({
                 message: (0, languageHelper_1.getLanguage)('en').invalidOrder,
@@ -1275,7 +1282,7 @@ const sendEmailOrMobileOtpMultiForDelivery = (req, res) => __awaiter(void 0, voi
             value: otp,
             customerEmail: email,
             customerMobile: contactNumber,
-            subOrderId: value.subOrderId
+            subOrderId: value.subOrderId,
         }, {
             value: otp,
             customerEmail: email,
@@ -1528,6 +1535,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.deliverOrder = deliverOrder;
 const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log('req.body', req.body);
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderDeliverValidationMulti);
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
@@ -1536,10 +1544,10 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         console.log('Request Body:', value);
         const isArrived = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
-            'deliveryDetails.subOrderId': value.subOrderId
+            'deliveryDetails.subOrderId': value.subOrderId,
         });
         console.log('Order Details:', isArrived.deliveryDetails);
-        const deliveryEmail = isArrived.deliveryDetails.filter((data) => (data.subOrderId === value.subOrderId));
+        const deliveryEmail = isArrived.deliveryDetails.filter((data) => data.subOrderId === value.subOrderId);
         if (!isArrived) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
@@ -1568,11 +1576,14 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         //
         const [paymentInfo] = yield Promise.all([
             paymentInfo_schema_1.default.findOne({ order: value.orderId }),
-            orderMulti_schema_1.default.updateOne({ orderId: value.orderId, 'deliveryDetails.subOrderId': value.subOrderId }, {
+            orderMulti_schema_1.default.updateOne({
+                orderId: value.orderId,
+                'deliveryDetails.subOrderId': value.subOrderId,
+            }, {
                 $set: {
                     'deliveryDetails.$.deliveryBoySignature': value.deliveryManSignature,
                     'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
-                    "deliveryDetails.$.status": enum_1.ORDER_HISTORY.DELIVERED,
+                    'deliveryDetails.$.status': enum_1.ORDER_HISTORY.DELIVERED,
                     'time.end': endTime, // Use dot notation to set only the 'end' field
                 },
             }, { new: true }),
@@ -1833,6 +1844,7 @@ const getPaymentDataForDeliveryBoy = (req, res) => __awaiter(void 0, void 0, voi
 });
 exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
 const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f, _g, _h, _j, _k;
     try {
         const { startDate, endDate } = req.query; // Get startDate and endDate from query params
         // Initialize dateFilter object
@@ -1852,18 +1864,45 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             };
         }
-        console.log("req.id", req.id);
+        console.log('req.id', req.id);
         const data1 = yield orderAssigneeMulti_schema_1.default.aggregate([
             {
-                $match: Object.assign({ 'deliveryBoy': req.id }, dateFilter),
+                $match: Object.assign({ deliveryBoy: req.id }, dateFilter),
             },
         ]);
-        console.log("dateFilter", dateFilter);
-        console.log("data1", data1);
+        console.log('dateFilter', dateFilter);
+        console.log('data1', data1);
         const newData = []; // Explicitly declare the type of newData as any[]
         for (const order of data1) {
-            const orderData = yield orderMulti_schema_1.default.find({ orderId: order.order });
-            console.log("orderData", orderData);
+            const orderData = yield orderMulti_schema_1.default.findOne({
+                orderId: order.order,
+            });
+            console.log('orderData', orderData);
+            const newData2 = {
+                time: orderData === null || orderData === void 0 ? void 0 : orderData.time,
+                _id: orderData === null || orderData === void 0 ? void 0 : orderData._id,
+                orderId: orderData === null || orderData === void 0 ? void 0 : orderData.orderId,
+                showOrderNumber: orderData === null || orderData === void 0 ? void 0 : orderData.showOrderNumber,
+                cashOnDelivery: orderData === null || orderData === void 0 ? void 0 : orderData.cashOnDelivery,
+                dateTime: orderData === null || orderData === void 0 ? void 0 : orderData.dateTime,
+                pickupDetails: orderData === null || orderData === void 0 ? void 0 : orderData.pickupDetails,
+                deliveryDetails: orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails,
+                status: orderData === null || orderData === void 0 ? void 0 : orderData.status,
+                merchant: orderData === null || orderData === void 0 ? void 0 : orderData.merchant,
+                trashed: orderData === null || orderData === void 0 ? void 0 : orderData.trashed,
+                dayChargeNumber: orderData === null || orderData === void 0 ? void 0 : orderData.dayChargeNumber,
+                distance: orderData === null || orderData === void 0 ? void 0 : orderData.distance,
+                isCustomer: orderData === null || orderData === void 0 ? void 0 : orderData.isCustomer,
+                charges: orderData === null || orderData === void 0 ? void 0 : orderData.charges,
+                createdAt: orderData === null || orderData === void 0 ? void 0 : orderData.createdAt,
+                updatedAt: orderData === null || orderData === void 0 ? void 0 : orderData.updatedAt,
+                totalDeliveredOrders: ((_f = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _f === void 0 ? void 0 : _f.filter((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED).length) || 0,
+                totalOrders: ((_g = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _g === void 0 ? void 0 : _g.length) || 0,
+                totalUnDeliveredOrders: (((_h = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _h === void 0 ? void 0 : _h.length) || 0) -
+                    (((_j = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _j === void 0 ? void 0 : _j.filter((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED).length) || 0),
+                totalParcelsCount: (_k = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _k === void 0 ? void 0 : _k.reduce((sum, detail) => sum + detail.parcelsCount, 0),
+            };
+            console.log('newData2', newData2);
             const data = {
                 _id: order._id,
                 deliveryBoy: order.deliveryBoy,
@@ -1872,11 +1911,11 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 status: order.status,
                 createdAt: order.createdAt,
                 updatedAt: order.updatedAt,
-                orderData: orderData[0]
+                orderData: newData2,
             };
             newData.push(data);
         }
-        console.log("data1", newData);
+        console.log('data1', newData);
         return res.ok({ data: newData });
     }
     catch (error) {
@@ -1887,14 +1926,46 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.getMultiOrder = getMultiOrder;
 const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // console.log("ENTER");
-    // console.log("id", id);
-    // const data2 = await orderSchemaMulti.find({orderId: id})
-    // console.log("data2", data2);
     try {
         const id = req.params.id;
-        const multiOrder = yield orderMulti_schema_1.default.findById(id);
-        console.log("multiOrder", multiOrder);
+        console.log('id', id);
+        const [multiOrder] = yield orderMulti_schema_1.default
+            .aggregate([
+            { $match: { _id: new mongoose_1.default.Types.ObjectId(id) } },
+            {
+                $addFields: {
+                    totalDeliveredOrders: {
+                        $size: {
+                            $filter: {
+                                input: '$deliveryDetails',
+                                as: 'detail',
+                                cond: { $eq: ['$$detail.status', enum_1.ORDER_HISTORY.DELIVERED] },
+                            },
+                        },
+                    },
+                    totalOrders: {
+                        $size: '$deliveryDetails',
+                    },
+                    totalParcelsCount: {
+                        $sum: '$deliveryDetails.parcelsCount',
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    totalUnDeliveredOrders: {
+                        $subtract: ['$totalOrders', '$totalDeliveredOrders'],
+                    },
+                },
+            },
+        ])
+            .exec();
+        const oder = yield orderAssigneeMulti_schema_1.default.findOne({
+            order: multiOrder.orderId,
+        });
+        if (oder.deliveryBoy.toString() != req.id.toString()) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
         return res.ok({ data: multiOrder });
     }
     catch (error) {
