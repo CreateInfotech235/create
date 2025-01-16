@@ -1846,7 +1846,7 @@ exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
 const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _f, _g, _h, _j, _k;
     try {
-        const { startDate, endDate } = req.query; // Get startDate and endDate from query params
+        const { startDate, endDate, status } = req.query; // Get status from query params instead of body
         // Initialize dateFilter object
         let dateFilter = {};
         // If startDate and endDate are provided, convert them to Date objects with time set to the start and end of the day
@@ -1864,20 +1864,19 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             };
         }
-        console.log('req.id', req.id);
+        // Add status to match if provided
+        const matchQuery = Object.assign(Object.assign({ deliveryBoy: req.id }, dateFilter), (status && { status: status }) // Only add status filter if status is provided
+        );
         const data1 = yield orderAssigneeMulti_schema_1.default.aggregate([
             {
-                $match: Object.assign({ deliveryBoy: req.id }, dateFilter),
+                $match: matchQuery
             },
         ]);
-        console.log('dateFilter', dateFilter);
-        console.log('data1', data1);
         const newData = []; // Explicitly declare the type of newData as any[]
         for (const order of data1) {
             const orderData = yield orderMulti_schema_1.default.findOne({
                 orderId: order.order,
             });
-            console.log('orderData', orderData);
             const newData2 = {
                 time: orderData === null || orderData === void 0 ? void 0 : orderData.time,
                 _id: orderData === null || orderData === void 0 ? void 0 : orderData._id,
@@ -1902,7 +1901,6 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                     (((_j = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _j === void 0 ? void 0 : _j.filter((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED).length) || 0),
                 totalParcelsCount: (_k = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _k === void 0 ? void 0 : _k.reduce((sum, detail) => sum + detail.parcelsCount, 0),
             };
-            console.log('newData2', newData2);
             const data = {
                 _id: order._id,
                 deliveryBoy: order.deliveryBoy,
@@ -1915,7 +1913,6 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             };
             newData.push(data);
         }
-        console.log('data1', newData);
         return res.ok({ data: newData });
     }
     catch (error) {

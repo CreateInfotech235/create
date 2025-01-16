@@ -2376,10 +2376,9 @@ export const getPaymentDataForDeliveryBoy = async (
     });
   }
 };
-
 export const getMultiOrder = async (req: RequestParams, res: Response) => {
   try {
-    const { startDate, endDate } = req.query; // Get startDate and endDate from query params
+    const { startDate, endDate, status } = req.query; // Get status from query params instead of body
 
     // Initialize dateFilter object
     let dateFilter = {};
@@ -2401,19 +2400,19 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         },
       };
     }
-    console.log('req.id', req.id);
+
+    // Add status to match if provided
+    const matchQuery = {
+      deliveryBoy: req.id,
+      ...dateFilter,
+      ...(status && { status: status }) // Only add status filter if status is provided
+    };
 
     const data1 = await OrderAssigneeSchemaMulti.aggregate([
       {
-        $match: {
-          deliveryBoy: req.id,
-          ...dateFilter,
-        },
+        $match: matchQuery
       },
     ]);
-    console.log('dateFilter', dateFilter);
-
-    console.log('data1', data1);
 
     const newData: any[] = []; // Explicitly declare the type of newData as any[]
 
@@ -2421,7 +2420,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       const orderData = await orderSchemaMulti.findOne({
         orderId: order.order,
       });
-      console.log('orderData', orderData);
 
       const newData2 = {
         time: orderData?.time,
@@ -2456,7 +2454,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           0,
         ),
       };
-      console.log('newData2', newData2);
+
       const data = {
         _id: order._id,
         deliveryBoy: order.deliveryBoy,
@@ -2467,9 +2465,9 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         updatedAt: order.updatedAt,
         orderData: newData2,
       };
+
       newData.push(data);
     }
-    console.log('data1', newData);
 
     return res.ok({ data: newData });
   } catch (error) {
