@@ -979,6 +979,147 @@ export const cancelOrder = async (req: RequestParams, res: Response) => {
   }
 };
 
+export const cancelMultiOrder = async (req: RequestParams, res: Response) => {
+  try {
+    const validateRequest = validateParamsWithJoi<OrderCancelType>(
+      req.body,
+      orderCancelValidation,
+    );
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+    console.log(value, 'value');
+    value.deliveryManId = req.id.toString();
+    console.log(value, 'value.orderId');
+
+    // Check if the order exists and is not yet completed
+    const existingOrder = await orderSchemaMulti.findOne({
+      orderId: value.orderId,
+      // 'deliveryDetails.subOrderId': value.subOrderId,
+      'deliveryDetails.status': {
+        $in: [
+          ORDER_HISTORY.CREATED,
+          ORDER_HISTORY.ASSIGNED,
+          ORDER_HISTORY.ARRIVED,
+        ],
+      },
+    });
+    console.log(existingOrder, 'First');
+    if (!existingOrder) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+    // Check if the delivery man is assigned to the order
+    const isAssigned = await OrderAssigneeSchemaMulti.findOne({
+      order: value.orderId,
+      deliveryBoy: value.deliveryManId,
+    });
+    console.log(isAssigned, 'Secound');
+
+    if (!isAssigned) {
+      return res.badRequest({
+        message: getLanguage('en').orderNotAssignedToYou,
+      });
+    }
+
+    // Update the order status to canceled
+    await orderSchemaMulti.findOneAndUpdate(
+      {
+        orderId: value.orderId,
+        'deliveryDetails.subOrderId': value.orderId,
+      },
+      {
+        $set: {
+          'deliveryDetails.$.status': ORDER_HISTORY.UNASSIGNED,
+          'deliveryDetails.$.time.end': Date.now(),
+        },
+      },
+    );
+    console.log('Third');
+
+    // Update the assignee status
+    await OrderAssigneeSchemaMulti.findByIdAndUpdate(isAssigned._id, {
+      status: ORDER_REQUEST.REJECT,
+    });
+
+    await orderSchemaMulti.findOneAndUpdate(
+      { orderId: value.orderId },
+      {
+        $set: {
+          status: ORDER_HISTORY.UNASSIGNED,
+        },
+      },
+    );
+
+    console.log('Four');
+    const history = await OrderHistorySchema.find({
+      order: value.orderId,
+      status: ORDER_HISTORY.ASSIGNED,
+    });
+    console.log(
+      history,
+      'Fivedsjsdvsdhjfsdvfsdfjkfsdvf',
+      existingOrder.merchant,
+    );
+    await OrderHistorySchema.deleteMany({
+      order: value.orderId,
+      status: ORDER_HISTORY.ASSIGNED,
+      merchantID: existingOrder.merchant,
+    });
+
+    const history1 = await OrderHistorySchema.find({
+      order: value.orderId,
+      status: ORDER_HISTORY.ASSIGNED,
+    });
+    console.log(history1, 'Sixxxxxxxxxxxxxxxxxxxxxx');
+
+    // Record the cancellation in the order history
+    await OrderHistorySchema.create({
+      message: `Order ${value.orderId} has been canceled by the delivery man.`,
+      order: value.orderId,
+      status: ORDER_HISTORY.UNASSIGNED,
+      merchantID: existingOrder.merchant,
+      deliveryBoy: value.deliveryManId,
+    });
+
+    await cancelOderbyDeliveryMan.create({
+      deliveryBoy: value.deliveryManId,
+      order: value.orderId,
+    });
+
+    await paymentGetSchema.findOneAndUpdate(
+      { orderId: value.orderId },
+      { $set: { statusOfOrder: 'CANCELLED' } },
+    );
+
+    await sendMailService(
+      existingOrder.pickupDetails.email,
+      'Cancel Order ',
+      'Your order is cancelled by deliveryman plz assign order other deliveryman',
+    );
+    console.log('Seaven');
+
+    await createNotification({
+      userId: existingOrder.merchant,
+      orderId: existingOrder.orderId,
+      title: 'Order Cancelled',
+      message: `Order ${existingOrder.orderId} has been cancelled by deliveryman`,
+      type: 'MERCHANT',
+    });
+
+    return res.ok({
+      message: getLanguage('en').orderCancelledSuccessfully,
+    });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
 export const departOrder = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<OrderAcceptType>(
@@ -2359,6 +2500,89 @@ export const getAllCancelledOrders = async (
   }
 };
 
+export const getAllCancelledOrdersMulti = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const Id = req.id;
+    console.log(Id);
+
+    if (!mongoose.Types.ObjectId.isValid(Id)) {
+      return res.status(400).json({ message: 'Invalid delivery man ID' });
+    }
+
+    const tr = await cancelOderbyDeliveryMan.find({ deliveryBoy: Id });
+    console.log(tr, 'tr');
+
+    const data = await cancelOderbyDeliveryMan.aggregate([
+      {
+        $match: {
+          deliveryBoy: Id,
+          status: 'CANCELLED',
+        },
+      },
+      {
+        $lookup: {
+          from: 'ordermultis', // Collection name in your database
+          localField: 'order', // Field in the cancelOderbyDeliveryMan schema
+          foreignField: 'orderId', // Field in the order collection
+          as: 'order', // Alias for the resulting joined documents
+        },
+      },
+      {
+        $lookup: {
+          from: 'merchants',
+          localField: 'order.merchant', // Field in the cancelOderbyDeliveryMan schema
+          foreignField: '_id', // Field in the merchants collection
+          as: 'merchant', // Alias for the resulting joined documents
+        },
+      },
+      {
+        $unwind: '$merchant',
+      },
+      {
+        $unwind: '$order', // Flatten the array of orders
+      },
+      {
+        $addFields: {
+          customerdata: {
+            $map: {
+              input: '$order.deliveryDetails',
+              as: 'detail',
+              in: {
+                customerMobilNumber: '$$detail.mobileNumber',
+                customerName: '$$detail.name',
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          orderId: '$order.orderId',
+          // new
+          // customerMobilNumber: '$order.deliveryDetails.mobileNumber',
+          // customerName: '$order.deliveryDetails.name',
+          customerdata: 1,
+          status: 1,
+          merchantName: '$merchant.name',
+          merchantMobilNumber: '$merchant.contactNumber',
+        },
+      },
+    ]);
+
+    console.log(data);
+
+    return res.ok({ data: data });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
 export const getPaymentDataForDeliveryBoy = async (
   req: RequestParams,
   res: Response,
@@ -2378,7 +2602,13 @@ export const getPaymentDataForDeliveryBoy = async (
 };
 export const getMultiOrder = async (req: RequestParams, res: Response) => {
   try {
-    const { startDate, endDate, status } = req.query; // Get status from query params instead of body
+    const {
+      startDate,
+      endDate,
+      status,
+      pageLimit = 10,
+      pageCount = 1,
+    } = req.query;
 
     // Initialize dateFilter object
     let dateFilter = {};
@@ -2405,12 +2635,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
     const matchQuery = {
       deliveryBoy: req.id,
       ...dateFilter,
-      ...(status && { status: status }) // Only add status filter if status is provided
     };
 
     const data1 = await OrderAssigneeSchemaMulti.aggregate([
       {
-        $match: matchQuery
+        $match: matchQuery,
       },
     ]);
 
@@ -2420,6 +2649,10 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       const orderData = await orderSchemaMulti.findOne({
         orderId: order.order,
       });
+      if (status && orderData?.status != status) {
+        console.log('orderData', orderData);
+        continue;
+      }
 
       const newData2 = {
         time: orderData?.time,
@@ -2469,7 +2702,16 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       newData.push(data);
     }
 
-    return res.ok({ data: newData });
+    // Apply pagination to newData array
+    const startIndex = (Number(pageCount) - 1) * Number(pageLimit);
+    const endIndex = startIndex + Number(pageLimit);
+    const paginatedData = pageLimit
+      ? newData.slice(startIndex, endIndex)
+      : newData;
+
+    return res.ok({
+      data: paginatedData,
+    });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,

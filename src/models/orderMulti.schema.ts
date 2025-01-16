@@ -93,7 +93,7 @@ const OrderSchema = new mongoose.Schema(
               coordinates: Array<number>,
             },
           },
-          subOrderId : { type: Number },
+          subOrderId: { type: Number },
           orderTimestamp: { type: Date },
           address: { type: String },
           mobileNumber: { type: String },
@@ -103,17 +103,17 @@ const OrderSchema = new mongoose.Schema(
           deliveryBoySignature: { type: String },
           postCode: { type: String },
           cashOnDelivery: { type: Boolean, default: false },
-          distance : {
+          distance: {
             type: Number,
           },
-          duration : {
-            type : String
+          duration: {
+            type: String,
           },
-          parcelsCount : {
-            type : Number
+          parcelsCount: {
+            type: Number,
           },
-          paymentCollectionRupees : {
-            type : Number
+          paymentCollectionRupees: {
+            type: Number,
           },
           status: {
             type: String,
@@ -124,9 +124,9 @@ const OrderSchema = new mongoose.Schema(
             start: { type: Date },
             end: { type: Date },
           },
-          trashed : {
-            type : Boolean,
-            default : false
+          trashed: {
+            type: Boolean,
+            default: false,
           },
           parcelType: {
             type: mongoose.Schema.Types.ObjectId,

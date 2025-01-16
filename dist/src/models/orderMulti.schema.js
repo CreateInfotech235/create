@@ -107,13 +107,13 @@ const OrderSchema = new mongoose_1.default.Schema({
                     type: Number,
                 },
                 duration: {
-                    type: String
+                    type: String,
                 },
                 parcelsCount: {
-                    type: Number
+                    type: Number,
                 },
                 paymentCollectionRupees: {
-                    type: Number
+                    type: Number,
                 },
                 status: {
                     type: String,
@@ -126,7 +126,7 @@ const OrderSchema = new mongoose_1.default.Schema({
                 },
                 trashed: {
                     type: Boolean,
-                    default: false
+                    default: false,
                 },
                 parcelType: {
                     type: mongoose_1.default.Schema.Types.ObjectId,

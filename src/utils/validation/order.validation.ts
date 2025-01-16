@@ -156,6 +156,7 @@ export const newOrderCreationMulti = Joi.object({
       postCode: Joi.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
       distance: Joi.number().required(),
       duration: Joi.string().required(),
+      description: Joi.string().allow(''),
       parcelsCount: Joi.number().required(),
       paymentCollectionRupees: Joi.number().required(),
       cashOnDelivery: Joi.boolean().valid(true, false).required(),
@@ -244,6 +245,7 @@ export const orderIdValidationForDelivery = Joi.object({
 export const orderCancelValidation = Joi.object({
   orderId: Joi.number().required(),
   reason: Joi.string(),
+  // subOrderId : Joi.number().required(),
 });
 export const invoiceValidation = Joi.object({
   companyName: Joi.string().required(),

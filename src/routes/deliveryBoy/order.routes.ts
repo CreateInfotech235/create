@@ -21,6 +21,8 @@ import {
   sendEmailOrMobileOtpMulti,
   sendEmailOrMobileOtpMultiForDelivery,
   getMultiOrderById,
+  cancelMultiOrder,
+  getAllCancelledOrdersMulti,
 } from '../../controller/deliveryBoy/order.controller';
 
 const router = express.Router();
@@ -155,6 +157,9 @@ router.patch('/cancel', cancelOrder);
  *       500:
  *         description: Something went wrong
  */
+
+router.patch('/cancelMultiOrder', cancelMultiOrder);
+
 router.patch('/pickUp', pickUpOrder);
 router.patch('/pickUpOrderMulti', pickUpOrderMulti);
 
@@ -232,7 +237,10 @@ router.patch('/deliverOrderMulti', deliverOrderMulti);
  */
 router.post('/sendEmailOrMobileOtp', sendEmailOrMobileOtp);
 router.post('/sendEmailOrMobileOtpMulti', sendEmailOrMobileOtpMulti);
-router.post('/sendEmailOrMobileOtpMultiForDelivery', sendEmailOrMobileOtpMultiForDelivery);
+router.post(
+  '/sendEmailOrMobileOtpMultiForDelivery',
+  sendEmailOrMobileOtpMultiForDelivery,
+);
 
 /**
  * @swagger
@@ -302,7 +310,6 @@ router.get('/getOrderForDeliveryMan', getOederForDeliveryMan);
  *         description: Something went wrong
  */
 router.get('/getCancelledOrder', getAllCancelledOrders);
-
 /**
  * @swagger
  * /deliveryBoy/orders/getPaymentData:
@@ -319,9 +326,12 @@ router.get('/getCancelledOrder', getAllCancelledOrders);
  *       500:
  *         description: Something went wrong
  */
+// router.get('/getCancelledOrderMulti', getAllCancelledOrdersMulti);
+
+router.get('/getCancelledOrderMulti', getAllCancelledOrdersMulti);
+
 router.get('/getPaymentData', getPaymentDataForDeliveryBoy);
 
 router.get('/getMultiOrder', getMultiOrder);
 router.get('/getMultiOrderById/:id', getMultiOrderById);
 export default router;
-

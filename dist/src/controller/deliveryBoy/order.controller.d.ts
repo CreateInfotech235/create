@@ -7,6 +7,7 @@ export declare const acceptOrder: (req: RequestParams, res: Response) => Promise
 export declare const arriveOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const arriveOrderMulti: (req: RequestParams, res: Response) => Promise<void>;
 export declare const cancelOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const cancelMultiOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const departOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const departOrderMulti: (req: RequestParams, res: Response) => Promise<void>;
 export declare const pickUpOrder: (req: RequestParams, res: Response) => Promise<void>;
@@ -20,6 +21,7 @@ export declare const OrderAssigneeSchemaData: (req: RequestParams, res: Response
 export declare const allPaymentInfo: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getOrderById: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getAllCancelledOrders: (req: RequestParams, res: Response) => Promise<void | Response<any, Record<string, any>>>;
+export declare const getAllCancelledOrdersMulti: (req: RequestParams, res: Response) => Promise<void | Response<any, Record<string, any>>>;
 export declare const getPaymentDataForDeliveryBoy: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getMultiOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getMultiOrderById: (req: RequestParams, res: Response) => Promise<void>;

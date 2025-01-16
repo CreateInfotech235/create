@@ -191,6 +191,7 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
     // Check if merchantId is provided and is a valid string
     const merchantId = req.id
     // console.log(merchantId, 'merchantId');
+console.log(req.body, "req.body");
 
     if (!merchantId) {
       return res.badRequest({ message: 'missing merchant ID' });

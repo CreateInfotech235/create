@@ -148,6 +148,7 @@ exports.newOrderCreationMulti = joi_1.default.object({
         postCode: joi_1.default.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
         distance: joi_1.default.number().required(),
         duration: joi_1.default.string().required(),
+        description: joi_1.default.string().allow(''),
         parcelsCount: joi_1.default.number().required(),
         paymentCollectionRupees: joi_1.default.number().required(),
         cashOnDelivery: joi_1.default.boolean().valid(true, false).required(),
@@ -217,6 +218,7 @@ exports.orderIdValidationForDelivery = joi_1.default.object({
 exports.orderCancelValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),
     reason: joi_1.default.string(),
+    // subOrderId : Joi.number().required(),
 });
 exports.invoiceValidation = joi_1.default.object({
     companyName: joi_1.default.string().required(),
