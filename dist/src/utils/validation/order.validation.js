@@ -139,6 +139,7 @@ exports.newOrderCreationMulti = joi_1.default.object({
     deliveryManId: joi_1.default.string()
         .pattern(/^[0-9a-fA-F]{24}$/)
         .required(),
+    merchant: joi_1.default.string().required(),
     deliveryDetails: joi_1.default.array()
         .items(joi_1.default.object({
         subOrderId: joi_1.default.number().required(),

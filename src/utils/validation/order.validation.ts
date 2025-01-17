@@ -146,6 +146,8 @@ export const newOrderCreationMulti = Joi.object({
   deliveryManId: Joi.string()
     .pattern(/^[0-9a-fA-F]{24}$/)
     .required(),
+  merchant: Joi.string().required(),
+
   deliveryDetails: Joi.array()
     .items(
       Joi.object({
