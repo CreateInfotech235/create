@@ -146,7 +146,9 @@ export const createCity = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').countryNotFound });
     }
 
-    const checkCityExist = await citySchema.findOne({ cityName: value.cityName });
+    const checkCityExist = await citySchema.findOne({
+      cityName: value.cityName,
+    });
 
     if (!checkCityExist) {
       const city = await citySchema.create({
@@ -172,7 +174,7 @@ export const createCity = async (req: RequestParams, res: Response) => {
 
     return res.ok({ message: getLanguage('en').cityCreated });
   } catch (error) {
-    console.log("error",error)
+    console.log('error', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
@@ -439,7 +441,6 @@ export const getCountryNames = async (req: RequestParams, res: Response) => {
     });
   }
 };
-
 
 export const deleteCity = async (req: RequestParams, res: Response) => {
   try {

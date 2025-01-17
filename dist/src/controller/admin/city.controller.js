@@ -118,7 +118,9 @@ const createCity = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!country) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').countryNotFound });
         }
-        const checkCityExist = yield city_schema_1.default.findOne({ cityName: value.cityName });
+        const checkCityExist = yield city_schema_1.default.findOne({
+            cityName: value.cityName,
+        });
         if (!checkCityExist) {
             const city = yield city_schema_1.default.create({
                 cityName: value.cityName,
@@ -139,7 +141,7 @@ const createCity = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').cityCreated });
     }
     catch (error) {
-        console.log("error", error);
+        console.log('error', error);
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });
