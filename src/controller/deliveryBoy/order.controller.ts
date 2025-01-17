@@ -2516,6 +2516,7 @@ export const getAllCancelledOrdersMulti = async (
     console.log(tr, 'tr');
 
     const data = await cancelOderbyDeliveryMan.aggregate([
+      { $sort : { order : -1 }},
       {
         $match: {
           deliveryBoy: Id,
@@ -2638,6 +2639,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
     };
 
     const data1 = await OrderAssigneeSchemaMulti.aggregate([
+      { $sort : { order : -1 }},
       {
         $match: matchQuery,
       },

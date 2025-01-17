@@ -72,11 +72,11 @@ export const orderCreateValidation = Joi.object({
 });
 
 export const newOrderCreation = Joi.object({
-  parcelsCount: Joi.number().required(),
+  // parcelsCount: Joi.number().required(),
   dateTime: Joi.date().timestamp().required(),
-  paymentCollection: Joi.string(),
-  paymentCollectionRupees: Joi.number(),
-  description: Joi.string(),
+  // paymentCollection: Joi.string(),
+  // paymentCollectionRupees: Joi.number(),
+  // description: Joi.string(),
 
   pickupDetails: Joi.object({
     location: Joi.object({

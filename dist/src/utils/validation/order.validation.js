@@ -67,11 +67,11 @@ exports.orderCreateValidation = joi_1.default.object({
         .default(''),
 });
 exports.newOrderCreation = joi_1.default.object({
-    parcelsCount: joi_1.default.number().required(),
+    // parcelsCount: Joi.number().required(),
     dateTime: joi_1.default.date().timestamp().required(),
-    paymentCollection: joi_1.default.string(),
-    paymentCollectionRupees: joi_1.default.number(),
-    description: joi_1.default.string(),
+    // paymentCollection: Joi.string(),
+    // paymentCollectionRupees: Joi.number(),
+    // description: Joi.string(),
     pickupDetails: joi_1.default.object({
         location: joi_1.default.object({
             latitude: joi_1.default.number().required(),

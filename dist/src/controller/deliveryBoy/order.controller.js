@@ -1943,6 +1943,7 @@ const getAllCancelledOrdersMulti = (req, res) => __awaiter(void 0, void 0, void 
         const tr = yield cancelOderbyDeliveryManSchema_1.default.find({ deliveryBoy: Id });
         console.log(tr, 'tr');
         const data = yield cancelOderbyDeliveryManSchema_1.default.aggregate([
+            { $sort: { order: -1 } },
             {
                 $match: {
                     deliveryBoy: Id,
@@ -2049,6 +2050,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // Add status to match if provided
         const matchQuery = Object.assign({ deliveryBoy: req.id }, dateFilter);
         const data1 = yield orderAssigneeMulti_schema_1.default.aggregate([
+            { $sort: { order: -1 } },
             {
                 $match: matchQuery,
             },
