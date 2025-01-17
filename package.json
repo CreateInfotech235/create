@@ -1,8 +1,8 @@
 {
   "name": "mighty_delivery_project",
   "version": "1.0.0",
-  "description": "",
-  "main": "ts-node index.ts",
+  "description": "A delivery project with TypeScript and Node.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,7 @@
     "start": "node dist/index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Your Name",
   "license": "ISC",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
