@@ -148,7 +148,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // Check if merchantId is provided and is a valid string
         const merchantId = req.id;
         // console.log(merchantId, 'merchantId');
-        console.log(req.body, "req.body");
+        console.log(req.body, 'req.body');
         if (!merchantId) {
             return res.badRequest({ message: 'missing merchant ID' });
         }
@@ -164,8 +164,9 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
         // console.log("enter in orderCreationMulti2");
         // Validate the cleaned body
+        console.log('before', req.body);
         const validateRequest = (0, validateRequest_1.default)(cleanedBody, order_validation_1.newOrderCreationMulti);
-        // console.log("enter in orderCreationMulti3");
+        console.log('v:', validateRequest);
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
@@ -181,6 +182,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         }
         // console.log("enter in orderCreationMulti6");
         const { value } = validateRequest;
+        console.log('value', value);
         let checkLastOrder = yield orderMulti_schema_1.default
             .findOne({}, { _id: 0, orderId: 1 })
             .sort({ orderId: -1 });
@@ -192,7 +194,9 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         }
         value.orderId = checkLastOrder.orderId;
         value.pickupDetails.merchantId = merchantId.toString();
-        const newOrder = yield orderMulti_schema_1.default.create(Object.assign(Object.assign({}, value), { merchant: merchantId.toString(), showOrderNumber: datamarcent.showOrderNumber }));
+        // Filter out empty parcelType values before creating the order
+        const sanitizedValue = Object.assign(Object.assign({}, value), { deliveryDetails: value.deliveryDetails.map((detail) => (Object.assign(Object.assign({}, detail), { parcelType: detail.parcelType || undefined }))) });
+        const newOrder = yield orderMulti_schema_1.default.create(Object.assign(Object.assign({}, sanitizedValue), { merchant: merchantId.toString(), showOrderNumber: datamarcent.showOrderNumber }));
         const admin = yield admin_schema_1.default.findOne();
         const deliveryMan = yield deliveryMan_schema_1.default.findById({
             _id: req.body.deliveryManId,
@@ -238,7 +242,9 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // console.log(paymentStatuslist, 'paymentStatuslist');
         var deliveryManWalletlist = [];
         for (let i = 0; i < totalChargelist.length; i++) {
-            deliveryManWalletlist.push(((_a = value === null || value === void 0 ? void 0 : value.deliveryDetails[i]) === null || _a === void 0 ? void 0 : _a.paymentCollectionRupees) ? (_b = value.deliveryDetails[i]) === null || _b === void 0 ? void 0 : _b.paymentCollectionRupees : 0);
+            deliveryManWalletlist.push(((_a = value === null || value === void 0 ? void 0 : value.deliveryDetails[i]) === null || _a === void 0 ? void 0 : _a.paymentCollectionRupees)
+                ? (_b = value.deliveryDetails[i]) === null || _b === void 0 ? void 0 : _b.paymentCollectionRupees
+                : 0);
         }
         // console.log(deliveryManWalletlist, 'deliveryManWalletlist');
         const data = {
@@ -342,12 +348,16 @@ const orderUpdateMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             const charge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0;
             const distance = 10;
             // Calculate total charge and admin charge
-            const totalCharge = ((charge * distance) || 0).toFixed(2);
-            const totalChargeNumber = isNaN(Number(totalCharge)) ? 0 : Number(totalCharge);
+            const totalCharge = (charge * distance || 0).toFixed(2);
+            const totalChargeNumber = isNaN(Number(totalCharge))
+                ? 0
+                : Number(totalCharge);
             const adminCharge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByAdmin)
                 ? (totalChargeNumber % ((deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.adminCharge) || 0)).toFixed(2)
                 : '0';
-            const adminChargeNumber = isNaN(Number(adminCharge)) ? 0 : Number(adminCharge);
+            const adminChargeNumber = isNaN(Number(adminCharge))
+                ? 0
+                : Number(adminCharge);
             const createdBy = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.createdByMerchant)
                 ? 'MERCHANTDELIVERYMAN'
                 : 'ADMINDELIVERYMAN';
@@ -1064,7 +1074,7 @@ const getAllOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0,
 });
 exports.getAllOrdersFromMerchant = getAllOrdersFromMerchant;
 const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("ENTER");
+    console.log('ENTER');
     try {
         const { startDate, endDate } = req.query; // Get startDate and endDate from query params
         // Initialize dateFilter object
@@ -1219,8 +1229,8 @@ exports.getAllOrdersFromMerchantMulti = getAllOrdersFromMerchantMulti;
 const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { startDate, endDate } = req.query; // Get startDate and endDate from query params
-        console.log("startDate", startDate);
-        console.log("endDate", endDate);
+        console.log('startDate', startDate);
+        console.log('endDate', endDate);
         // Initialize dateFilter object
         let dateFilter = {};
         // If startDate and endDate are provided, convert them to Date objects with time set to the start and end of the day
@@ -1466,7 +1476,7 @@ const deleteOrderFormMerchantMulti = (req, res) => __awaiter(void 0, void 0, voi
             // Delete entire order if no subOrderId specified
             yield orderMulti_schema_1.default.findByIdAndDelete(id);
             yield orderHistory_schema_1.default.deleteMany({ order: OrderData.orderId });
-            console.log("OrderData.orderId", OrderData.orderId);
+            console.log('OrderData.orderId', OrderData.orderId);
             yield orderAssigneeMulti_schema_1.default.deleteMany({ order: OrderData.orderId });
             yield (0, common_1.createNotification)({
                 userId: OrderData.merchant,
@@ -1518,7 +1528,7 @@ const moveToTrashMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // Update main order trashed status and all delivery details trashed status
         yield orderMulti_schema_1.default.findByIdAndUpdate(id, {
             trashed: trash,
-            'deliveryDetails.$[].trashed': trash
+            'deliveryDetails.$[].trashed': trash,
         });
         yield (0, common_1.createNotification)({
             userId: OrderData.merchant,
@@ -1581,7 +1591,9 @@ const moveToTrashSubOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0,
         yield (0, common_1.createNotification)({
             userId: OrderData.merchant,
             orderId: OrderData.orderId,
-            title: trash ? 'Sub Order Moved to Trash' : 'Sub Order Restored from Trash',
+            title: trash
+                ? 'Sub Order Moved to Trash'
+                : 'Sub Order Restored from Trash',
             message: `Sub Order ${subOrderId} ${trash ? 'moved to trash' : 'restored from trash'}`,
             type: 'MERCHANT',
         });

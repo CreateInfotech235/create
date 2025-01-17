@@ -139,32 +139,39 @@ export const newOrderCreationMulti = Joi.object({
     merchantId: Joi.string().required(),
     mobileNumber: Joi.string().required(),
     name: Joi.string().required(),
-    postCode: Joi.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
+    postCode: Joi.string()
+      .regex(/^[A-Za-z0-9\s-]+$/)
+      .required(),
   }).required(),
-  deliveryManId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
-  deliveryDetails: Joi.array().items(
-    Joi.object({
-      subOrderId: Joi.number().required(),
-      address: Joi.string().required(),
-      email: Joi.string().email().optional(),
-      location: Joi.object({
-        latitude: Joi.number().required(),
-        longitude: Joi.number().required(),
-      }).required(),
-      mobileNumber: Joi.string().required(),
-      name: Joi.string().required(),
-      postCode: Joi.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
-      distance: Joi.number().required(),
-      duration: Joi.string().required(),
-      description: Joi.string().allow(''),
-      parcelsCount: Joi.number().required(),
-      paymentCollectionRupees: Joi.number().required(),
-      cashOnDelivery: Joi.boolean().valid(true, false).required(),
-      parcelType: Joi.string().required(),
-    })
-  ).required(),
+  deliveryManId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
+  deliveryDetails: Joi.array()
+    .items(
+      Joi.object({
+        subOrderId: Joi.number().required(),
+        address: Joi.string().required(),
+        email: Joi.string().email().optional(),
+        location: Joi.object({
+          latitude: Joi.number().required(),
+          longitude: Joi.number().required(),
+        }).required(),
+        mobileNumber: Joi.string().required(),
+        name: Joi.string().required(),
+        postCode: Joi.string()
+          .regex(/^[A-Za-z0-9\s-]+$/)
+          .required(),
+        distance: Joi.number().required(),
+        duration: Joi.string().required(),
+        description: Joi.string().allow(''),
+        parcelsCount: Joi.number().required(),
+        paymentCollectionRupees: Joi.number().required(),
+        cashOnDelivery: Joi.boolean().valid(true, false).required(),
+        parcelType: Joi.string().allow(''),
+      }),
+    )
+    .required(),
 });
-
 
 export const orderAssignValidation = Joi.object({
   deliveryManId: Joi.string()
@@ -185,7 +192,7 @@ export const orderArriveValidation = Joi.object({
 });
 export const orderArriveValidationMulti = Joi.object({
   orderId: Joi.number().required(),
-  subOrderId : Joi.number().optional()
+  subOrderId: Joi.number().optional(),
 });
 
 export const orderListByDeliveryManValidation = Joi.object({
@@ -226,7 +233,7 @@ export const orderDeliverValidation = Joi.object({
 });
 export const orderDeliverValidationMulti = Joi.object({
   orderId: Joi.number().required(),
-  subOrderId : Joi.number().required(),
+  subOrderId: Joi.number().required(),
   deliveryManSignature: Joi.string()
     .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
     .required(),
@@ -239,7 +246,7 @@ export const orderIdValidation = Joi.object({
 });
 export const orderIdValidationForDelivery = Joi.object({
   orderId: Joi.number().required(),
-  subOrderId : Joi.number().required(),
+  subOrderId: Joi.number().required(),
 });
 
 export const orderCancelValidation = Joi.object({

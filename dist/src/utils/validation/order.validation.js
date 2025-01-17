@@ -132,10 +132,15 @@ exports.newOrderCreationMulti = joi_1.default.object({
         merchantId: joi_1.default.string().required(),
         mobileNumber: joi_1.default.string().required(),
         name: joi_1.default.string().required(),
-        postCode: joi_1.default.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
+        postCode: joi_1.default.string()
+            .regex(/^[A-Za-z0-9\s-]+$/)
+            .required(),
     }).required(),
-    deliveryManId: joi_1.default.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
-    deliveryDetails: joi_1.default.array().items(joi_1.default.object({
+    deliveryManId: joi_1.default.string()
+        .pattern(/^[0-9a-fA-F]{24}$/)
+        .required(),
+    deliveryDetails: joi_1.default.array()
+        .items(joi_1.default.object({
         subOrderId: joi_1.default.number().required(),
         address: joi_1.default.string().required(),
         email: joi_1.default.string().email().optional(),
@@ -145,15 +150,18 @@ exports.newOrderCreationMulti = joi_1.default.object({
         }).required(),
         mobileNumber: joi_1.default.string().required(),
         name: joi_1.default.string().required(),
-        postCode: joi_1.default.string().regex(/^[A-Za-z0-9\s-]+$/).required(),
+        postCode: joi_1.default.string()
+            .regex(/^[A-Za-z0-9\s-]+$/)
+            .required(),
         distance: joi_1.default.number().required(),
         duration: joi_1.default.string().required(),
         description: joi_1.default.string().allow(''),
         parcelsCount: joi_1.default.number().required(),
         paymentCollectionRupees: joi_1.default.number().required(),
         cashOnDelivery: joi_1.default.boolean().valid(true, false).required(),
-        parcelType: joi_1.default.string().required(),
-    })).required(),
+        parcelType: joi_1.default.string().allow(''),
+    }))
+        .required(),
 });
 exports.orderAssignValidation = joi_1.default.object({
     deliveryManId: joi_1.default.string()
@@ -172,7 +180,7 @@ exports.orderArriveValidation = joi_1.default.object({
 });
 exports.orderArriveValidationMulti = joi_1.default.object({
     orderId: joi_1.default.number().required(),
-    subOrderId: joi_1.default.number().optional()
+    subOrderId: joi_1.default.number().optional(),
 });
 exports.orderListByDeliveryManValidation = joi_1.default.object({
     startDate: joi_1.default.string().allow(''),

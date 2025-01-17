@@ -189,14 +189,13 @@ export const orderCreation = async (req: RequestParams, res: Response) => {
 export const orderCreationMulti = async (req: RequestParams, res: Response) => {
   try {
     // Check if merchantId is provided and is a valid string
-    const merchantId = req.id
+    const merchantId = req.id;
     // console.log(merchantId, 'merchantId');
-console.log(req.body, "req.body");
+    console.log(req.body, 'req.body');
 
     if (!merchantId) {
       return res.badRequest({ message: 'missing merchant ID' });
     }
-
 
     interface RequestBody {
       [key: string]: any; // Adjust this type to match the structure of your request body
@@ -216,13 +215,15 @@ console.log(req.body, "req.body");
     });
     // console.log("enter in orderCreationMulti2");
 
-
     // Validate the cleaned body
+    console.log('before', req.body);
+
     const validateRequest = validateParamsWithJoi<OrderCreateTypeMulti>(
       cleanedBody,
       newOrderCreationMulti,
     );
-    // console.log("enter in orderCreationMulti3");
+
+    console.log('v:', validateRequest);
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -245,6 +246,7 @@ console.log(req.body, "req.body");
     // console.log("enter in orderCreationMulti6");
 
     const { value } = validateRequest;
+    console.log('value', value);
 
     let checkLastOrder = await orderSchemaMulti
       .findOne({}, { _id: 0, orderId: 1 })
@@ -258,8 +260,17 @@ console.log(req.body, "req.body");
     value.orderId = checkLastOrder.orderId;
     value.pickupDetails.merchantId = merchantId.toString();
 
-    const newOrder = await orderSchemaMulti.create({
+    // Filter out empty parcelType values before creating the order
+    const sanitizedValue = {
       ...value,
+      deliveryDetails: value.deliveryDetails.map((detail) => ({
+        ...detail,
+        parcelType: detail.parcelType || undefined, // Convert empty string to undefined
+      })),
+    };
+
+    const newOrder = await orderSchemaMulti.create({
+      ...sanitizedValue,
       merchant: merchantId.toString(),
       showOrderNumber: datamarcent.showOrderNumber,
     });
@@ -273,8 +284,14 @@ console.log(req.body, "req.body");
     const charge = deliveryMan?.charge || 0;
     var distancelist = [];
 
-    for (let i = 0; i < JSON.parse(JSON.stringify(value.deliveryDetails)).length; i++) {
-      distancelist.push(JSON.parse(JSON.stringify(value.deliveryDetails))[i].distance);
+    for (
+      let i = 0;
+      i < JSON.parse(JSON.stringify(value.deliveryDetails)).length;
+      i++
+    ) {
+      distancelist.push(
+        JSON.parse(JSON.stringify(value.deliveryDetails))[i].distance,
+      );
     }
     // console.log(distancelist, 'distancelist');
 
@@ -286,17 +303,19 @@ console.log(req.body, "req.body");
 
     var adminChargelist = [];
     for (let i = 0; i < totalChargelist.length; i++) {
-
       const totalChargeNumber = isNaN(Number(totalChargelist[i]))
         ? 0
         : Number(totalChargelist[i]);
       // console.log(totalChargeNumber, 'totalChargeNumber');
       // console.log(deliveryMan, 'deliveryMan?.adminCharge');
       // console.log(((totalChargeNumber * deliveryMan?.adminCharge) / 100));
-      adminChargelist.push(Number(((totalChargeNumber * deliveryMan?.adminCharge) / 100).toFixed(2)));
+      adminChargelist.push(
+        Number(
+          ((totalChargeNumber * deliveryMan?.adminCharge) / 100).toFixed(2),
+        ),
+      );
     }
     // console.log(adminChargelist, 'adminChargelist');
-
 
     // const distance = value.deliveryDetails[0].distance || 0;
     var distanceList = [];
@@ -312,13 +331,19 @@ console.log(req.body, "req.body");
 
     var paymentStatuslist = [];
     for (let i = 0; i < totalChargelist.length; i++) {
-      paymentStatuslist.push(value?.cashOnDelivery ? 'CASHONDELIVERY' : 'DIRECTPAYMENT');
+      paymentStatuslist.push(
+        value?.cashOnDelivery ? 'CASHONDELIVERY' : 'DIRECTPAYMENT',
+      );
     }
     // console.log(paymentStatuslist, 'paymentStatuslist');
 
     var deliveryManWalletlist = [];
     for (let i = 0; i < totalChargelist.length; i++) {
-      deliveryManWalletlist.push(value?.deliveryDetails[i]?.paymentCollectionRupees ? value.deliveryDetails[i]?.paymentCollectionRupees : 0);
+      deliveryManWalletlist.push(
+        value?.deliveryDetails[i]?.paymentCollectionRupees
+          ? value.deliveryDetails[i]?.paymentCollectionRupees
+          : 0,
+      );
     }
     // console.log(deliveryManWalletlist, 'deliveryManWalletlist');
 
@@ -349,7 +374,7 @@ console.log(req.body, "req.body");
         totalPaytoDeliveryMan: totalChargelist[i],
         totalPaytoAdmin: adminChargelist[i],
         deliveryManWallet: deliveryManWalletlist[i],
-        paymentStatus: paymentStatuslist[i]
+        paymentStatus: paymentStatuslist[i],
       });
     }
     // console.log(newData, 'newData');
@@ -452,13 +477,17 @@ export const orderUpdateMulti = async (req: RequestParams, res: Response) => {
       const distance = 10;
 
       // Calculate total charge and admin charge
-      const totalCharge = ((charge * distance) || 0).toFixed(2);
-      const totalChargeNumber = isNaN(Number(totalCharge)) ? 0 : Number(totalCharge);
+      const totalCharge = (charge * distance || 0).toFixed(2);
+      const totalChargeNumber = isNaN(Number(totalCharge))
+        ? 0
+        : Number(totalCharge);
 
       const adminCharge = deliveryMan?.createdByAdmin
         ? (totalChargeNumber % (deliveryMan?.adminCharge || 0)).toFixed(2)
         : '0';
-      const adminChargeNumber = isNaN(Number(adminCharge)) ? 0 : Number(adminCharge);
+      const adminChargeNumber = isNaN(Number(adminCharge))
+        ? 0
+        : Number(adminCharge);
 
       const createdBy = deliveryMan?.createdByMerchant
         ? 'MERCHANTDELIVERYMAN'
@@ -544,7 +573,6 @@ export const orderUpdateMulti = async (req: RequestParams, res: Response) => {
     });
   }
 };
-
 
 export const getAllPaymentInfo = async (req: RequestParams, res: Response) => {
   try {
@@ -1353,14 +1381,12 @@ export const getAllOrdersFromMerchant = async (
   }
 };
 
-
 export const getAllOrdersFromMerchantMulti = async (
   req: RequestParams,
   res: Response,
 ) => {
-  console.log("ENTER");
+  console.log('ENTER');
   try {
-    
     const { startDate, endDate } = req.query; // Get startDate and endDate from query params
 
     // Initialize dateFilter object
@@ -1521,15 +1547,14 @@ export const getAllOrdersFromMerchantMulti = async (
   }
 };
 
-
 export const getAllRecentOrdersFromMerchant = async (
   req: RequestParams,
   res: Response,
 ) => {
   try {
     const { startDate, endDate } = req.query; // Get startDate and endDate from query params
-    console.log("startDate", startDate);
-    console.log("endDate", endDate);
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
     // Initialize dateFilter object
     let dateFilter = {};
 
@@ -1778,7 +1803,6 @@ export const moveToTrash = async (req: RequestParams, res: Response) => {
 //   }
 // }
 
-
 export const deleteOrderFormMerchantMulti = async (
   req: RequestParams,
   res: Response,
@@ -1801,7 +1825,7 @@ export const deleteOrderFormMerchantMulti = async (
       // Delete entire order if no subOrderId specified
       await orderSchemaMulti.findByIdAndDelete(id);
       await OrderHistorySchema.deleteMany({ order: OrderData.orderId });
-      console.log("OrderData.orderId", OrderData.orderId);
+      console.log('OrderData.orderId', OrderData.orderId);
 
       await OrderAssigneeSchemaMulti.deleteMany({ order: OrderData.orderId });
 
@@ -1845,8 +1869,6 @@ export const deleteOrderFormMerchantMulti = async (
   }
 };
 
-
-
 export const moveToTrashMulti = async (req: RequestParams, res: Response) => {
   try {
     const { id } = req.params;
@@ -1866,7 +1888,7 @@ export const moveToTrashMulti = async (req: RequestParams, res: Response) => {
     // Update main order trashed status and all delivery details trashed status
     await orderSchemaMulti.findByIdAndUpdate(id, {
       trashed: trash,
-      'deliveryDetails.$[].trashed': trash
+      'deliveryDetails.$[].trashed': trash,
     });
 
     await createNotification({
@@ -1890,7 +1912,6 @@ export const moveToTrashMulti = async (req: RequestParams, res: Response) => {
   }
 };
 
-
 export const moveToTrashSubOrderMulti = async (
   req: RequestParams,
   res: Response,
@@ -1910,7 +1931,7 @@ export const moveToTrashSubOrderMulti = async (
     }
 
     const deliveryDetail = OrderData.deliveryDetails.find(
-      (detail: any) => detail.subOrderId === subOrderId
+      (detail: any) => detail.subOrderId === subOrderId,
     );
 
     if (!deliveryDetail) {
@@ -1918,10 +1939,16 @@ export const moveToTrashSubOrderMulti = async (
     }
 
     // Get current trashed status from deliveryDetail
-    console.log('🚀 ~ moveToTrashSubOrderMulti ~ deliveryDetail:', deliveryDetail);
+    console.log(
+      '🚀 ~ moveToTrashSubOrderMulti ~ deliveryDetail:',
+      deliveryDetail,
+    );
     const currentTrashed = (deliveryDetail as { trashed?: boolean })?.trashed;
 
-    console.log('🚀 ~ moveToTrashSubOrderMulti ~ currentTrashed:', currentTrashed);
+    console.log(
+      '🚀 ~ moveToTrashSubOrderMulti ~ currentTrashed:',
+      currentTrashed,
+    );
     // Toggle trashed status - if true make false, if false make true
     const trash = currentTrashed ? false : true;
 
@@ -1937,7 +1964,7 @@ export const moveToTrashSubOrderMulti = async (
         $set: {
           'deliveryDetails.$.trashed': trash,
         },
-      }
+      },
     );
 
     if (updateResult.modifiedCount === 0) {
@@ -1950,8 +1977,12 @@ export const moveToTrashSubOrderMulti = async (
     await createNotification({
       userId: OrderData.merchant,
       orderId: OrderData.orderId,
-      title: trash ? 'Sub Order Moved to Trash' : 'Sub Order Restored from Trash',
-      message: `Sub Order ${subOrderId} ${trash ? 'moved to trash' : 'restored from trash'}`,
+      title: trash
+        ? 'Sub Order Moved to Trash'
+        : 'Sub Order Restored from Trash',
+      message: `Sub Order ${subOrderId} ${
+        trash ? 'moved to trash' : 'restored from trash'
+      }`,
       type: 'MERCHANT',
     });
 
