@@ -258,31 +258,31 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const merchantCount = yield user_schema_1.default.aggregate([
             {
                 $lookup: {
-                    from: "subcriptionPurchase",
-                    localField: "_id",
-                    foreignField: "merchant",
-                    as: "subcriptionPurchase",
+                    from: 'subcriptionPurchase',
+                    localField: '_id',
+                    foreignField: 'merchant',
+                    as: 'subcriptionPurchase',
                 },
             },
             {
                 $unwind: {
-                    path: "$subcriptionPurchase",
+                    path: '$subcriptionPurchase',
                     preserveNullAndEmptyArrays: true,
                 },
             },
             {
                 $lookup: {
-                    from: "subcriptions",
-                    localField: "subcriptionPurchase.subcriptionId",
-                    foreignField: "_id",
-                    as: "subcription",
+                    from: 'subcriptions',
+                    localField: 'subcriptionPurchase.subcriptionId',
+                    foreignField: '_id',
+                    as: 'subcription',
                 },
             },
             {
                 $project: {
                     _id: 1,
                     subcription: 1,
-                    expiry: "$subcriptionPurchase.expiry",
+                    expiry: '$subcriptionPurchase.expiry',
                 },
             },
             {
@@ -291,27 +291,27 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
                         $cond: {
                             if: {
                                 $and: [
-                                    { $ne: ["$subcription", []] }, // Not empty subcription
-                                    { $gte: ["$expiry", new Date()] } // Expiry is valid
-                                ]
+                                    { $ne: ['$subcription', []] }, // Not empty subcription
+                                    { $gte: ['$expiry', new Date()] }, // Expiry is valid
+                                ],
                             },
                             then: true,
-                            else: false
-                        }
-                    }
-                }
+                            else: false,
+                        },
+                    },
+                },
             },
             {
                 $group: {
                     _id: null,
                     subscribedMerchants: {
-                        $sum: { $cond: [{ $eq: ["$isActive", true] }, 1, 0] }
+                        $sum: { $cond: [{ $eq: ['$isActive', true] }, 1, 0] },
                     },
                     unsubscribedMerchants: {
-                        $sum: { $cond: [{ $eq: ["$isActive", false] }, 1, 0] }
-                    }
-                }
-            }
+                        $sum: { $cond: [{ $eq: ['$isActive', false] }, 1, 0] },
+                    },
+                },
+            },
         ]);
         let totalCounts = {
             totalOrders,
@@ -561,7 +561,7 @@ exports.getAllTickets = getAllTickets;
 // Fetch messages for a specific ticket
 const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.params.id, "fddfdf");
+        console.log(req.params.id, 'fddfdf');
         const ticket = yield SupportTicket_1.default.findById(req.params.id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
@@ -576,7 +576,7 @@ exports.getMessagesByTicketId = getMessagesByTicketId;
 // Add a new message to a specific ticket
 const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.params.id, "fddfdf");
+        console.log(req.params.id, 'fddfdf');
         const { text, sender } = req.body;
         if (!text || !['merchant', 'admin'].includes(sender)) {
             return res.status(400).json({ message: 'Invalid message data' });
@@ -607,7 +607,7 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
 exports.addMessageToTicket = addMessageToTicket;
 const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("Gfgeguefg");
+        console.log('Gfgeguefg');
         const { ticketId, messageId } = req.params;
         // Find the ticket by ID
         const ticket = yield SupportTicket_1.default.findById(ticketId);
@@ -705,7 +705,9 @@ const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
         }
         // Encrypt the new password
-        const encryptedPassword = yield (0, common_1.encryptPassword)({ password: value.newPassword });
+        const encryptedPassword = yield (0, common_1.encryptPassword)({
+            password: value.newPassword,
+        });
         // Update the user's password
         yield admin_schema_1.default.updateOne({ email: value.email }, { $set: { password: encryptedPassword } });
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').passwordResetSuccess });

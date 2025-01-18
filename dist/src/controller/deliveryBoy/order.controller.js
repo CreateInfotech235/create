@@ -1069,14 +1069,14 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!isArrived) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorOrderArrived });
         }
-        const otpData = yield otp_schema_1.default.findOne({
-            value: value.otp,
-            customerEmail: isArrived.pickupDetails.email,
-            expiry: { $gte: Date.now() },
-        });
-        if (!otpData) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
-        }
+        // const otpData = await otpSchema.findOne({
+        //   value: value.otp,
+        //   customerEmail: isArrived.pickupDetails.email,
+        //   expiry: { $gte: Date.now() },
+        // });
+        // if (!otpData) {
+        //   return res.badRequest({ message: getLanguage('en').otpExpired });
+        // }
         // const signDocs = value.userSignature;
         // value.userSignature = await uploadFile(
         //   signDocs[0],
@@ -1155,15 +1155,15 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         if (!isArrived) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorOrderArrived });
         }
-        const otpData = yield otp_schema_1.default.findOne({
-            value: value.otp,
-            customerEmail: isArrived.pickupDetails.email,
-            expiry: { $gte: Date.now() },
-        });
-        console.log(otpData);
-        if (!otpData) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
-        }
+        // const otpData = await otpSchema.findOne({
+        //   value: value.otp,
+        //   customerEmail: isArrived.pickupDetails.email,
+        //   expiry: { $gte: Date.now() },
+        // });
+        // console.log(otpData);
+        // if (!otpData) {
+        //   return res.badRequest({ message: getLanguage('en').otpExpired });
+        // }
         // const signDocs = value.userSignature;
         // value.userSignature = await uploadFile(
         //   signDocs[0],
@@ -1481,15 +1481,15 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
         // otp verification START
-        const otpData = yield otp_schema_1.default.findOne({
-            value: value.otp,
-            customerEmail: isArrived.deliveryDetails.email,
-            expiry: { $gte: Date.now() },
-        });
-        console.log('OTP Data:', otpData);
-        if (!otpData) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
-        }
+        // const otpData = await otpSchema.findOne({
+        //   value: value.otp,
+        //   customerEmail: isArrived.deliveryDetails.email,
+        //   expiry: { $gte: Date.now() },
+        // });
+        // console.log('OTP Data:', otpData);
+        // if (!otpData) {
+        //   return res.badRequest({ message: getLanguage('en').otpExpired });
+        // }
         // otp verification END
         // total amount to be paid
         const endTime = Date.now(); // Current time in milliseconds
@@ -1658,16 +1658,16 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
         // otp verification START
-        const otpData = yield otp_schema_1.default.findOne({
-            value: value.otp,
-            subOrderId: value.subOrderId,
-            customerEmail: deliveryEmail[0].email,
-            expiry: { $gte: Date.now() },
-        });
-        console.log('OTP Data:', otpData);
-        if (!otpData) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
-        }
+        // const otpData = await otpSchema.findOne({
+        //   value: value.otp,
+        //   subOrderId: value.subOrderId,
+        //   customerEmail: (deliveryEmail[0] as { email?: string }).email,
+        //   expiry: { $gte: Date.now() },
+        // });
+        // console.log('OTP Data:', otpData);
+        // if (!otpData) {
+        //   return res.badRequest({ message: getLanguage('en').otpExpired });
+        // }
         // otp verification END
         // total amount to be paid
         const endTime = Date.now(); // Current time in milliseconds

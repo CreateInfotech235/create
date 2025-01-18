@@ -157,7 +157,8 @@ exports.customerSignUpValidation = joi_1.default.object().keys({
     lastName: joi_1.default.string().required(),
     email: joi_1.default.string()
         .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
-        .required(),
+        .allow('-')
+        .optional(),
     address: joi_1.default.string().required(),
     postCode: joi_1.default.string().required(),
     mobileNumber: joi_1.default.string().required(),

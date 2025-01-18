@@ -198,7 +198,7 @@ exports.orderPickUpValidation = joi_1.default.object({
         .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
         .required(),
     pickupTimestamp: joi_1.default.date().timestamp().required(),
-    otp: joi_1.default.number(),
+    // otp: Joi.number(),
 });
 exports.orderDeliverValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),
@@ -206,7 +206,7 @@ exports.orderDeliverValidation = joi_1.default.object({
         .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
         .required(),
     deliverTimestamp: joi_1.default.date().timestamp().required(),
-    otp: joi_1.default.number(),
+    // otp: Joi.number(),
 });
 exports.orderDeliverValidationMulti = joi_1.default.object({
     orderId: joi_1.default.number().required(),
@@ -215,7 +215,7 @@ exports.orderDeliverValidationMulti = joi_1.default.object({
         .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
         .required(),
     deliverTimestamp: joi_1.default.date().timestamp().required(),
-    otp: joi_1.default.number(),
+    // otp: Joi.number(),
 });
 exports.orderIdValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),

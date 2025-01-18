@@ -17,7 +17,6 @@ const customer_schema_1 = __importDefault(require("../../models/customer.schema"
 const languageHelper_1 = require("../../language/languageHelper");
 const city_schema_1 = __importDefault(require("../../models/city.schema"));
 const country_schema_1 = __importDefault(require("../../models/country.schema"));
-const failedCustomer_schema_1 = __importDefault(require("../../models/failedCustomer.schema"));
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
 const mongoose_1 = __importDefault(require("mongoose"));
@@ -56,85 +55,95 @@ exports.createCustomer = createCustomer;
 const createCustomerExal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const customers = req.body;
-        // Ensure the input is an array
         if (!Array.isArray(customers)) {
             return res.badRequest({ message: 'Request body must be an array of customers' });
         }
-        const successful = []; // Array to store successfully added customers
-        const failed = []; // Array to store failed customer data with errors
-        for (const customerData of customers) {
-            try {
-                // Validate the customer data
-                const validateRequest = (0, validateRequest_1.default)(customerData, auth_validation_1.customerSignUpValidation);
-                // Handle validation failure
-                if (!validateRequest.isValid) {
-                    const failedCustomer = yield failedCustomer_schema_1.default.create({
-                        data: customerData,
-                        error: validateRequest.message,
-                        attemptedAt: new Date(),
-                        resolved: false
-                    });
-                    failed.push(failedCustomer);
-                    continue; // Skip to the next customer
+        const successful = [];
+        const failed = [];
+        // Process customers in parallel batches
+        const batchSize = 10;
+        for (let i = 0; i < customers.length; i += batchSize) {
+            const batch = customers.slice(i, i + batchSize);
+            const results = yield Promise.all(batch.map((customerData) => __awaiter(void 0, void 0, void 0, function* () {
+                try {
+                    const validateRequest = (0, validateRequest_1.default)(customerData, auth_validation_1.customerSignUpValidation);
+                    if (!validateRequest.isValid) {
+                        return {
+                            success: false,
+                            data: customerData,
+                            error: validateRequest.message
+                        };
+                    }
+                    const { value } = validateRequest;
+                    // Check customer existence and merchant in parallel
+                    const [existingCustomer, merchant] = yield Promise.all([
+                        customer_schema_1.default.findOne({
+                            email: value.email,
+                            merchantId: value.merchantId
+                        }).lean(),
+                        user_schema_1.default.findById(value.merchantId).lean()
+                    ]);
+                    if (existingCustomer) {
+                        return {
+                            success: false,
+                            data: customerData,
+                            error: 'Customer with this email already exists for this merchant'
+                        };
+                    }
+                    if (!merchant) {
+                        return {
+                            success: false,
+                            data: customerData,
+                            error: 'Merchant not found'
+                        };
+                    }
+                    // Update merchant count and create customer
+                    const [newCustomer] = yield Promise.all([
+                        customer_schema_1.default.create(Object.assign(Object.assign({}, value), { showCustomerNumber: merchant.showCustomerNumber })),
+                        user_schema_1.default.updateOne({ _id: value.merchantId }, { $inc: { showCustomerNumber: 1 } })
+                    ]);
+                    return {
+                        success: true,
+                        data: newCustomer
+                    };
                 }
-                const { value } = validateRequest;
-                // Check if customer already exists with same email and merchantId
-                const existingCustomer = yield customer_schema_1.default.findOne({
-                    email: value.email,
-                    merchantId: value.merchantId
-                });
-                if (existingCustomer) {
-                    const failedCustomer = yield failedCustomer_schema_1.default.create({
+                catch (error) {
+                    return {
+                        success: false,
                         data: customerData,
-                        error: 'Customer with this email already exists for this merchant',
-                        attemptedAt: new Date(),
-                        resolved: false
-                    });
-                    failed.push(failedCustomer);
-                    continue;
+                        error: 'Unexpected error occurred while creating customer'
+                    };
                 }
-                // Find the merchant and update their customer count
-                const merchant = yield user_schema_1.default.findById(value.merchantId);
-                if (!merchant) {
-                    const failedCustomer = yield failedCustomer_schema_1.default.create({
-                        data: customerData,
-                        error: 'Merchant not found',
-                        attemptedAt: new Date(),
-                        resolved: false
-                    });
-                    failed.push(failedCustomer);
-                    continue;
+            })));
+            // Process results
+            for (const result of results) {
+                if (result.success) {
+                    successful.push(result.data);
                 }
-                // Increment the merchant's customer count
-                yield user_schema_1.default.updateOne({ _id: value.merchantId }, { $set: { showCustomerNumber: merchant.showCustomerNumber + 1 } });
-                // Create the customer
-                const newCustomer = yield customer_schema_1.default.create(Object.assign(Object.assign({}, value), { showCustomerNumber: merchant.showCustomerNumber }));
-                // Add the successful customer data to the results array
-                successful.push(newCustomer);
-            }
-            catch (error) {
-                // Handle unexpected errors during processing
-                const failedCustomer = yield failedCustomer_schema_1.default.create({
-                    data: customerData,
-                    error: 'Unexpected error occurred while creating customer',
-                    attemptedAt: new Date(),
-                    resolved: false
-                });
-                failed.push(failedCustomer);
+                else {
+                    // const failedCustomer = await FailedCustomerSchema.create({
+                    //   data: result.data,
+                    //   error: result.error,
+                    //   attemptedAt: new Date(),
+                    //   resolved: false
+                    // });
+                    failed.push({ data: result.data,
+                        error: result.error,
+                        attemptedAt: new Date(),
+                        resolved: false });
+                }
             }
         }
-        // Send the response with both successful and failed data
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').userRegistered,
             data: {
-                successful, // Successfully added customers
-                failed, // Failed customers with error details
+                successful,
+                failed,
             },
         });
     }
     catch (error) {
         console.error('Error creating customers:', error);
-        // Handle any unexpected error in the main flow
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });
