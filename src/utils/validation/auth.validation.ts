@@ -172,7 +172,8 @@ export const customerSignUpValidation = Joi.object().keys({
   lastName: Joi.string().required(),
   email: Joi.string()
     .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
-    .required(),
+    .allow('-')
+    .optional(),
   address: Joi.string().required(),
   postCode: Joi.string().required(),
   mobileNumber: Joi.string().required(),

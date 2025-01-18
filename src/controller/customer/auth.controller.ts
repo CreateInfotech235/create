@@ -76,117 +76,130 @@ export const createCustomerExal = async (req: RequestParams, res: Response) => {
   try {
     const customers = req.body;
 
-    // Ensure the input is an array
     if (!Array.isArray(customers)) {
       return res.badRequest({ message: 'Request body must be an array of customers' });
     }
 
-    const successful = []; // Array to store successfully added customers
-    const failed = [];     // Array to store failed customer data with errors
+    const successful = [];
+    const failed = [];
 
-    for (const customerData of customers) {
-      try {
-        // Validate the customer data
-        const validateRequest = validateParamsWithJoi<{
-          firstName: string;
-          lastName: string;
-          customerId: string;
-          country: string;
-          city: string;
-          address: string;
-          postCode: string;
-          mobileNumber: string;
-          email: string;
-          location: {
-            latitude: number;
-            longitude: number;
-          };
-          merchantId: string;
-          trashed: boolean;
-        }>(customerData, customerSignUpValidation);
+    // Process customers in parallel batches
+    const batchSize = 10;
+    for (let i = 0; i < customers.length; i += batchSize) {
+      const batch = customers.slice(i, i + batchSize);
+      
+      const results = await Promise.all(
+        batch.map(async (customerData) => {
+          try {
+            const validateRequest = validateParamsWithJoi<{
+              firstName: string;
+              lastName: string;
+              customerId: string;
+              country: string;
+              city: string;
+              address: string;
+              postCode: string;
+              mobileNumber: string;
+              email: string;
+              location: {
+                latitude: number;
+                longitude: number;
+              };
+              merchantId: string;
+              trashed: boolean;
+            }>(customerData, customerSignUpValidation);
 
-        // Handle validation failure
-        if (!validateRequest.isValid) {
-          const failedCustomer = await FailedCustomerSchema.create({
-            data: customerData,
-            error: validateRequest.message,
+            if (!validateRequest.isValid) {
+              return {
+                success: false,
+                data: customerData,
+                error: validateRequest.message
+              };
+            }
+
+            const { value } = validateRequest;
+
+            // Check customer existence and merchant in parallel
+            const [existingCustomer, merchant] = await Promise.all([
+              customerSchema.findOne({
+                email: value.email,
+                merchantId: value.merchantId
+              }).lean(),
+              merchantSchema.findById(value.merchantId).lean()
+            ]);
+
+            if (existingCustomer) {
+              return {
+                success: false,
+                data: customerData,
+                error: 'Customer with this email already exists for this merchant'
+              };
+            }
+
+            if (!merchant) {
+              return {
+                success: false,
+                data: customerData,
+                error: 'Merchant not found'
+              };
+            }
+
+            // Update merchant count and create customer
+            const [newCustomer] = await Promise.all([
+              customerSchema.create({
+                ...value,
+                showCustomerNumber: merchant.showCustomerNumber
+              }),
+              merchantSchema.updateOne(
+                { _id: value.merchantId },
+                { $inc: { showCustomerNumber: 1 } }
+              )
+            ]);
+
+            return {
+              success: true,
+              data: newCustomer
+            };
+
+          } catch (error) {
+            return {
+              success: false,
+              data: customerData,
+              error: 'Unexpected error occurred while creating customer'
+            };
+          }
+        })
+      );
+
+      // Process results
+      for (const result of results) {
+        if (result.success) {
+          successful.push(result.data);
+        } else {
+          // const failedCustomer = await FailedCustomerSchema.create({
+          //   data: result.data,
+          //   error: result.error,
+          //   attemptedAt: new Date(),
+          //   resolved: false
+          // });
+          failed.push({data: result.data,
+            error: result.error,
             attemptedAt: new Date(),
-            resolved: false
-          });
-          failed.push(failedCustomer);
-          continue; // Skip to the next customer
+            resolved: false});
         }
-
-        const { value } = validateRequest;
-
-        // Check if customer already exists with same email and merchantId
-        const existingCustomer = await customerSchema.findOne({
-          email: value.email,
-          merchantId: value.merchantId
-        });
-
-        if (existingCustomer) {
-          const failedCustomer = await FailedCustomerSchema.create({
-            data: customerData,
-            error: 'Customer with this email already exists for this merchant',
-            attemptedAt: new Date(),
-            resolved: false
-          });
-          failed.push(failedCustomer);
-          continue;
-        }
-
-        // Find the merchant and update their customer count
-        const merchant = await merchantSchema.findById(value.merchantId);
-        if (!merchant) {
-          const failedCustomer = await FailedCustomerSchema.create({
-            data: customerData,
-            error: 'Merchant not found',
-            attemptedAt: new Date(),
-            resolved: false
-          });
-          failed.push(failedCustomer);
-          continue;
-        }
-
-        // Increment the merchant's customer count
-        await merchantSchema.updateOne(
-          { _id: value.merchantId },
-          { $set: { showCustomerNumber: merchant.showCustomerNumber + 1 } },
-        );
-
-        // Create the customer
-        const newCustomer = await customerSchema.create({
-          ...value,
-          showCustomerNumber: merchant.showCustomerNumber,
-        });
-
-        // Add the successful customer data to the results array
-        successful.push(newCustomer);
-      } catch (error) {
-        // Handle unexpected errors during processing
-        const failedCustomer = await FailedCustomerSchema.create({
-          data: customerData,
-          error: 'Unexpected error occurred while creating customer',
-          attemptedAt: new Date(),
-          resolved: false
-        });
-        failed.push(failedCustomer);
       }
     }
 
-    // Send the response with both successful and failed data
     return res.ok({
       message: getLanguage('en').userRegistered,
       data: {
-        successful, // Successfully added customers
-        failed,     // Failed customers with error details
+        successful,
+        failed,
       },
     });
+
   } catch (error) {
     console.error('Error creating customers:', error);
-
-    // Handle any unexpected error in the main flow
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

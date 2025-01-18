@@ -6,7 +6,7 @@ import adminSchema from '../../models/admin.schema';
 import authTokenSchema from '../../models/authToken.schema';
 import otpSchema from '../../models/otp.schema';
 import SupportTicket from '../../models/SupportTicket';
-import { io } from '../../../index'
+import { io } from '../../../index';
 import {
   createAuthTokens,
   createNotification,
@@ -37,7 +37,7 @@ import deliveryManSchema from '../../models/deliveryMan.schema';
 import subscribedSchema from '../../models/subcription.schema';
 import Notifications from '../../models/notificatio.schema';
 import merchantSchema from '../../models/user.schema';
-import Ticket from '../../models/Ticket.schema'
+import Ticket from '../../models/Ticket.schema';
 
 export const signIn = async (req: RequestParams, res: Response) => {
   try {
@@ -72,7 +72,7 @@ export const signIn = async (req: RequestParams, res: Response) => {
     await authTokenSchema.deleteMany({ adminId: userExist._id });
     const { accessToken, refreshToken } = createAuthTokens(userExist._id);
     await authTokenSchema.create({
-      adminId : userExist._id,
+      adminId: userExist._id,
       accessToken: accessToken,
       refreshToken: refreshToken,
     });
@@ -232,9 +232,8 @@ export const renewToken = async (req: RequestParams, res: Response) => {
     }
     await authTokenSchema.deleteMany({ adminId: adminVerify._id });
 
-    
     const { accessToken, refreshToken } = createAuthTokens(adminVerify._id);
-    
+
     await authTokenSchema.create({
       adminId: adminVerify._id,
       accessToken: data.accessToken,
@@ -291,7 +290,6 @@ export const logout = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').invalidToken });
     }
 
-
     return res.ok({
       message: getLanguage('en').logoutSuccessfully,
     });
@@ -303,7 +301,6 @@ export const logout = async (req: RequestParams, res: Response) => {
     });
   }
 };
-
 
 export const getOrderCounts = async (req: RequestParams, res: Response) => {
   try {
@@ -338,31 +335,31 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
     const merchantCount = await merchantSchema.aggregate([
       {
         $lookup: {
-          from: "subcriptionPurchase",
-          localField: "_id",
-          foreignField: "merchant",
-          as: "subcriptionPurchase",
+          from: 'subcriptionPurchase',
+          localField: '_id',
+          foreignField: 'merchant',
+          as: 'subcriptionPurchase',
         },
       },
       {
         $unwind: {
-          path: "$subcriptionPurchase",
+          path: '$subcriptionPurchase',
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $lookup: {
-          from: "subcriptions",
-          localField: "subcriptionPurchase.subcriptionId",
-          foreignField: "_id",
-          as: "subcription",
+          from: 'subcriptions',
+          localField: 'subcriptionPurchase.subcriptionId',
+          foreignField: '_id',
+          as: 'subcription',
         },
       },
       {
         $project: {
           _id: 1,
           subcription: 1,
-          expiry: "$subcriptionPurchase.expiry",
+          expiry: '$subcriptionPurchase.expiry',
         },
       },
       {
@@ -371,29 +368,28 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
             $cond: {
               if: {
                 $and: [
-                  { $ne: ["$subcription", []] }, // Not empty subcription
-                  { $gte: ["$expiry", new Date()] } // Expiry is valid
-                ]
+                  { $ne: ['$subcription', []] }, // Not empty subcription
+                  { $gte: ['$expiry', new Date()] }, // Expiry is valid
+                ],
               },
               then: true,
-              else: false
-            }
-          }
-        }
+              else: false,
+            },
+          },
+        },
       },
       {
         $group: {
-          _id: null, 
+          _id: null,
           subscribedMerchants: {
-            $sum: { $cond: [{ $eq: ["$isActive", true] }, 1, 0] }
+            $sum: { $cond: [{ $eq: ['$isActive', true] }, 1, 0] },
           },
           unsubscribedMerchants: {
-            $sum: { $cond: [{ $eq: ["$isActive", false] }, 1, 0] }
-          }
-        }
-      }
+            $sum: { $cond: [{ $eq: ['$isActive', false] }, 1, 0] },
+          },
+        },
+      },
     ]);
-
 
     let totalCounts = {
       totalOrders,
@@ -406,11 +402,9 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       deliveredOrders,
       cancelledOrders,
       deliveryMan,
-      subscribedMerchants:merchantCount[0].subscribedMerchants,
-      unsubscribedMerchants:merchantCount[0].unsubscribedMerchants,
-
+      subscribedMerchants: merchantCount[0].subscribedMerchants,
+      unsubscribedMerchants: merchantCount[0].unsubscribedMerchants,
     };
-
 
     return res.ok({
       message: getLanguage('en').countedData,
@@ -601,7 +595,7 @@ export const sendEmailFor = async (req: RequestParams, res: Response) => {
       email: string;
       contactNumber: number;
       countryCode: string;
-      subject : string;
+      subject: string;
       messageSend: string;
       personType: PERSON_TYPE;
     }>(req.body, otpVerifyValidation);
@@ -637,7 +631,7 @@ export const sendEmailFor = async (req: RequestParams, res: Response) => {
 
     // const otp = generateIntRandomNo(111111, 999999);
 
-    await emailSend(value.email, value.subject , `${value.messageSend}`);
+    await emailSend(value.email, value.subject, `${value.messageSend}`);
 
     // const data = await otpSchema.updateOne(
     //   {
@@ -673,7 +667,6 @@ export const sendEmailFor = async (req: RequestParams, res: Response) => {
   }
 };
 
-
 export const getAllTickets = async (req: RequestParams, res: Response) => {
   try {
     const tickets = await SupportTicket.find({}, 'userid'); // Return only merchantName and _id
@@ -684,9 +677,12 @@ export const getAllTickets = async (req: RequestParams, res: Response) => {
 };
 
 // Fetch messages for a specific ticket
-export const getMessagesByTicketId = async (req: RequestParams, res: Response) => {
+export const getMessagesByTicketId = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
-    console.log(req.params.id , "fddfdf");
+    console.log(req.params.id, 'fddfdf');
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
@@ -700,13 +696,13 @@ export const getMessagesByTicketId = async (req: RequestParams, res: Response) =
 // Add a new message to a specific ticket
 export const addMessageToTicket = async (req: RequestParams, res: Response) => {
   try {
-    console.log(req.params.id , "fddfdf");
+    console.log(req.params.id, 'fddfdf');
     const { text, sender } = req.body;
     if (!text || !['merchant', 'admin'].includes(sender)) {
       return res.status(400).json({ message: 'Invalid message data' });
     }
-    console.log(text , sender);
-    const ticket = await SupportTicket.findById(req.params.id);    
+    console.log(text, sender);
+    const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
@@ -731,10 +727,13 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
   }
 };
 
-export const deleteMessageFromTicket = async (req: RequestParams, res: Response) => {
+export const deleteMessageFromTicket = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
-    console.log("Gfgeguefg");
-    
+    console.log('Gfgeguefg');
+
     const { ticketId, messageId } = req.params;
 
     // Find the ticket by ID
@@ -744,7 +743,9 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
     }
 
     // Find the index of the message to delete
-    const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId);
+    const messageIndex = ticket.messages.findIndex(
+      (msg) => msg._id.toString() === messageId,
+    );
     if (messageIndex === -1) {
       return res.status(404).json({ message: 'Message not found' });
     }
@@ -764,11 +765,12 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
   }
 };
 
-
-
 export const sendOtp = async (req: RequestParams, res: Response) => {
   try {
-    const validateRequest = validateParamsWithJoi<{ email: string }>(req.body, sendOtpValidation);
+    const validateRequest = validateParamsWithJoi<{ email: string }>(
+      req.body,
+      sendOtpValidation,
+    );
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -784,7 +786,7 @@ export const sendOtp = async (req: RequestParams, res: Response) => {
     }
 
     // Generate OTP
-    const otp = Math.floor(1000 + Math.random() * 9000); 
+    const otp = Math.floor(1000 + Math.random() * 9000);
     const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
     await emailOrMobileOtp(
       value.email,
@@ -809,68 +811,76 @@ export const sendOtp = async (req: RequestParams, res: Response) => {
 };
 
 export const verifyOtp = async (req: RequestParams, res: Response) => {
-try {
-  const validateRequest = validateParamsWithJoi<{ otp: number }>(req.body, verifyOtpValidation);
+  try {
+    const validateRequest = validateParamsWithJoi<{ otp: number }>(
+      req.body,
+      verifyOtpValidation,
+    );
 
-  if (!validateRequest.isValid) {
-    return res.badRequest({ message: validateRequest.message });
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    // Validate OTP
+    const otpData = await otpSchema.findOne({
+      value: value.otp,
+      expiry: { $gte: Date.now() },
+    });
+
+    if (!otpData) {
+      return res.badRequest({ message: getLanguage('en').otpExpired });
+    }
+
+    // Optionally, mark OTP as used or delete it
+    await otpSchema.deleteOne({ _id: otpData._id });
+
+    return res.ok({ message: getLanguage('en').otpVerified });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
   }
-
-  const { value } = validateRequest;
-
-  // Validate OTP
-  const otpData = await otpSchema.findOne({
-    value: value.otp,
-    expiry: { $gte: Date.now() },
-  });
-
-  if (!otpData) {
-    return res.badRequest({ message: getLanguage('en').otpExpired });
-  }
-
-  // Optionally, mark OTP as used or delete it
-  await otpSchema.deleteOne({ _id: otpData._id });
-
-  return res.ok({ message: getLanguage('en').otpVerified });
-} catch (error) {
-  console.error('Error:', error);
-  return res.failureResponse({
-    message: getLanguage('en').somethingWentWrong,
-  });
-}
-};  
+};
 
 export const resetPassword = async (req: RequestParams, res: Response) => {
-try {
-  const validateRequest = validateParamsWithJoi<{ email: string; newPassword: string }>(req.body, resetPasswordValidation);
+  try {
+    const validateRequest = validateParamsWithJoi<{
+      email: string;
+      newPassword: string;
+    }>(req.body, resetPasswordValidation);
 
-  if (!validateRequest.isValid) {
-    return res.badRequest({ message: validateRequest.message });
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+
+    // Check if the user exists
+    const user = await adminSchema.findOne({ email: value.email });
+
+    if (!user) {
+      return res.badRequest({ message: getLanguage('en').emailNotRegistered });
+    }
+
+    // Encrypt the new password
+    const encryptedPassword = await encryptPassword({
+      password: value.newPassword,
+    });
+
+    // Update the user's password
+    await adminSchema.updateOne(
+      { email: value.email },
+      { $set: { password: encryptedPassword } },
+    );
+
+    return res.ok({ message: getLanguage('en').passwordResetSuccess });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
   }
-
-  const { value } = validateRequest;
-
-  // Check if the user exists
-  const user = await adminSchema.findOne({ email: value.email });
-
-  if (!user) {
-    return res.badRequest({ message: getLanguage('en').emailNotRegistered });
-  }
-
-  // Encrypt the new password
-  const encryptedPassword = await encryptPassword({ password: value.newPassword });
-
-  // Update the user's password
-  await adminSchema.updateOne(
-    { email: value.email },
-    { $set: { password: encryptedPassword } }
-  );
-
-  return res.ok({ message: getLanguage('en').passwordResetSuccess });
-} catch (error) {
-  console.error('Error:', error);
-  return res.failureResponse({
-    message: getLanguage('en').somethingWentWrong,
-  });
-}
 };

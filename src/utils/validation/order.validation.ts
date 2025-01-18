@@ -222,7 +222,7 @@ export const orderPickUpValidation = Joi.object({
     .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
     .required(),
   pickupTimestamp: Joi.date().timestamp().required(),
-  otp: Joi.number(),
+  // otp: Joi.number(),
 });
 
 export const orderDeliverValidation = Joi.object({
@@ -231,7 +231,7 @@ export const orderDeliverValidation = Joi.object({
     .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
     .required(),
   deliverTimestamp: Joi.date().timestamp().required(),
-  otp: Joi.number(),
+  // otp: Joi.number(),
 });
 export const orderDeliverValidationMulti = Joi.object({
   orderId: Joi.number().required(),
@@ -240,7 +240,7 @@ export const orderDeliverValidationMulti = Joi.object({
     .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
     .required(),
   deliverTimestamp: Joi.date().timestamp().required(),
-  otp: Joi.number(),
+  // otp: Joi.number(),
 });
 
 export const orderIdValidation = Joi.object({
