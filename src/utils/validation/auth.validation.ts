@@ -14,19 +14,19 @@ export const userSignInValidation = Joi.object().keys({
 });
 
 export const verifyOtpValidation = Joi.object().keys({
-  otp : Joi.number().required(),
+  otp: Joi.number().required(),
   email: Joi.string().required(),
-})
+});
 export const resetPasswordValidation = Joi.object().keys({
   email: Joi.string().required(),
   newPassword: Joi.string()
     .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
     .required(),
-})
+});
 
 export const sendOtpValidation = Joi.object().keys({
-  email: Joi.string().required()
-})
+  email: Joi.string().required(),
+});
 
 export const userSignUpValidation = Joi.object().keys({
   firstName: Joi.string().required(),
@@ -187,6 +187,28 @@ export const customerSignUpValidation = Joi.object().keys({
     latitude: Joi.number(),
     longitude: Joi.number(),
   }),
+  Patient_ID: Joi.string(),
+  createdByAdmin: Joi.boolean().optional(),
+  trashed: Joi.boolean().default(false),
+  NHS_Number: Joi.string().allow("")
+});
+
+export const customerSignUpValidationmul = Joi.object().keys({
+  firstName: Joi.string().allow('-').required(),
+  merchantId: Joi.string(),
+  lastName: Joi.string().allow('-').required(),
+  email: Joi.string().allow('-').optional(),
+  // .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+  address: Joi.string().allow('-').required(),
+  postCode: Joi.string().allow('-').required(),
+  mobileNumber: Joi.string().allow('-').required(),
+  country: Joi.string().allow('-').required(),
+  city: Joi.string().allow('-').required(),
+  location: Joi.object({
+    latitude: Joi.number().allow('-'),
+    longitude: Joi.number().allow('-'),
+  }),
+  NHS_Number: Joi.string().required(),
   createdByAdmin: Joi.boolean().optional(),
   trashed: Joi.boolean().default(false),
 });

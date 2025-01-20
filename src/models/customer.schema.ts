@@ -42,6 +42,10 @@ const CustomerSchema = new Schema(
       coordinates: { type: [Number], required: true },
     },
     createdByAdmin: { type: Boolean, default: false },
+    NHS_Number: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true },
 );

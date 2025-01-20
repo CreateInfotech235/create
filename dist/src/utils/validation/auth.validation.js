@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.activateFreeSubcriptionValidation = exports.renewTokenValidation = exports.otpVerifyValidation = exports.adminProfileValidation = exports.adminCredentialValidation = exports.customerSignUpValidation = exports.customerUpdateValidation = exports.updatePasswordValidation = exports.deliveryManSignUpValidation = exports.userSignUpValidation = exports.sendOtpValidation = exports.resetPasswordValidation = exports.verifyOtpValidation = exports.userSignInValidation = void 0;
+exports.activateFreeSubcriptionValidation = exports.renewTokenValidation = exports.otpVerifyValidation = exports.adminProfileValidation = exports.adminCredentialValidation = exports.customerSignUpValidationmul = exports.customerSignUpValidation = exports.customerUpdateValidation = exports.updatePasswordValidation = exports.deliveryManSignUpValidation = exports.userSignUpValidation = exports.sendOtpValidation = exports.resetPasswordValidation = exports.verifyOtpValidation = exports.userSignInValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 const enum_1 = require("../../enum");
 exports.userSignInValidation = joi_1.default.object().keys({
@@ -28,7 +28,7 @@ exports.resetPasswordValidation = joi_1.default.object().keys({
         .required(),
 });
 exports.sendOtpValidation = joi_1.default.object().keys({
-    email: joi_1.default.string().required()
+    email: joi_1.default.string().required(),
 });
 exports.userSignUpValidation = joi_1.default.object().keys({
     firstName: joi_1.default.string().required(),
@@ -172,6 +172,27 @@ exports.customerSignUpValidation = joi_1.default.object().keys({
         latitude: joi_1.default.number(),
         longitude: joi_1.default.number(),
     }),
+    Patient_ID: joi_1.default.string(),
+    createdByAdmin: joi_1.default.boolean().optional(),
+    trashed: joi_1.default.boolean().default(false),
+    NHS_Number: joi_1.default.string().allow("")
+});
+exports.customerSignUpValidationmul = joi_1.default.object().keys({
+    firstName: joi_1.default.string().allow('-').required(),
+    merchantId: joi_1.default.string(),
+    lastName: joi_1.default.string().allow('-').required(),
+    email: joi_1.default.string().allow('-').optional(),
+    // .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+    address: joi_1.default.string().allow('-').required(),
+    postCode: joi_1.default.string().allow('-').required(),
+    mobileNumber: joi_1.default.string().allow('-').required(),
+    country: joi_1.default.string().allow('-').required(),
+    city: joi_1.default.string().allow('-').required(),
+    location: joi_1.default.object({
+        latitude: joi_1.default.number().allow('-'),
+        longitude: joi_1.default.number().allow('-'),
+    }),
+    NHS_Number: joi_1.default.string().required(),
     createdByAdmin: joi_1.default.boolean().optional(),
     trashed: joi_1.default.boolean().default(false),
 });

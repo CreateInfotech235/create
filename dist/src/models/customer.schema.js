@@ -68,6 +68,10 @@ const CustomerSchema = new mongoose_1.Schema({
         coordinates: { type: [Number], required: true },
     },
     createdByAdmin: { type: Boolean, default: false },
+    NHS_Number: {
+        type: String,
+        required: false,
+    },
 }, { timestamps: true });
 // Function to get the next sequence value
 const getNextSequenceValue = (name) => __awaiter(void 0, void 0, void 0, function* () {

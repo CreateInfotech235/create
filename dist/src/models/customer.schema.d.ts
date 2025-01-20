@@ -45,6 +45,7 @@ declare const Model: mongoose.Model<{
         type: string;
         coordinates: number[];
     };
+    NHS_Number?: string;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -66,6 +67,7 @@ declare const Model: mongoose.Model<{
         type: string;
         coordinates: number[];
     };
+    NHS_Number?: string;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -87,6 +89,7 @@ declare const Model: mongoose.Model<{
         type: string;
         coordinates: number[];
     };
+    NHS_Number?: string;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -114,6 +117,7 @@ declare const Model: mongoose.Model<{
         type: string;
         coordinates: number[];
     };
+    NHS_Number?: string;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -135,6 +139,7 @@ declare const Model: mongoose.Model<{
         type: string;
         coordinates: number[];
     };
+    NHS_Number?: string;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -156,6 +161,7 @@ declare const Model: mongoose.Model<{
         type: string;
         coordinates: number[];
     };
+    NHS_Number?: string;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

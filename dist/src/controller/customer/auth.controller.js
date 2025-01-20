@@ -39,13 +39,24 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
         yield user_schema_1.default.updateOne({ _id: req.body.merchantId }, { $set: { showCustomerNumber: datamarcent.showCustomerNumber + 1 } });
         console.log(value.email, 'value.email');
         console.log(datamarcent.showCustomerNumber, value, 'datamarcent.showCustomerNumber');
+        if (value.NHS_Number !== undefined) {
+            const isexiste = yield customer_schema_1.default.findOne({
+                NHS_Number: value.NHS_Number,
+                merchantId: value.merchantId,
+            });
+            if (isexiste) {
+                return res.badRequest({
+                    message: 'NHS Number already exists for this merchant',
+                });
+            }
+        }
         const data = yield customer_schema_1.default.create(Object.assign(Object.assign({}, value), { showCustomerNumber: datamarcent.showCustomerNumber }));
         console.log(value.email, 'value.email');
-        console.log(data, "safdsdgsfdgdfhdghfgh");
+        console.log(data, 'safdsdgsfdgdfhdghfgh');
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').userRegistered, data });
     }
     catch (error) {
-        console.log(error, "safdsdgsfdgdfhdghfgh");
+        console.log(error, 'safdsdgsfdgdfhdghfgh');
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });
@@ -53,92 +64,83 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.createCustomer = createCustomer;
 const createCustomerExal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const customers = req.body;
         if (!Array.isArray(customers)) {
-            return res.badRequest({ message: 'Request body must be an array of customers' });
+            return res.badRequest({
+                message: 'Request body must be an array of customers',
+            });
         }
-        const successful = [];
         const failed = [];
-        // Process customers in parallel batches
-        const batchSize = 10;
-        for (let i = 0; i < customers.length; i += batchSize) {
-            const batch = customers.slice(i, i + batchSize);
-            const results = yield Promise.all(batch.map((customerData) => __awaiter(void 0, void 0, void 0, function* () {
-                try {
-                    const validateRequest = (0, validateRequest_1.default)(customerData, auth_validation_1.customerSignUpValidation);
-                    if (!validateRequest.isValid) {
-                        return {
-                            success: false,
-                            data: customerData,
-                            error: validateRequest.message
-                        };
-                    }
-                    const { value } = validateRequest;
-                    // Check customer existence and merchant in parallel
-                    const [existingCustomer, merchant] = yield Promise.all([
-                        customer_schema_1.default.findOne({
-                            email: value.email,
-                            merchantId: value.merchantId
-                        }).lean(),
-                        user_schema_1.default.findById(value.merchantId).lean()
-                    ]);
-                    if (existingCustomer) {
-                        return {
-                            success: false,
-                            data: customerData,
-                            error: 'Customer with this email already exists for this merchant'
-                        };
-                    }
-                    if (!merchant) {
-                        return {
-                            success: false,
-                            data: customerData,
-                            error: 'Merchant not found'
-                        };
-                    }
-                    // Update merchant count and create customer
-                    const [newCustomer] = yield Promise.all([
-                        customer_schema_1.default.create(Object.assign(Object.assign({}, value), { showCustomerNumber: merchant.showCustomerNumber })),
-                        user_schema_1.default.updateOne({ _id: value.merchantId }, { $inc: { showCustomerNumber: 1 } })
-                    ]);
-                    return {
-                        success: true,
-                        data: newCustomer
-                    };
-                }
-                catch (error) {
-                    return {
+        const successful = [];
+        // Get merchant data
+        const merchantId = (_a = customers[0]) === null || _a === void 0 ? void 0 : _a.merchantId;
+        if (!merchantId) {
+            return res.badRequest({
+                message: 'merchantId is required',
+            });
+        }
+        const merchantData = yield user_schema_1.default.findById(merchantId).lean();
+        if (!merchantData) {
+            return res.badRequest({
+                message: 'Merchant not found',
+            });
+        }
+        let currentCustomerNumber = merchantData.showCustomerNumber;
+        // Get existing customers for this merchant
+        const existingCustomers = yield customer_schema_1.default
+            .find({
+            merchantId: merchantId,
+        })
+            .lean();
+        // Process each customer
+        for (const customerData of customers) {
+            try {
+                // Validate customer data
+                const validateRequest = (0, validateRequest_1.default)(customerData, auth_validation_1.customerSignUpValidationmul);
+                if (!validateRequest.isValid) {
+                    failed.push({
                         success: false,
                         data: customerData,
-                        error: 'Unexpected error occurred while creating customer'
-                    };
+                        error: validateRequest.message,
+                    });
+                    continue;
                 }
-            })));
-            // Process results
-            for (const result of results) {
-                if (result.success) {
-                    successful.push(result.data);
+                const { value } = validateRequest;
+                // Check if customer exists by NHS number
+                const existingCustomer = existingCustomers.find((c) => c.NHS_Number === value.NHS_Number);
+                if (existingCustomer) {
+                    // Update existing customer
+                    const updatedCustomer = yield customer_schema_1.default.findByIdAndUpdate(existingCustomer._id, Object.assign({}, value), { new: true });
+                    successful.push(updatedCustomer);
                 }
                 else {
-                    // const failedCustomer = await FailedCustomerSchema.create({
-                    //   data: result.data,
-                    //   error: result.error,
-                    //   attemptedAt: new Date(),
-                    //   resolved: false
-                    // });
-                    failed.push({ data: result.data,
-                        error: result.error,
-                        attemptedAt: new Date(),
-                        resolved: false });
+                    // Create new customer
+                    const newCustomer = yield customer_schema_1.default.create(Object.assign(Object.assign({}, value), { showCustomerNumber: currentCustomerNumber }));
+                    successful.push(newCustomer);
+                    currentCustomerNumber++;
                 }
             }
+            catch (err) {
+                failed.push({
+                    success: false,
+                    data: customerData,
+                    error: err,
+                });
+            }
         }
+        // Update merchant's customer counter
+        yield user_schema_1.default.findByIdAndUpdate(merchantId, {
+            showCustomerNumber: currentCustomerNumber,
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').userRegistered,
             data: {
                 successful,
                 failed,
+                totalSuccessful: successful.length,
+                totalFailed: failed.length,
             },
         });
     }
@@ -150,6 +152,138 @@ const createCustomerExal = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.createCustomerExal = createCustomerExal;
+// export const createCustomerExal2 = async (
+//   req: RequestParams,
+//   res: Response,
+// ) => {
+//   try {
+//     const customers = req.body;
+//     if (!Array.isArray(customers)) {
+//       return res.badRequest({
+//         message: 'Request body must be an array of customers',
+//       });
+//     }
+//     const successful = [];
+//     const failed = [];
+//     // Process customers in parallel batches
+//     const batchSize = 10;
+//     for (let i = 0; i < customers.length; i += batchSize) {
+//       const batch = customers.slice(i, i + batchSize);
+//       const results = await Promise.all(
+//         batch.map(async (customerData) => {
+//           try {
+//             const validateRequest = validateParamsWithJoi<{
+//               firstName: string;
+//               lastName: string;
+//               customerId: string;
+//               country: string;
+//               city: string;
+//               address: string;
+//               postCode: string;
+//               mobileNumber: string;
+//               email: string;
+//               location: {
+//                 latitude: number;
+//                 longitude: number;
+//               };
+//               merchantId: string;
+//               trashed: boolean;
+//               NHS_Number: string; // Added Patient_ID to the validation schema
+//             }>(customerData, customerSignUpValidationmul);
+//             if (!validateRequest.isValid) {
+//               return {
+//                 success: false,
+//                 data: customerData,
+//                 error: validateRequest.message,
+//               };
+//             }
+//             const { value } = validateRequest;
+//             console.log(value);
+//             // Check customer existence by Patient_ID and merchant in parallel
+//             const [existingCustomer, merchant] = await Promise.all([
+//               customerSchema
+//                 .findOne({
+//                   NHS_Number: value.NHS_Number,
+//                   merchantId: value.merchantId,
+//                 })
+//                 .lean(),
+//               await merchantSchema.findById(value.merchantId).lean(),
+//             ]);
+//             if (existingCustomer) {
+//               // Update existing customer if Patient_ID is repeated
+//               console.log(existingCustomer, 'existingCustomer');
+//               const updatedCustomer = await customerSchema.findByIdAndUpdate(
+//                 existingCustomer._id,
+//                 {
+//                   ...value,
+//                   showCustomerNumber: existingCustomer.showCustomerNumber,
+//                 },
+//                 { new: true },
+//               );
+//               return {
+//                 success: true,
+//                 data: updatedCustomer,
+//               };
+//             }
+//             if (!merchant) {
+//               return {
+//                 success: false,
+//                 data: customerData,
+//                 error: 'Merchant not found',
+//               };
+//             }
+//             // Update merchant count and create customer
+//             const [newCustomer] = await Promise.all([
+//               customerSchema.create({
+//                 ...value,
+//                 showCustomerNumber: merchant.showCustomerNumber,
+//               }),
+//               await merchantSchema.updateOne(
+//                 { _id: value.merchantId },
+//                 { $inc: { showCustomerNumber: 1 } },
+//               ),
+//             ]);
+//             return {
+//               success: true,
+//               data: newCustomer,
+//             };
+//           } catch (error) {
+//             return {
+//               success: false,
+//               data: customerData,
+//               error: 'Unexpected error occurred while creating customer',
+//             };
+//           }
+//         }),
+//       );
+//       // Process results
+//       for (const result of results) {
+//         if (result.success) {
+//           successful.push(result.data);
+//         } else {
+//           failed.push({
+//             data: result.data,
+//             error: result.error,
+//             attemptedAt: new Date(),
+//             resolved: false,
+//           });
+//         }
+//       }
+//     }
+//     return res.ok({
+//       message: getLanguage('en').userRegistered,
+//       data: {
+//         successful,
+//         failed,
+//       },
+//     });
+//   } catch (error) {
+//     console.error('Error creating customers:', error);
+//     return res.failureResponse({
+//       message: getLanguage('en').somethingWentWrong,
+//     });
+//   }
+// };
 const updateCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.customerUpdateValidation);
