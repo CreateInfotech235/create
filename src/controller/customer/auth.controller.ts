@@ -40,7 +40,7 @@ export const createCustomer = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
-    
+
     const userExist = await customerSchema.findOne({ email: value.email });
     // if (userExist) {
     //   return res.badRequest({
@@ -103,6 +103,8 @@ export const createCustomerExal = async (req: RequestParams, res: Response) => {
     }
 
     const failed = [];
+    const updated = [];
+    const created = [];
     const successful = [];
 
     // Get merchant data
@@ -170,21 +172,11 @@ export const createCustomerExal = async (req: RequestParams, res: Response) => {
 
         if (existingCustomer) {
           // Update existing customer
-          const updatedCustomer = await customerSchema.findByIdAndUpdate(
-            existingCustomer._id,
-            {
-              ...value,
-            },
-            { new: true },
-          );
-          successful.push(updatedCustomer);
+          updated.push(existingCustomer);
+          successful.push(existingCustomer);
         } else {
           // Create new customer
-          const newCustomer = await customerSchema.create({
-            ...value,
-            showCustomerNumber: currentCustomerNumber,
-          });
-          successful.push(newCustomer);
+          created.push({ ...value, showCustomerNumber: currentCustomerNumber });
           currentCustomerNumber++;
         }
       } catch (err) {
@@ -195,6 +187,18 @@ export const createCustomerExal = async (req: RequestParams, res: Response) => {
         });
       }
     }
+    // create customer
+    const createCustomer = await customerSchema.create(created);
+    console.log(createCustomer, 'createCustomer');
+    // update customer
+    console.log(updated, 'updated');
+    for (let index = 0; index < updated.length; index++) {
+      const element = updated[index];
+      await customerSchema.findByIdAndUpdate(element._id, {
+        ...element,
+      });
+    }
+    console.log(updated.length, 'updated length');
 
     // Update merchant's customer counter
     await merchantSchema.findByIdAndUpdate(merchantId, {
@@ -204,9 +208,12 @@ export const createCustomerExal = async (req: RequestParams, res: Response) => {
     return res.ok({
       message: getLanguage('en').userRegistered,
       data: {
-        successful,
+        successful: {
+          ...successful,
+          ...updated,
+        },
         failed,
-        totalSuccessful: successful.length,
+        totalSuccessful: successful.length + updated.length,
         totalFailed: failed.length,
       },
     });
@@ -447,7 +454,7 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
       },
       {
         $sort: {
-          createdAt: -1, // Sort by createdAt in descending order
+          showCustomerNumber: -1, // Sort by createdAt in descending order
         },
       },
       {
@@ -492,6 +499,7 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
           mobileNumber: '$mobileNumber',
           postCode: '$postCode',
           location: '$location',
+          NHS_Number: '$NHS_Number',
           createdDate: '$createdAt',
           customerId: 1,
           merchantId: 1,

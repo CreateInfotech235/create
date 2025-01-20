@@ -73,6 +73,8 @@ const createCustomerExal = (req, res) => __awaiter(void 0, void 0, void 0, funct
             });
         }
         const failed = [];
+        const updated = [];
+        const created = [];
         const successful = [];
         // Get merchant data
         const merchantId = (_a = customers[0]) === null || _a === void 0 ? void 0 : _a.merchantId;
@@ -112,13 +114,12 @@ const createCustomerExal = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 const existingCustomer = existingCustomers.find((c) => c.NHS_Number === value.NHS_Number);
                 if (existingCustomer) {
                     // Update existing customer
-                    const updatedCustomer = yield customer_schema_1.default.findByIdAndUpdate(existingCustomer._id, Object.assign({}, value), { new: true });
-                    successful.push(updatedCustomer);
+                    updated.push(existingCustomer);
+                    successful.push(existingCustomer);
                 }
                 else {
                     // Create new customer
-                    const newCustomer = yield customer_schema_1.default.create(Object.assign(Object.assign({}, value), { showCustomerNumber: currentCustomerNumber }));
-                    successful.push(newCustomer);
+                    created.push(Object.assign(Object.assign({}, value), { showCustomerNumber: currentCustomerNumber }));
                     currentCustomerNumber++;
                 }
             }
@@ -130,6 +131,16 @@ const createCustomerExal = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 });
             }
         }
+        // create customer
+        const createCustomer = yield customer_schema_1.default.create(created);
+        console.log(createCustomer, 'createCustomer');
+        // update customer
+        console.log(updated, 'updated');
+        for (let index = 0; index < updated.length; index++) {
+            const element = updated[index];
+            yield customer_schema_1.default.findByIdAndUpdate(element._id, Object.assign({}, element));
+        }
+        console.log(updated.length, 'updated length');
         // Update merchant's customer counter
         yield user_schema_1.default.findByIdAndUpdate(merchantId, {
             showCustomerNumber: currentCustomerNumber,
@@ -137,9 +148,9 @@ const createCustomerExal = (req, res) => __awaiter(void 0, void 0, void 0, funct
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').userRegistered,
             data: {
-                successful,
+                successful: Object.assign(Object.assign({}, successful), updated),
                 failed,
-                totalSuccessful: successful.length,
+                totalSuccessful: successful.length + updated.length,
                 totalFailed: failed.length,
             },
         });
@@ -345,7 +356,7 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             },
             {
                 $sort: {
-                    createdAt: -1, // Sort by createdAt in descending order
+                    showCustomerNumber: -1, // Sort by createdAt in descending order
                 },
             },
             {
@@ -390,6 +401,7 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     mobileNumber: '$mobileNumber',
                     postCode: '$postCode',
                     location: '$location',
+                    NHS_Number: '$NHS_Number',
                     createdDate: '$createdAt',
                     customerId: 1,
                     merchantId: 1,
