@@ -131,7 +131,7 @@ export const newOrderCreationMulti = Joi.object({
     address: Joi.string().required(),
     dateTime: Joi.date().timestamp().required(),
     description: Joi.string().allow(''),
-    email: Joi.string().email().optional(),
+    email: Joi.string().email().required(),
     location: Joi.object({
       latitude: Joi.number().required(),
       longitude: Joi.number().required(),
@@ -153,18 +153,18 @@ export const newOrderCreationMulti = Joi.object({
       Joi.object({
         subOrderId: Joi.number().required(),
         address: Joi.string().required(),
-        email: Joi.string().email().optional(),
+        email: Joi.string().email().allow(''),
         location: Joi.object({
           latitude: Joi.number().required(),
           longitude: Joi.number().required(),
         }).required(),
-        mobileNumber: Joi.string().required(),
-        name: Joi.string().required(),
+        mobileNumber: Joi.string().allow(''),
+        name: Joi.string().allow(''),
         postCode: Joi.string()
           .regex(/^[A-Za-z0-9\s-]+$/)
           .required(),
-        distance: Joi.number().required(),
-        duration: Joi.string().required(),
+        distance: Joi.number().allow(''),
+        duration: Joi.string().allow(''),
         description: Joi.string().allow(''),
         parcelsCount: Joi.number().required(),
         paymentCollectionRupees: Joi.number().required(),

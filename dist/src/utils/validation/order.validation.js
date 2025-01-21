@@ -124,7 +124,7 @@ exports.newOrderCreationMulti = joi_1.default.object({
         address: joi_1.default.string().required(),
         dateTime: joi_1.default.date().timestamp().required(),
         description: joi_1.default.string().allow(''),
-        email: joi_1.default.string().email().optional(),
+        email: joi_1.default.string().email().required(),
         location: joi_1.default.object({
             latitude: joi_1.default.number().required(),
             longitude: joi_1.default.number().required(),
@@ -144,18 +144,18 @@ exports.newOrderCreationMulti = joi_1.default.object({
         .items(joi_1.default.object({
         subOrderId: joi_1.default.number().required(),
         address: joi_1.default.string().required(),
-        email: joi_1.default.string().email().optional(),
+        email: joi_1.default.string().email().allow(''),
         location: joi_1.default.object({
             latitude: joi_1.default.number().required(),
             longitude: joi_1.default.number().required(),
         }).required(),
-        mobileNumber: joi_1.default.string().required(),
-        name: joi_1.default.string().required(),
+        mobileNumber: joi_1.default.string().allow(''),
+        name: joi_1.default.string().allow(''),
         postCode: joi_1.default.string()
             .regex(/^[A-Za-z0-9\s-]+$/)
             .required(),
-        distance: joi_1.default.number().required(),
-        duration: joi_1.default.string().required(),
+        distance: joi_1.default.number().allow(''),
+        duration: joi_1.default.string().allow(''),
         description: joi_1.default.string().allow(''),
         parcelsCount: joi_1.default.number().required(),
         paymentCollectionRupees: joi_1.default.number().required(),
