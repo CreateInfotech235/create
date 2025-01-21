@@ -156,18 +156,13 @@ exports.customerSignUpValidation = joi_1.default.object().keys({
     merchantId: joi_1.default.string(),
     lastName: joi_1.default.string().required(),
     email: joi_1.default.string()
-        .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
-        .allow('-')
-        .optional(),
+        // .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+        .allow(''),
     address: joi_1.default.string().required(),
     postCode: joi_1.default.string().required(),
-    mobileNumber: joi_1.default.string().required(),
-    country: joi_1.default.string()
-        // .regex(/^[0-9a-fA-F]{24}$/)
-        .required(),
-    city: joi_1.default.string()
-        // .regex(/^[0-9a-fA-F]{24}$/)
-        .required(),
+    mobileNumber: joi_1.default.string().allow(''),
+    country: joi_1.default.string().required(),
+    city: joi_1.default.string().required(),
     location: joi_1.default.object({
         latitude: joi_1.default.number(),
         longitude: joi_1.default.number(),
@@ -175,7 +170,7 @@ exports.customerSignUpValidation = joi_1.default.object().keys({
     Patient_ID: joi_1.default.string(),
     createdByAdmin: joi_1.default.boolean().optional(),
     trashed: joi_1.default.boolean().default(false),
-    NHS_Number: joi_1.default.string().allow("")
+    NHS_Number: joi_1.default.string().allow(''),
 });
 exports.customerSignUpValidationmul = joi_1.default.object().keys({
     firstName: joi_1.default.string().allow('-').required(),

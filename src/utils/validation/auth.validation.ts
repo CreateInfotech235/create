@@ -171,18 +171,13 @@ export const customerSignUpValidation = Joi.object().keys({
   merchantId: Joi.string(),
   lastName: Joi.string().required(),
   email: Joi.string()
-    .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
-    .allow('-')
-    .optional(),
+    // .regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+    .allow(''),
   address: Joi.string().required(),
   postCode: Joi.string().required(),
-  mobileNumber: Joi.string().required(),
-  country: Joi.string()
-    // .regex(/^[0-9a-fA-F]{24}$/)
-    .required(),
-  city: Joi.string()
-    // .regex(/^[0-9a-fA-F]{24}$/)
-    .required(),
+  mobileNumber: Joi.string().allow(''),
+  country: Joi.string().required(),
+  city: Joi.string().required(),
   location: Joi.object({
     latitude: Joi.number(),
     longitude: Joi.number(),
@@ -190,7 +185,7 @@ export const customerSignUpValidation = Joi.object().keys({
   Patient_ID: Joi.string(),
   createdByAdmin: Joi.boolean().optional(),
   trashed: Joi.boolean().default(false),
-  NHS_Number: Joi.string().allow("")
+  NHS_Number: Joi.string().allow(''),
 });
 
 export const customerSignUpValidationmul = Joi.object().keys({
