@@ -97,4 +97,5 @@ export declare const getLanguage: (lang: language) => {
     customerUndoToTrash: string;
     deliveryManUndoToTrash: string;
     customerUpdated: string;
+    NHSNumberAlreadyExists: string;
 };

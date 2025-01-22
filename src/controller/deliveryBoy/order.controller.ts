@@ -1192,6 +1192,15 @@ export const cancelMultiSubOrder = async (
       { $set: { deliveryDetails: nowdata.deliveryDetails } },
       { new: true },
     );
+    if (newoder) {
+      console.log(value.reason, 'value.reason');
+      await cancelOderbyDeliveryMan.create({
+        deliveryBoy: value.deliveryManId,
+        order: value.orderId,
+        subOrderId: value.subOrderId,
+        reason: value.reason,
+      });
+    }
 
     // const oderdata = await orderSchemaMulti.findOne({
     const oderdata = await orderSchemaMulti.findOne({
@@ -1403,7 +1412,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
   }
 };
 
-export const pickUpOrder = async (req: RequestParams, res: Response) => {
+export const pickUpOrder = async (req: RequestParams, res: Response) => { 
   try {
     const validateRequest = validateParamsWithJoi<OrderPickUpType>(
       req.body,
@@ -2723,108 +2732,119 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       pageCount = 1,
     } = req.query;
 
-    // Initialize dateFilter object
-    let dateFilter = {};
-
-    // If startDate and endDate are provided, convert them to Date objects with time set to the start and end of the day
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      // Adjust start and end dates to include the full day (UTC time)
-      start.setUTCHours(0, 0, 0, 0); // Set startDate to 00:00:00 UTC
-      end.setUTCHours(23, 59, 59, 999); // Set endDate to 23:59:59 UTC
-
-      // Add date range filter
-      dateFilter = {
-        dateTime: {
-          $gte: start, // Greater than or equal to start date
-          $lte: end, // Less than or equal to end date
-        },
-      };
-    }
-
-    // Add status to match if provided
-    const matchQuery = {
-      deliveryBoy: req.id,
-      ...dateFilter,
-    };
-
-    const data1 = await OrderAssigneeSchemaMulti.aggregate([
-      { $sort: { order: -1 } },
+    const data = await OrderAssigneeSchemaMulti.aggregate([
       {
-        $match: matchQuery,
+        $match: {
+          deliveryBoy: new mongoose.Types.ObjectId(req.id),
+          ...(startDate &&
+            endDate && {
+              createdAt: {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+              },
+            }),
+        },
+      },
+      {
+        $lookup: {
+          from: 'ordermultis',
+          localField: 'order',
+          foreignField: 'orderId',
+          as: 'orderData',
+        },
+      },
+      {
+        $unwind: '$orderData',
+      },
+      {
+        $addFields: {
+          'orderData.deliveryDetails': {
+            $sortArray: {
+              input: {
+                $map: {
+                  input: '$orderData.deliveryDetails',
+                  as: 'detail',
+                  in: {
+                    $mergeObjects: [
+                      '$$detail',
+                      {
+                        location: {
+                          latitude: 51.5855125,
+                          longitude: -0.2717866,
+                        },
+                        subOrderId: '$$detail.subOrderId',
+                        address: '$$detail.address',
+                        mobileNumber: '$$detail.mobileNumber' || '',
+                        name: '$$detail.name' || '',
+                        email: '$$detail.email' || '',
+                        postCode: '$$detail.postCode' || '',
+                        cashOnDelivery: '$$detail.cashOnDelivery' || '',
+                        distance: '$$detail.distance' || '',
+                        duration: '$$detail.duration' || '',
+                        parcelsCount: '$$detail.parcelsCount' || '',
+                        paymentCollectionRupees: '$$detail.paymentCollectionRupees' || '',
+                        status: '$$detail.status' || '',
+                        trashed: '$$detail.trashed' || '',
+                        _id: '$$detail._id' || '',
+                        orderId: '$orderData.orderId' || '',
+                        description: '$$detail.description' || '',
+                      },
+                    ],
+                  },
+                },
+              },
+              sortBy: { distance: 1 }
+            }
+          }
+        },
+      },
+      {
+        $match: {
+          ...(status && { 'orderData.status': status }),
+        },
+      },
+      {
+        $addFields: {
+          'orderData.totalDeliveredOrders': {
+            $size: {
+              $filter: {
+                input: '$orderData.deliveryDetails',
+                as: 'detail',
+                cond: { $eq: ['$$detail.status', ORDER_HISTORY.DELIVERED] },
+              },
+            },
+          },
+          'orderData.totalOrders': {
+            $size: '$orderData.deliveryDetails',
+          },
+          'orderData.totalParcelsCount': {
+            $sum: '$orderData.deliveryDetails.parcelsCount',
+          },
+        },
+      },
+      {
+        $addFields: {
+          'orderData.totalUnDeliveredOrders': {
+            $subtract: [
+              '$orderData.totalOrders',
+              '$orderData.totalDeliveredOrders',
+            ],
+          },
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $skip: (Number(pageCount) - 1) * Number(pageLimit),
+      },
+      {
+        $limit: Number(pageLimit),
       },
     ]);
 
-    const newData: any[] = []; // Explicitly declare the type of newData as any[]
-
-    for (const order of data1) {
-      const orderData = await orderSchemaMulti.findOne({
-        orderId: order.order,
-      });
-      if (status && orderData?.status != status) {
-        console.log('orderData', orderData);
-        continue;
-      }
-
-      const newData2 = {
-        time: orderData?.time,
-        _id: orderData?._id,
-        orderId: orderData?.orderId,
-        showOrderNumber: orderData?.showOrderNumber,
-        cashOnDelivery: orderData?.cashOnDelivery,
-        dateTime: orderData?.dateTime,
-        pickupDetails: orderData?.pickupDetails,
-        deliveryDetails: orderData?.deliveryDetails,
-        status: orderData?.status,
-        merchant: orderData?.merchant,
-        trashed: orderData?.trashed,
-        dayChargeNumber: orderData?.dayChargeNumber,
-        distance: orderData?.distance,
-        isCustomer: orderData?.isCustomer,
-        charges: orderData?.charges,
-        createdAt: orderData?.createdAt,
-        updatedAt: orderData?.updatedAt,
-        totalDeliveredOrders:
-          orderData?.deliveryDetails?.filter(
-            (detail: any) => detail.status === ORDER_HISTORY.DELIVERED,
-          ).length || 0,
-        totalOrders: orderData?.deliveryDetails?.length || 0,
-        totalUnDeliveredOrders:
-          (orderData?.deliveryDetails?.length || 0) -
-          (orderData?.deliveryDetails?.filter(
-            (detail: any) => detail.status === ORDER_HISTORY.DELIVERED,
-          ).length || 0),
-        totalParcelsCount: orderData?.deliveryDetails?.reduce(
-          (sum: number, detail: any) => sum + detail.parcelsCount,
-          0,
-        ),
-      };
-
-      const data = {
-        _id: order._id,
-        deliveryBoy: order.deliveryBoy,
-        merchant: order.merchant,
-        order: order.order,
-        status: order.status,
-        createdAt: order.createdAt,
-        updatedAt: order.updatedAt,
-        orderData: newData2,
-      };
-
-      newData.push(data);
-    }
-
-    // Apply pagination to newData array
-    const startIndex = (Number(pageCount) - 1) * Number(pageLimit);
-    const endIndex = startIndex + Number(pageLimit);
-    const paginatedData = pageLimit
-      ? newData.slice(startIndex, endIndex)
-      : newData;
-
     return res.ok({
-      data: paginatedData,
+      data: data,
     });
   } catch (error) {
     return res.failureResponse({

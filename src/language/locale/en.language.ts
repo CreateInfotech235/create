@@ -102,6 +102,7 @@ const messages = {
   customerUndoToTrash: 'customer undo from to trash successfully.',
   deliveryManUndoToTrash: 'DelivetyMan undo from to trash successfully.',
   customerUpdated: 'Customer data update successfully.',
+  NHSNumberAlreadyExists: 'NHS Number already exists',
 };
 
 export default messages;

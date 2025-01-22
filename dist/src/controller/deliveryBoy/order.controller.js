@@ -966,6 +966,15 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         console.log(nowdata, 'nowdata');
         const newoder = yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { deliveryDetails: nowdata.deliveryDetails } }, { new: true });
+        if (newoder) {
+            console.log(value.reason, 'value.reason');
+            yield cancelOderbyDeliveryManSchema_1.default.create({
+                deliveryBoy: value.deliveryManId,
+                order: value.orderId,
+                subOrderId: value.subOrderId,
+                reason: value.reason,
+            });
+        }
         // const oderdata = await orderSchemaMulti.findOne({
         const oderdata = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
@@ -2115,87 +2124,115 @@ const getPaymentDataForDeliveryBoy = (req, res) => __awaiter(void 0, void 0, voi
 });
 exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
 const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h, _j, _k;
     try {
         const { startDate, endDate, status, pageLimit = 10, pageCount = 1, } = req.query;
-        // Initialize dateFilter object
-        let dateFilter = {};
-        // If startDate and endDate are provided, convert them to Date objects with time set to the start and end of the day
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            // Adjust start and end dates to include the full day (UTC time)
-            start.setUTCHours(0, 0, 0, 0); // Set startDate to 00:00:00 UTC
-            end.setUTCHours(23, 59, 59, 999); // Set endDate to 23:59:59 UTC
-            // Add date range filter
-            dateFilter = {
-                dateTime: {
-                    $gte: start, // Greater than or equal to start date
-                    $lte: end, // Less than or equal to end date
-                },
-            };
-        }
-        // Add status to match if provided
-        const matchQuery = Object.assign({ deliveryBoy: req.id }, dateFilter);
-        const data1 = yield orderAssigneeMulti_schema_1.default.aggregate([
-            { $sort: { order: -1 } },
+        const data = yield orderAssigneeMulti_schema_1.default.aggregate([
             {
-                $match: matchQuery,
+                $match: Object.assign({ deliveryBoy: new mongoose_1.default.Types.ObjectId(req.id) }, (startDate &&
+                    endDate && {
+                    createdAt: {
+                        $gte: new Date(startDate),
+                        $lte: new Date(endDate),
+                    },
+                })),
+            },
+            {
+                $lookup: {
+                    from: 'ordermultis',
+                    localField: 'order',
+                    foreignField: 'orderId',
+                    as: 'orderData',
+                },
+            },
+            {
+                $unwind: '$orderData',
+            },
+            {
+                $addFields: {
+                    'orderData.deliveryDetails': {
+                        $sortArray: {
+                            input: {
+                                $map: {
+                                    input: '$orderData.deliveryDetails',
+                                    as: 'detail',
+                                    in: {
+                                        $mergeObjects: [
+                                            '$$detail',
+                                            {
+                                                location: {
+                                                    latitude: 51.5855125,
+                                                    longitude: -0.2717866,
+                                                },
+                                                subOrderId: '$$detail.subOrderId',
+                                                address: '$$detail.address',
+                                                mobileNumber: '$$detail.mobileNumber' || '',
+                                                name: '$$detail.name' || '',
+                                                email: '$$detail.email' || '',
+                                                postCode: '$$detail.postCode' || '',
+                                                cashOnDelivery: '$$detail.cashOnDelivery' || '',
+                                                distance: '$$detail.distance' || '',
+                                                duration: '$$detail.duration' || '',
+                                                parcelsCount: '$$detail.parcelsCount' || '',
+                                                paymentCollectionRupees: '$$detail.paymentCollectionRupees' || '',
+                                                status: '$$detail.status' || '',
+                                                trashed: '$$detail.trashed' || '',
+                                                _id: '$$detail._id' || '',
+                                                orderId: '$orderData.orderId' || '',
+                                                description: '$$detail.description' || '',
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                            sortBy: { distance: 1 }
+                        }
+                    }
+                },
+            },
+            {
+                $match: Object.assign({}, (status && { 'orderData.status': status })),
+            },
+            {
+                $addFields: {
+                    'orderData.totalDeliveredOrders': {
+                        $size: {
+                            $filter: {
+                                input: '$orderData.deliveryDetails',
+                                as: 'detail',
+                                cond: { $eq: ['$$detail.status', enum_1.ORDER_HISTORY.DELIVERED] },
+                            },
+                        },
+                    },
+                    'orderData.totalOrders': {
+                        $size: '$orderData.deliveryDetails',
+                    },
+                    'orderData.totalParcelsCount': {
+                        $sum: '$orderData.deliveryDetails.parcelsCount',
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    'orderData.totalUnDeliveredOrders': {
+                        $subtract: [
+                            '$orderData.totalOrders',
+                            '$orderData.totalDeliveredOrders',
+                        ],
+                    },
+                },
+            },
+            {
+                $sort: { createdAt: -1 },
+            },
+            {
+                $skip: (Number(pageCount) - 1) * Number(pageLimit),
+            },
+            {
+                $limit: Number(pageLimit),
             },
         ]);
-        const newData = []; // Explicitly declare the type of newData as any[]
-        for (const order of data1) {
-            const orderData = yield orderMulti_schema_1.default.findOne({
-                orderId: order.order,
-            });
-            if (status && (orderData === null || orderData === void 0 ? void 0 : orderData.status) != status) {
-                console.log('orderData', orderData);
-                continue;
-            }
-            const newData2 = {
-                time: orderData === null || orderData === void 0 ? void 0 : orderData.time,
-                _id: orderData === null || orderData === void 0 ? void 0 : orderData._id,
-                orderId: orderData === null || orderData === void 0 ? void 0 : orderData.orderId,
-                showOrderNumber: orderData === null || orderData === void 0 ? void 0 : orderData.showOrderNumber,
-                cashOnDelivery: orderData === null || orderData === void 0 ? void 0 : orderData.cashOnDelivery,
-                dateTime: orderData === null || orderData === void 0 ? void 0 : orderData.dateTime,
-                pickupDetails: orderData === null || orderData === void 0 ? void 0 : orderData.pickupDetails,
-                deliveryDetails: orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails,
-                status: orderData === null || orderData === void 0 ? void 0 : orderData.status,
-                merchant: orderData === null || orderData === void 0 ? void 0 : orderData.merchant,
-                trashed: orderData === null || orderData === void 0 ? void 0 : orderData.trashed,
-                dayChargeNumber: orderData === null || orderData === void 0 ? void 0 : orderData.dayChargeNumber,
-                distance: orderData === null || orderData === void 0 ? void 0 : orderData.distance,
-                isCustomer: orderData === null || orderData === void 0 ? void 0 : orderData.isCustomer,
-                charges: orderData === null || orderData === void 0 ? void 0 : orderData.charges,
-                createdAt: orderData === null || orderData === void 0 ? void 0 : orderData.createdAt,
-                updatedAt: orderData === null || orderData === void 0 ? void 0 : orderData.updatedAt,
-                totalDeliveredOrders: ((_f = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _f === void 0 ? void 0 : _f.filter((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED).length) || 0,
-                totalOrders: ((_g = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _g === void 0 ? void 0 : _g.length) || 0,
-                totalUnDeliveredOrders: (((_h = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _h === void 0 ? void 0 : _h.length) || 0) -
-                    (((_j = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _j === void 0 ? void 0 : _j.filter((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED).length) || 0),
-                totalParcelsCount: (_k = orderData === null || orderData === void 0 ? void 0 : orderData.deliveryDetails) === null || _k === void 0 ? void 0 : _k.reduce((sum, detail) => sum + detail.parcelsCount, 0),
-            };
-            const data = {
-                _id: order._id,
-                deliveryBoy: order.deliveryBoy,
-                merchant: order.merchant,
-                order: order.order,
-                status: order.status,
-                createdAt: order.createdAt,
-                updatedAt: order.updatedAt,
-                orderData: newData2,
-            };
-            newData.push(data);
-        }
-        // Apply pagination to newData array
-        const startIndex = (Number(pageCount) - 1) * Number(pageLimit);
-        const endIndex = startIndex + Number(pageLimit);
-        const paginatedData = pageLimit
-            ? newData.slice(startIndex, endIndex)
-            : newData;
         return res.ok({
-            data: paginatedData,
+            data: data,
         });
     }
     catch (error) {

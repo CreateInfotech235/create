@@ -14,6 +14,14 @@ const cancelOderbyDeliveryMan = new mongoose.Schema(
       type: String,
       default:"CANCELLED"
     },
+    subOrderId: {
+      type: Number,
+      default: 0,
+    },
+    reason: {
+      type: String,
+      default: '',
+    },
   },
   { timestamps: true, versionKey: false },
 );

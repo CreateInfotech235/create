@@ -97,6 +97,7 @@ declare const _default: {
         customerUndoToTrash: string;
         deliveryManUndoToTrash: string;
         customerUpdated: string;
+        NHSNumberAlreadyExists: string;
     };
 };
 export default _default;

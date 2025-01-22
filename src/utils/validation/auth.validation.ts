@@ -164,6 +164,7 @@ export const customerUpdateValidation = Joi.object({
   }).optional(),
   merchantId: Joi.string().optional(),
   trashed: Joi.boolean().optional(),
+  NHS_Number: Joi.string().optional(),
 });
 
 export const customerSignUpValidation = Joi.object().keys({

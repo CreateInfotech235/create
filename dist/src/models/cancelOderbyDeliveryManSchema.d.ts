@@ -29,6 +29,8 @@ declare const cancelOderbyDeliveryManschema: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    reason: string;
+    subOrderId: number;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
@@ -36,6 +38,8 @@ declare const cancelOderbyDeliveryManschema: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    reason: string;
+    subOrderId: number;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
 }> & {
@@ -43,6 +47,8 @@ declare const cancelOderbyDeliveryManschema: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    reason: string;
+    subOrderId: number;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
 } & {
@@ -57,6 +63,8 @@ declare const cancelOderbyDeliveryManschema: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    reason: string;
+    subOrderId: number;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
@@ -64,6 +72,8 @@ declare const cancelOderbyDeliveryManschema: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    reason: string;
+    subOrderId: number;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
 }>> & mongoose.FlatRecord<{
@@ -71,6 +81,8 @@ declare const cancelOderbyDeliveryManschema: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    reason: string;
+    subOrderId: number;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
 }> & {

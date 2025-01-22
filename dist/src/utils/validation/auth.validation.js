@@ -150,6 +150,7 @@ exports.customerUpdateValidation = joi_1.default.object({
     }).optional(),
     merchantId: joi_1.default.string().optional(),
     trashed: joi_1.default.boolean().optional(),
+    NHS_Number: joi_1.default.string().optional(),
 });
 exports.customerSignUpValidation = joi_1.default.object().keys({
     firstName: joi_1.default.string().required(),

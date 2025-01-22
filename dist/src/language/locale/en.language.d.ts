@@ -96,5 +96,6 @@ declare const messages: {
     customerUndoToTrash: string;
     deliveryManUndoToTrash: string;
     customerUpdated: string;
+    NHSNumberAlreadyExists: string;
 };
 export default messages;

@@ -388,6 +388,7 @@ export const updateCustomer = async (req: RequestParams, res: Response) => {
       };
       trashed?: boolean;
       merchantId: String;
+      NHS_Number: string;
     }>(req.body, customerUpdateValidation);
 
     if (!validateRequest.isValid) {
@@ -402,6 +403,13 @@ export const updateCustomer = async (req: RequestParams, res: Response) => {
       return res.badRequest({
         message: getLanguage('en').customerNotFound,
       });
+    }
+
+    if(value.NHS_Number && value.NHS_Number !== customer.NHS_Number){
+      const existingCustomer = await customerSchema.findOne({ NHS_Number: value.NHS_Number, merchantId: customer.merchantId });
+      if(existingCustomer){
+        return res.badRequest({message: getLanguage('en').NHSNumberAlreadyExists});
+      }
     }
 
     // Check for unique email (if updating email)
@@ -438,25 +446,50 @@ export const updateCustomer = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
 export const getCustomers = async (req: RequestParams, res: Response) => {
   try {
     const merchantId = await req.query.merchantId;
+    // const { currentPage = 1, itemsPerPage = 10, searchQuery } = req.query;
     console.log(merchantId);
-
     if (merchantId === undefined) {
       console.log(merchantId, 'merchantId');
     }
+    // console.log(currentPage, itemsPerPage, searchQuery);
+    var query = {
+      merchantId: new mongoose.Types.ObjectId(merchantId as string),
+      // ...(searchQuery
+      //   ? {
+      //       $or: [
+      //         { firstName: { $regex: searchQuery, $options: 'i' } },
+      //         { lastName: { $regex: searchQuery, $options: 'i' } },
+      //         { email: { $regex: searchQuery, $options: 'i' } },
+      //         { NHS_Number: { $regex: searchQuery, $options: 'i' } },
+      //         { address: { $regex: searchQuery, $options: 'i' } },
+      //         { postCode: { $regex: searchQuery, $options: 'i' } },
+      //         { mobileNumber: { $regex: searchQuery, $options: 'i' } },
+      //         { showCustomerNumber: { $regex: searchQuery, $options: 'i' } },
+      //       ],
+      //     }
+      //   : {}),
+    };
+    console.log(query, 'query');
+
     const data = await customerSchema.aggregate([
       {
-        $match: {
-          merchantId: new mongoose.Types.ObjectId(merchantId as string),
-        },
+        $match: query,
       },
       {
         $sort: {
           showCustomerNumber: -1, // Sort by createdAt in descending order
         },
       },
+      // {
+      //   $skip: currentPage * itemsPerPage,
+      // },
+      // {
+      //   $limit: itemsPerPage,
+      // },
       {
         $lookup: {
           from: 'country',
@@ -485,6 +518,7 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
           preserveNullAndEmptyArrays: true,
         },
       },
+
       {
         $project: {
           _id: 1,
@@ -510,7 +544,8 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
         },
       },
     ]);
-    console.log(data);
+    const totell = await customerSchema.countDocuments(query);
+    // console.log(data);
     return res.ok({ data: data === null ? [] : data });
   } catch (error) {
     return res.failureResponse({

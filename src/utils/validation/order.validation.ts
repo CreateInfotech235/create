@@ -259,7 +259,7 @@ export const orderCancelValidation = Joi.object({
 
 export const orderCancelMultiValidation = Joi.object({
   orderId: Joi.number().required(),
-  reason: Joi.string(),
+  reason: Joi.string().required(),
   subOrderId: Joi.number().required(),
 });
 

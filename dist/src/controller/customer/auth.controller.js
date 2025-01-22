@@ -309,6 +309,12 @@ const updateCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 message: (0, languageHelper_1.getLanguage)('en').customerNotFound,
             });
         }
+        if (value.NHS_Number && value.NHS_Number !== customer.NHS_Number) {
+            const existingCustomer = yield customer_schema_1.default.findOne({ NHS_Number: value.NHS_Number, merchantId: customer.merchantId });
+            if (existingCustomer) {
+                return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').NHSNumberAlreadyExists });
+            }
+        }
         // Check for unique email (if updating email)
         if (value.email && value.email !== customer.email) {
             const emailExists = yield customer_schema_1.default.findOne({ email: value.email });
@@ -344,21 +350,45 @@ exports.updateCustomer = updateCustomer;
 const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const merchantId = yield req.query.merchantId;
+        // const { currentPage = 1, itemsPerPage = 10, searchQuery } = req.query;
         console.log(merchantId);
         if (merchantId === undefined) {
             console.log(merchantId, 'merchantId');
         }
+        // console.log(currentPage, itemsPerPage, searchQuery);
+        var query = {
+            merchantId: new mongoose_1.default.Types.ObjectId(merchantId),
+            // ...(searchQuery
+            //   ? {
+            //       $or: [
+            //         { firstName: { $regex: searchQuery, $options: 'i' } },
+            //         { lastName: { $regex: searchQuery, $options: 'i' } },
+            //         { email: { $regex: searchQuery, $options: 'i' } },
+            //         { NHS_Number: { $regex: searchQuery, $options: 'i' } },
+            //         { address: { $regex: searchQuery, $options: 'i' } },
+            //         { postCode: { $regex: searchQuery, $options: 'i' } },
+            //         { mobileNumber: { $regex: searchQuery, $options: 'i' } },
+            //         { showCustomerNumber: { $regex: searchQuery, $options: 'i' } },
+            //       ],
+            //     }
+            //   : {}),
+        };
+        console.log(query, 'query');
         const data = yield customer_schema_1.default.aggregate([
             {
-                $match: {
-                    merchantId: new mongoose_1.default.Types.ObjectId(merchantId),
-                },
+                $match: query,
             },
             {
                 $sort: {
                     showCustomerNumber: -1, // Sort by createdAt in descending order
                 },
             },
+            // {
+            //   $skip: currentPage * itemsPerPage,
+            // },
+            // {
+            //   $limit: itemsPerPage,
+            // },
             {
                 $lookup: {
                     from: 'country',
@@ -412,7 +442,8 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         ]);
-        console.log(data);
+        const totell = yield customer_schema_1.default.countDocuments(query);
+        // console.log(data);
         return res.ok({ data: data === null ? [] : data });
     }
     catch (error) {
