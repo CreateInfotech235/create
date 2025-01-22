@@ -67,12 +67,17 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 });
             }
         }
-        const userExist = yield deliveryMan_schema_1.default.findOne({ email: value.email });
-        // if (userExist) {
-        //   return res.badRequest({
-        //     message: getLanguage('en').emailRegisteredAlready,
-        //   });
-        // }
+        console.log(value.email, 'email');
+        const userExist = yield deliveryMan_schema_1.default.findOne({
+            merchantId: value.merchantId,
+            email: value.email,
+        });
+        if (userExist) {
+            console.log(userExist, 'userExist');
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').emailRegisteredAlready,
+            });
+        }
         if (!isFromMerchantPanel && (value === null || value === void 0 ? void 0 : value.otp)) {
             const otpData = yield otp_schema_1.default.findOne({
                 value: value.otp,
@@ -179,7 +184,7 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
         else {
             alert('Please enter an address.');
         }
-        console.log(updateData.defaultLocation, "Loc");
+        console.log(updateData.defaultLocation, 'Loc');
         // Update DeliveryMan Profile Data (excluding password)
         const updatedDeliveryMan = yield deliveryMan_schema_1.default.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
         if (!updatedDeliveryMan) {
@@ -447,8 +452,7 @@ const getDeliveryManLocation = (req, res) => __awaiter(void 0, void 0, void 0, f
         const deliveryManId = req.query.deliveryManId;
         console.log(deliveryManId);
         // Fetch only specific fields, for example: name, location, and contact
-        const deliveryBoys = yield deliveryMan_schema_1.default.find({ createdByMerchant: true, merchantId, _id: deliveryManId }, { email: 1, location: 1, defaultLocation: 1, status: 1 } // Projection: only fetch these fields
-        );
+        const deliveryBoys = yield deliveryMan_schema_1.default.find({ createdByMerchant: true, merchantId, _id: deliveryManId }, { email: 1, location: 1, defaultLocation: 1, status: 1 });
         if (!deliveryBoys || deliveryBoys.length === 0) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').noDeliveryBoysFound });
         }

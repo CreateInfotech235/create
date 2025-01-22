@@ -85,54 +85,54 @@ const OrderSchema = new mongoose_1.default.Schema({
     },
     deliveryDetails: [
         {
-            type: {
-                location: {
-                    type: Object,
-                    properties: {
-                        type: String,
-                        coordinates: (Array),
-                    },
-                },
-                subOrderId: { type: Number },
-                orderTimestamp: { type: Date },
-                address: { type: String },
-                mobileNumber: { type: String },
-                name: { type: String },
-                email: { type: String },
-                description: { type: String },
-                deliveryBoySignature: { type: String },
-                postCode: { type: String },
-                cashOnDelivery: { type: Boolean, default: false },
-                distance: {
-                    type: Number,
-                },
-                duration: {
+            // type: {
+            location: {
+                type: Object,
+                properties: {
                     type: String,
-                },
-                parcelsCount: {
-                    type: Number,
-                },
-                paymentCollectionRupees: {
-                    type: Number,
-                },
-                status: {
-                    type: String,
-                    default: enum_1.ORDER_HISTORY.ASSIGNED,
-                    enum: enum_1.ORDER_HISTORY,
-                },
-                time: {
-                    start: { type: Date },
-                    end: { type: Date },
-                },
-                trashed: {
-                    type: Boolean,
-                    default: false,
-                },
-                parcelType: {
-                    type: mongoose_1.default.Schema.Types.ObjectId,
-                    ref: 'parcel',
+                    coordinates: (Array),
                 },
             },
+            subOrderId: { type: Number },
+            orderTimestamp: { type: Date },
+            address: { type: String },
+            mobileNumber: { type: String },
+            name: { type: String },
+            email: { type: String },
+            description: { type: String },
+            deliveryBoySignature: { type: String },
+            postCode: { type: String },
+            cashOnDelivery: { type: Boolean, default: false },
+            distance: {
+                type: Number,
+            },
+            duration: {
+                type: String,
+            },
+            parcelsCount: {
+                type: Number,
+            },
+            paymentCollectionRupees: {
+                type: Number,
+            },
+            status: {
+                type: String,
+                default: enum_1.ORDER_HISTORY.ASSIGNED,
+                enum: enum_1.ORDER_HISTORY,
+            },
+            time: {
+                start: { type: Date },
+                end: { type: Date },
+            },
+            trashed: {
+                type: Boolean,
+                default: false,
+            },
+            parcelType: {
+                type: mongoose_1.default.Schema.Types.ObjectId,
+                ref: 'parcel',
+            },
+            // },
         },
     ],
     deliveryLocation: {

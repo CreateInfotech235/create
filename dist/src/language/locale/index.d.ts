@@ -54,6 +54,7 @@ declare const _default: {
         invalidOrNonCancellableOrder: string;
         errorOrderArrived: string;
         orderCancelledSuccessfully: string;
+        orderAlreadyCancelled: string;
         errorDataNotFound: string;
         parcelTypeDeleted: string;
         parcelTypeUpdated: string;

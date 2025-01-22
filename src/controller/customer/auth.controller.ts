@@ -41,7 +41,7 @@ export const createCustomer = async (req: RequestParams, res: Response) => {
 
     const { value } = validateRequest;
 
-    const userExist = await customerSchema.findOne({ email: value.email });
+    // const userExist = await customerSchema.findOne({ email: value.email });
     // if (userExist) {
     //   return res.badRequest({
     //     message: getLanguage('en').emailRegisteredAlready,

@@ -8,6 +8,7 @@ export declare const arriveOrder: (req: RequestParams, res: Response) => Promise
 export declare const arriveOrderMulti: (req: RequestParams, res: Response) => Promise<void>;
 export declare const cancelOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const cancelMultiOrder: (req: RequestParams, res: Response) => Promise<void>;
+export declare const cancelMultiSubOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const departOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const departOrderMulti: (req: RequestParams, res: Response) => Promise<void>;
 export declare const pickUpOrder: (req: RequestParams, res: Response) => Promise<void>;

@@ -85,7 +85,7 @@ const OrderSchema = new mongoose.Schema(
     },
     deliveryDetails: [
       {
-        type: {
+        // type: {
           location: {
             type: Object,
             properties: {
@@ -132,7 +132,7 @@ const OrderSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'parcel',
           },
-        },
+        // },
       },
     ],
     deliveryLocation: {

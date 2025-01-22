@@ -40,6 +40,23 @@ const router = express_1.default.Router();
  *         description: Something went wrong
  */
 router.get('/', order_controller_1.getAssignedOrders);
+/**
+ * @swagger
+ * /deliveryBoy/orders/getAssignedOrdersMulti:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get Assigned Orders Multi
+ *     tags: [ Delivery Man - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ *
+ */
 router.get('/getAssignedOrdersMulti', order_controller_1.getAssignedOrdersMulti);
 /**
  * @swagger
@@ -87,6 +104,28 @@ router.patch('/accept', order_controller_1.acceptOrder);
  *         description: Something went wrong
  */
 router.patch('/arrive', order_controller_1.arriveOrder);
+/**
+ * @swagger
+ * /deliveryBoy/orders/arriveOrderMulti:
+ *   patch:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Orders List For Mobile
+ *     tags: [ Delivery Man - Orders ]
+ *     requestBody:
+ *       description: Extra parameters
+ *       content:
+ *        application/json:
+ *         schema:
+ *          $ref: '#components/schemas/OrderDelivery'
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.patch('/arriveOrderMulti', order_controller_1.arriveOrderMulti);
 /**
  * @swagger
@@ -113,6 +152,52 @@ router.patch('/arriveOrderMulti', order_controller_1.arriveOrderMulti);
 router.patch('/cancel', order_controller_1.cancelOrder);
 /**
  * @swagger
+ * /deliveryBoy/orders/cancelMultiOrder:
+ *   patch:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Orders List For Mobile
+ *     tags: [ Delivery Man - Orders ]
+ *     requestBody:
+ *       description: Extra parameters
+ *       content:
+ *        application/json:
+ *         schema:
+ *          $ref: '#components/schemas/OrderDelivery'
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
+router.patch('/cancelMultiOrder', order_controller_1.cancelMultiOrder);
+/**
+ * @swagger
+ * /deliveryBoy/orders/cancelMultiSubOrder:
+ *   patch:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Cancel Multi Sub Order
+ *     tags: [ Delivery Man - Orders ]
+ *     requestBody:
+ *       description: Extra parameters
+ *       content:
+ *        application/json:
+ *         schema:
+ *          $ref: '#components/schemas/OrderCancelType'
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
+router.patch('/cancelMultiSubOrder', order_controller_1.cancelMultiSubOrder);
+/**
+ * @swagger
  * /deliveryBoy/orders/pickUp:
  *   patch:
  *     security:
@@ -133,8 +218,29 @@ router.patch('/cancel', order_controller_1.cancelOrder);
  *       500:
  *         description: Something went wrong
  */
-router.patch('/cancelMultiOrder', order_controller_1.cancelMultiOrder);
 router.patch('/pickUp', order_controller_1.pickUpOrder);
+/**
+ * @swagger
+  * /deliveryBoy/orders/pickUpOrderMulti:
+ *   patch:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Orders List For Mobile
+ *     tags: [ Delivery Man - Orders ]
+ *     requestBody:
+ *       description: Extra parameters
+ *       content:
+ *        application/json:
+ *         schema:
+ *          $ref: '#components/schemas/OrderPickUpType'
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.patch('/pickUpOrderMulti', order_controller_1.pickUpOrderMulti);
 /**
  * @swagger
@@ -159,6 +265,28 @@ router.patch('/pickUpOrderMulti', order_controller_1.pickUpOrderMulti);
  *         description: Something went wrong
  */
 router.patch('/depart', order_controller_1.departOrder);
+/**
+ * @swagger
+ * /deliveryBoy/orders/departOrderMulti:
+ *   patch:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Orders List For Mobile
+ *     tags: [ Delivery Man - Orders ]
+ *     requestBody:
+ *       description: Extra parameters
+ *       content:
+ *        application/json:
+ *         schema:
+ *          $ref: '#components/schemas/OrderArriveType'
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.patch('/departOrderMulti', order_controller_1.departOrderMulti);
 /**
  * @swagger
@@ -181,8 +309,24 @@ router.patch('/departOrderMulti', order_controller_1.departOrderMulti);
  *         description: Bad Request Client Error
  *       500:
  *         description: Something went wrong
- */
+  */
 router.patch('/deliver', order_controller_1.deliverOrder);
+/**
+ * @swagger
+ * /deliveryBoy/orders/deliverOrderMulti:
+ *   patch:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Orders List For Mobile
+ *     tags: [ Delivery Man - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.patch('/deliverOrderMulti', order_controller_1.deliverOrderMulti);
 /**
  * @swagger
@@ -207,7 +351,39 @@ router.patch('/deliverOrderMulti', order_controller_1.deliverOrderMulti);
  *         description: Something went wrong
  */
 router.post('/sendEmailOrMobileOtp', order_controller_1.sendEmailOrMobileOtp);
+/**
+ * @swagger
+ * /deliveryBoy/orders/sendEmailOrMobileOtpMulti:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Orders List For Mobile
+ *     tags: [ Delivery Man - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/sendEmailOrMobileOtpMulti', order_controller_1.sendEmailOrMobileOtpMulti);
+/**
+ * @swagger
+ * /deliveryBoy/orders/sendEmailOrMobileOtpMultiForDelivery:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Orders List For Mobile
+ *     tags: [ Delivery Man - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.post('/sendEmailOrMobileOtpMultiForDelivery', order_controller_1.sendEmailOrMobileOtpMultiForDelivery);
 /**
  * @swagger
@@ -293,7 +469,59 @@ router.get('/getCancelledOrder', order_controller_1.getAllCancelledOrders);
  */
 // router.get('/getCancelledOrderMulti', getAllCancelledOrdersMulti);
 router.get('/getCancelledOrderMulti', order_controller_1.getAllCancelledOrdersMulti);
+/**
+ * @swagger
+ * /deliveryBoy/orders/getPaymentData:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get Payment Data
+ *     tags: [ Delivery Man - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getPaymentData', order_controller_1.getPaymentDataForDeliveryBoy);
+/**
+ * @swagger
+ * /deliveryBoy/orders/getMultiOrder:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get Multi Order
+ *     tags: [ Delivery Man - Orders ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getMultiOrder', order_controller_1.getMultiOrder);
+/**
+ * @swagger
+ * /deliveryBoy/orders/getMultiOrderById/{id}:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get Multi Order By Id
+ *     tags: [ Delivery Man - Orders ]
+ *     parameters:
+ *     - name: id
+ *       in: path
+ *       required: true
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
 router.get('/getMultiOrderById/:id', order_controller_1.getMultiOrderById);
 exports.default = router;

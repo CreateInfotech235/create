@@ -13,5 +13,6 @@ export declare const orderDeliverValidationMulti: Joi.ObjectSchema<any>;
 export declare const orderIdValidation: Joi.ObjectSchema<any>;
 export declare const orderIdValidationForDelivery: Joi.ObjectSchema<any>;
 export declare const orderCancelValidation: Joi.ObjectSchema<any>;
+export declare const orderCancelMultiValidation: Joi.ObjectSchema<any>;
 export declare const invoiceValidation: Joi.ObjectSchema<any>;
 export declare const orderAdminListValidation: Joi.ObjectSchema<any>;

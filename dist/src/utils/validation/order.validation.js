@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.orderAdminListValidation = exports.invoiceValidation = exports.orderCancelValidation = exports.orderIdValidationForDelivery = exports.orderIdValidation = exports.orderDeliverValidationMulti = exports.orderDeliverValidation = exports.orderPickUpValidation = exports.orderListByDeliveryManValidation = exports.orderArriveValidationMulti = exports.orderArriveValidation = exports.orderAcceptValidation = exports.orderAssignValidation = exports.newOrderCreationMulti = exports.newOrderCreation = exports.orderCreateValidation = void 0;
+exports.orderAdminListValidation = exports.invoiceValidation = exports.orderCancelMultiValidation = exports.orderCancelValidation = exports.orderIdValidationForDelivery = exports.orderIdValidation = exports.orderDeliverValidationMulti = exports.orderDeliverValidation = exports.orderPickUpValidation = exports.orderListByDeliveryManValidation = exports.orderArriveValidationMulti = exports.orderArriveValidation = exports.orderAcceptValidation = exports.orderAssignValidation = exports.newOrderCreationMulti = exports.newOrderCreation = exports.orderCreateValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 const enum_1 = require("../../enum");
 exports.orderCreateValidation = joi_1.default.object({
@@ -189,8 +189,8 @@ exports.orderListByDeliveryManValidation = joi_1.default.object({
     status: joi_1.default.string()
         .valid(enum_1.ORDER_HISTORY.CREATED, enum_1.ORDER_HISTORY.ASSIGNED, enum_1.ORDER_HISTORY.ACCEPTED, enum_1.ORDER_HISTORY.ARRIVED, enum_1.ORDER_HISTORY.PICKED_UP, enum_1.ORDER_HISTORY.DELIVERED, enum_1.ORDER_HISTORY.DEPARTED, enum_1.ORDER_HISTORY.CANCELLED)
         .allow(''),
-    pageCount: joi_1.default.number().required(),
-    pageLimit: joi_1.default.number().required(),
+    pageCount: joi_1.default.number(),
+    pageLimit: joi_1.default.number(),
 });
 exports.orderPickUpValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),
@@ -228,6 +228,11 @@ exports.orderCancelValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),
     reason: joi_1.default.string(),
     // subOrderId : Joi.number().required(),
+});
+exports.orderCancelMultiValidation = joi_1.default.object({
+    orderId: joi_1.default.number().required(),
+    reason: joi_1.default.string(),
+    subOrderId: joi_1.default.number().required(),
 });
 exports.invoiceValidation = joi_1.default.object({
     companyName: joi_1.default.string().required(),

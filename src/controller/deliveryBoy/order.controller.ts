@@ -39,6 +39,7 @@ import {
   orderAcceptValidation,
   orderArriveValidation,
   orderArriveValidationMulti,
+  orderCancelMultiValidation,
   orderCancelValidation,
   orderDeliverValidation,
   orderDeliverValidationMulti,
@@ -51,6 +52,7 @@ import {
   OrderAcceptType,
   OrderAcceptTypeMulti,
   OrderCancelType,
+  OrderCancelTypeMultiSubOrder,
   OrderDeliverType,
   OrderDeliverTypeMulti,
   OrderPickUpType,
@@ -1004,6 +1006,8 @@ export const cancelMultiOrder = async (req: RequestParams, res: Response) => {
           ORDER_HISTORY.CREATED,
           ORDER_HISTORY.ASSIGNED,
           ORDER_HISTORY.ARRIVED,
+          ORDER_HISTORY.PICKED_UP,
+          ORDER_HISTORY.DEPARTED,
         ],
       },
     });
@@ -1109,6 +1113,114 @@ export const cancelMultiOrder = async (req: RequestParams, res: Response) => {
       message: `Order ${existingOrder.orderId} has been cancelled by deliveryman`,
       type: 'MERCHANT',
     });
+
+    return res.ok({
+      message: getLanguage('en').orderCancelledSuccessfully,
+    });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
+export const cancelMultiSubOrder = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const validateRequest = validateParamsWithJoi<OrderCancelTypeMultiSubOrder>(
+      req.body,
+      orderCancelMultiValidation,
+    );
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
+
+    const { value } = validateRequest;
+    value.deliveryManId = req.id.toString();
+
+    // Check if the order exists and is not yet completed
+    const existingOrder = await orderSchemaMulti.findOne({
+      orderId: value.orderId,
+      'deliveryDetails.status': {
+        $in: [
+          ORDER_HISTORY.CREATED,
+          ORDER_HISTORY.ASSIGNED,
+          ORDER_HISTORY.ARRIVED,
+          ORDER_HISTORY.PICKED_UP,
+          ORDER_HISTORY.DEPARTED,
+        ],
+      },
+    });
+    console.log(existingOrder, 'existingOrder');
+    if (!existingOrder) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+    console.log(existingOrder, 'First');
+    const isAssigned = await OrderAssigneeSchemaMulti.findOne({
+      order: value.orderId,
+      deliveryBoy: value.deliveryManId,
+    });
+    console.log(isAssigned, 'Secound');
+
+    if (!isAssigned) {
+      return res.badRequest({
+        message: getLanguage('en').orderNotAssignedToYou,
+      });
+    }
+
+    const nowdata = existingOrder;
+    // console.log(value.subOrderId, 'value');
+    nowdata.deliveryDetails.map((item) => {
+      if (item.subOrderId == value.subOrderId) {
+        if (item.status !== ORDER_HISTORY.CANCELLED) {
+          item.status = ORDER_HISTORY.CANCELLED;
+        } else {
+          return res.badRequest({
+            message: getLanguage('en').orderAlreadyCancelled,
+          });
+        }
+      }
+    });
+    console.log(nowdata, 'nowdata');
+
+    const newoder = await orderSchemaMulti.findOneAndUpdate(
+      { orderId: value.orderId },
+      { $set: { deliveryDetails: nowdata.deliveryDetails } },
+      { new: true },
+    );
+
+    // const oderdata = await orderSchemaMulti.findOne({
+    const oderdata = await orderSchemaMulti.findOne({
+      orderId: value.orderId,
+      // 'deliveryDetails.subOrderId': value.subOrderId,
+    });
+    console.log(oderdata, 'oderdata');
+    // IF ALL ODER IN CANCELLED OR DELIVERED THEN TRUE ELSE FALSE
+    const isalloderdelevever = oderdata.deliveryDetails.every(
+      (item) =>
+        item.status === ORDER_HISTORY.CANCELLED ||
+        item.status === ORDER_HISTORY.DELIVERED,
+    );
+
+    console.log(isalloderdelevever, 'isalloderdelevever');
+
+    // await orderSchemaMulti.findOneAndUpdate(
+    //   {
+    //     orderId: value.orderId,
+    //     'deliveryDetails.subOrderId': value.orderId,
+    //   },
+    //   {
+    //     $set: {
+    //       'deliveryDetails.$.status': ORDER_HISTORY.UNASSIGNED,
+    //       'deliveryDetails.$.time.end': Date.now(),
+    //     },
+    //   },
+    // );
+    // console.log('Third');
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -2516,7 +2628,7 @@ export const getAllCancelledOrdersMulti = async (
     console.log(tr, 'tr');
 
     const data = await cancelOderbyDeliveryMan.aggregate([
-      { $sort : { order : -1 }},
+      { $sort: { order: -1 } },
       {
         $match: {
           deliveryBoy: Id,
@@ -2639,7 +2751,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
     };
 
     const data1 = await OrderAssigneeSchemaMulti.aggregate([
-      { $sort : { order : -1 }},
+      { $sort: { order: -1 } },
       {
         $match: matchQuery,
       },

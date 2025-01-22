@@ -18,6 +18,10 @@ interface OrderCancelType
   extends Pick<OrderAssignType, 'deliveryManId' | 'orderId'> {
   status: ORDER_REQUEST;
 }
+interface OrderCancelTypeMultiSubOrder
+  extends Pick<OrderAssignType, 'deliveryManId' | 'orderId' | 'subOrderId'> {
+  status: ORDER_REQUEST;
+}
 
 interface OrderPickUpType {
   orderId: number;

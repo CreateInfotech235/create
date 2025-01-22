@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMultiOrderById = exports.getMultiOrder = exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrdersMulti = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelMultiOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
+exports.getMultiOrderById = exports.getMultiOrder = exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrdersMulti = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelMultiSubOrder = exports.cancelMultiOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -825,6 +825,8 @@ const cancelMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, functio
                     enum_1.ORDER_HISTORY.CREATED,
                     enum_1.ORDER_HISTORY.ASSIGNED,
                     enum_1.ORDER_HISTORY.ARRIVED,
+                    enum_1.ORDER_HISTORY.PICKED_UP,
+                    enum_1.ORDER_HISTORY.DEPARTED,
                 ],
             },
         });
@@ -912,6 +914,92 @@ const cancelMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.cancelMultiOrder = cancelMultiOrder;
+const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderCancelMultiValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        value.deliveryManId = req.id.toString();
+        // Check if the order exists and is not yet completed
+        const existingOrder = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+            'deliveryDetails.status': {
+                $in: [
+                    enum_1.ORDER_HISTORY.CREATED,
+                    enum_1.ORDER_HISTORY.ASSIGNED,
+                    enum_1.ORDER_HISTORY.ARRIVED,
+                    enum_1.ORDER_HISTORY.PICKED_UP,
+                    enum_1.ORDER_HISTORY.DEPARTED,
+                ],
+            },
+        });
+        console.log(existingOrder, 'existingOrder');
+        if (!existingOrder) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
+        console.log(existingOrder, 'First');
+        const isAssigned = yield orderAssigneeMulti_schema_1.default.findOne({
+            order: value.orderId,
+            deliveryBoy: value.deliveryManId,
+        });
+        console.log(isAssigned, 'Secound');
+        if (!isAssigned) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').orderNotAssignedToYou,
+            });
+        }
+        const nowdata = existingOrder;
+        // console.log(value.subOrderId, 'value');
+        nowdata.deliveryDetails.map((item) => {
+            if (item.subOrderId == value.subOrderId) {
+                if (item.status !== enum_1.ORDER_HISTORY.CANCELLED) {
+                    item.status = enum_1.ORDER_HISTORY.CANCELLED;
+                }
+                else {
+                    return res.badRequest({
+                        message: (0, languageHelper_1.getLanguage)('en').orderAlreadyCancelled,
+                    });
+                }
+            }
+        });
+        console.log(nowdata, 'nowdata');
+        const newoder = yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { deliveryDetails: nowdata.deliveryDetails } }, { new: true });
+        // const oderdata = await orderSchemaMulti.findOne({
+        const oderdata = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+            // 'deliveryDetails.subOrderId': value.subOrderId,
+        });
+        console.log(oderdata, 'oderdata');
+        // IF ALL ODER IN CANCELLED OR DELIVERED THEN TRUE ELSE FALSE
+        const isalloderdelevever = oderdata.deliveryDetails.every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED ||
+            item.status === enum_1.ORDER_HISTORY.DELIVERED);
+        console.log(isalloderdelevever, 'isalloderdelevever');
+        // await orderSchemaMulti.findOneAndUpdate(
+        //   {
+        //     orderId: value.orderId,
+        //     'deliveryDetails.subOrderId': value.orderId,
+        //   },
+        //   {
+        //     $set: {
+        //       'deliveryDetails.$.status': ORDER_HISTORY.UNASSIGNED,
+        //       'deliveryDetails.$.time.end': Date.now(),
+        //     },
+        //   },
+        // );
+        // console.log('Third');
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.cancelMultiSubOrder = cancelMultiSubOrder;
 const departOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderArriveValidation);

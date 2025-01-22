@@ -108,13 +108,19 @@ export const signUp = async (req: RequestParams, res: Response) => {
         });
       }
     }
+    console.log(value.email, 'email');
 
-    const userExist = await deliveryManSchema.findOne({ email: value.email });
-    // if (userExist) {
-    //   return res.badRequest({
-    //     message: getLanguage('en').emailRegisteredAlready,
-    //   });
-    // }
+    const userExist = await deliveryManSchema.findOne({
+      merchantId: value.merchantId,
+      email: value.email,
+    });
+    if (userExist) {
+      console.log(userExist, 'userExist');
+
+      return res.badRequest({
+        message: getLanguage('en').emailRegisteredAlready,
+      });
+    }
 
     if (!isFromMerchantPanel && value?.otp) {
       const otpData = await otpSchema.findOne({
@@ -267,8 +273,7 @@ export const updateDeliveryManProfileAndPassword = async (
     } else {
       alert('Please enter an address.');
     }
-    console.log(updateData.defaultLocation , "Loc");
-    
+    console.log(updateData.defaultLocation, 'Loc');
 
     // Update DeliveryMan Profile Data (excluding password)
     const updatedDeliveryMan = await deliveryManSchema.findByIdAndUpdate(
@@ -572,11 +577,11 @@ export const getDeliveryManLocation = async (
     const merchantId = req.params.merchantId;
     const deliveryManId = req.query.deliveryManId;
     console.log(deliveryManId);
-    
+
     // Fetch only specific fields, for example: name, location, and contact
     const deliveryBoys = await deliveryManSchema.find(
-      { createdByMerchant: true, merchantId , _id : deliveryManId},
-      { email: 1, location: 1, defaultLocation: 1 , status : 1} // Projection: only fetch these fields
+      { createdByMerchant: true, merchantId, _id: deliveryManId },
+      { email: 1, location: 1, defaultLocation: 1, status: 1 }, // Projection: only fetch these fields
     );
 
     if (!deliveryBoys || deliveryBoys.length === 0) {
@@ -594,8 +599,6 @@ export const getDeliveryManLocation = async (
     });
   }
 };
-
-
 
 export const deleteDeliveryMan = async (req: RequestParams, res: Response) => {
   try {

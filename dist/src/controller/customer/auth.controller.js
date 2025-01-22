@@ -28,7 +28,7 @@ const createCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
-        const userExist = yield customer_schema_1.default.findOne({ email: value.email });
+        // const userExist = await customerSchema.findOne({ email: value.email });
         // if (userExist) {
         //   return res.badRequest({
         //     message: getLanguage('en').emailRegisteredAlready,

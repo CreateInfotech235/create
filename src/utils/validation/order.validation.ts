@@ -212,8 +212,8 @@ export const orderListByDeliveryManValidation = Joi.object({
       ORDER_HISTORY.CANCELLED,
     )
     .allow(''),
-  pageCount: Joi.number().required(),
-  pageLimit: Joi.number().required(),
+  pageCount: Joi.number(),
+  pageLimit: Joi.number(),
 });
 
 export const orderPickUpValidation = Joi.object({
@@ -256,6 +256,13 @@ export const orderCancelValidation = Joi.object({
   reason: Joi.string(),
   // subOrderId : Joi.number().required(),
 });
+
+export const orderCancelMultiValidation = Joi.object({
+  orderId: Joi.number().required(),
+  reason: Joi.string(),
+  subOrderId: Joi.number().required(),
+});
+
 export const invoiceValidation = Joi.object({
   companyName: Joi.string().required(),
   city: Joi.string(),
