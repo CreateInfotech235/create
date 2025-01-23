@@ -200,7 +200,6 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.getAssignedOrders = getAssignedOrders;
 const getAssignedOrdersMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c, _d;
     try {
         const validateRequest = (0, validateRequest_1.default)(req.query, order_validation_1.orderListByDeliveryManValidation);
         if (!validateRequest.isValid) {
@@ -232,85 +231,95 @@ const getAssignedOrdersMulti = (req, res) => __awaiter(void 0, void 0, void 0, f
                     as: 'orderData',
                 },
             },
-            { $unwind: { path: '$orderData', preserveNullAndEmptyArrays: true } },
-            {
-                $lookup: {
-                    from: 'deliveryMan',
-                    localField: 'deliveryBoy',
-                    foreignField: '_id',
-                    as: 'deliveryManData',
-                    pipeline: [{ $project: { _id: 1, firstName: 1, lastName: 1 } }],
-                },
-            },
-            {
-                $unwind: { path: '$deliveryManData', preserveNullAndEmptyArrays: true },
-            },
-            {
-                $project: {
-                    _id: 1,
-                    deliveryBoy: 1,
-                    status: 1,
-                    createdAt: 1,
-                    order: {
-                        orderId: '$orderData.orderId',
-                        _id: '$orderData._id',
-                        showOrderNumber: '$orderData.showOrderNumber',
-                        parcelsCount: '$orderData.parcelsCount',
-                        customerName: '$orderData.deliveryDetails.name',
-                        customerEmail: '$orderData.deliveryDetails.email',
-                        pickupDetails: '$orderData.pickupDetails',
-                        deliveryDetails: '$orderData.deliveryDetails',
-                        deliveryMan: {
-                            $concat: [
-                                '$deliveryManData.firstName',
-                                ' ',
-                                '$deliveryManData.lastName',
-                            ],
-                        },
-                        deliveryManId: '$deliveryManData._id',
-                        pickupDate: {
-                            $dateToString: {
-                                format: '%d-%m-%Y , %H:%M',
-                                date: '$orderData.pickupDetails.dateTime',
-                            },
-                        },
-                        deliveryDate: {
-                            $dateToString: {
-                                format: '%d-%m-%Y , %H:%M',
-                                date: '$orderData.deliveryDetails.orderTimestamp',
-                            },
-                        },
-                        createdDate: {
-                            $dateToString: {
-                                format: '%d-%m-%Y , %H:%M',
-                                date: '$orderData.createdAt',
-                            },
-                        },
-                        pickupRequest: '$orderData.pickupDetails.request',
-                        postCode: '$orderData.pickupDetails.postCode',
-                        cashOnDelivery: '$orderData.cashOnDelivery',
-                        status: '$orderData.status',
-                        dateTime: '$orderData.dateTime',
-                        trashed: { $ifNull: ['$orderData.trashed', false] },
-                        distance: '$orderData.distance',
-                        duration: '$orderData.duration',
-                        paymentCollectionRupees: '$orderData.paymentCollectionRupees',
-                    },
-                },
-            },
-            { $sort: { 'order.distance': 1, createdAt: -1 } },
-            {
-                $facet: {
-                    data: [{ $skip: skip }, { $limit: pageLimit }],
-                    totalCount: [{ $count: 'count' }],
-                },
-            },
+            // { $unwind: { path: '$orderData', preserveNullAndEmptyArrays: true } },
+            // {
+            //   $sort: {
+            //     'orderData.distance': 1,
+            //   },
+            // },
+            // {
+            //   $lookup: {
+            //     from: 'deliveryMan',
+            //     localField: 'deliveryBoy',
+            //     foreignField: '_id',
+            //     as: 'deliveryManData',
+            //     pipeline: [{ $project: { _id: 1, firstName: 1, lastName: 1 } }],
+            //   },
+            // },
+            // {
+            //   $unwind: { path: '$deliveryManData', preserveNullAndEmptyArrays: true },
+            // },
+            // {
+            //   $project: {
+            //     _id: 1,
+            //     deliveryBoy: 1,
+            //     status: 1,
+            //     createdAt: 1,
+            //     order: {
+            //       orderId: '$orderData.orderId',
+            //       _id: '$orderData._id',
+            //       showOrderNumber: '$orderData.showOrderNumber',
+            //       parcelsCount: '$orderData.parcelsCount',
+            //       customerName: '$orderData.deliveryDetails.name',
+            //       customerEmail: '$orderData.deliveryDetails.email',
+            //       pickupDetails: '$orderData.pickupDetails',
+            //       deliveryDetails: '$orderData.deliveryDetails',
+            //       deliveryMan: {
+            //         $concat: [
+            //           '$deliveryManData.firstName',
+            //           ' ',
+            //           '$deliveryManData.lastName',
+            //         ],
+            //       },
+            //       deliveryManId: '$deliveryManData._id',
+            //       pickupDate: {
+            //         $dateToString: {
+            //           format: '%d-%m-%Y , %H:%M',
+            //           date: '$orderData.pickupDetails.dateTime',
+            //         },
+            //       },
+            //       deliveryDate: {
+            //         $dateToString: {
+            //           format: '%d-%m-%Y , %H:%M',
+            //           date: '$orderData.deliveryDetails.orderTimestamp',
+            //         },
+            //       },
+            //       createdDate: {
+            //         $dateToString: {
+            //           format: '%d-%m-%Y , %H:%M',
+            //           date: '$orderData.createdAt',
+            //         },
+            //       },
+            //       pickupRequest: '$orderData.pickupDetails.request',
+            //       postCode: '$orderData.pickupDetails.postCode',
+            //       cashOnDelivery: '$orderData.cashOnDelivery',
+            //       status: '$orderData.status',
+            //       dateTime: '$orderData.dateTime',
+            //       trashed: { $ifNull: ['$orderData.trashed', false] },
+            //       distance: '$orderData.distance',
+            //       duration: '$orderData.duration',
+            //       paymentCollectionRupees: '$orderData.paymentCollectionRupees',
+            //     },
+            //   },
+            // },
+            // { $sort: { 'order.distance': 1, createdAt: -1 } },
+            // {
+            //   $facet: {
+            //     data: [{ $skip: skip }, { $limit: pageLimit }],
+            //     totalCount: [{ $count: 'count' }],
+            //   },
+            // },
         ];
-        const result = yield orderAssigneeMulti_schema_1.default.aggregate(pipeline);
-        const data = {
-            data: ((_b = result[0]) === null || _b === void 0 ? void 0 : _b.data) || [],
-            totalCount: ((_d = (_c = result[0]) === null || _c === void 0 ? void 0 : _c.totalCount[0]) === null || _d === void 0 ? void 0 : _d.count) || 0,
-        };
+        const result = yield orderAssigneeMulti_schema_1.default.find({
+            deliveryBoy: new mongoose_1.default.Types.ObjectId(req.id),
+        });
+        // console.log(result, 'result');
+        // const data = {
+        //   data: result[0]?.data || [],
+        //   totalCount: result[0]?.totalCount[0]?.count || 0,
+        // };
+        const data = yield orderAssigneeMulti_schema_1.default.aggregate(pipeline);
+        console.log(data, 'data');
         return res.ok({ data });
     }
     catch (error) {
@@ -322,7 +331,7 @@ const getAssignedOrdersMulti = (req, res) => __awaiter(void 0, void 0, void 0, f
 });
 exports.getAssignedOrdersMulti = getAssignedOrdersMulti;
 const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _b;
     try {
         const { startDate, endDate, status, pageCount = 1, pageLimit = 10, } = req.query; // Add pageCount and pageLimit params
         // Calculate pagination values
@@ -479,7 +488,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
         ]);
         const data = {
             data: data1[0].data,
-            totalCount: ((_e = data1[0].totalCount[0]) === null || _e === void 0 ? void 0 : _e.count) || 0,
+            totalCount: ((_b = data1[0].totalCount[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
         };
         // Get total count for pagination
         const totalCount = yield order_schema_1.default.countDocuments(matchCondition);
@@ -1957,6 +1966,7 @@ const getOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             .populate('country')
             .populate('city')
             .populate('vehicle');
+        console.log(data, 'data');
         // Set city and country to null
         if (data) {
             data.city = null;
@@ -2249,6 +2259,16 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const [multiOrder] = yield orderMulti_schema_1.default
             .aggregate([
             { $match: { _id: new mongoose_1.default.Types.ObjectId(id) } },
+            {
+                $addFields: {
+                    deliveryDetails: {
+                        $sortArray: {
+                            input: "$deliveryDetails",
+                            sortBy: { distance: 1 }
+                        }
+                    }
+                }
+            },
             {
                 $addFields: {
                     totalDeliveredOrders: {
