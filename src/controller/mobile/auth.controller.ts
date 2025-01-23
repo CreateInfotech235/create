@@ -1,9 +1,9 @@
 import { Response } from 'express';
-import mongoose from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 import { JwtPayload, verify } from 'jsonwebtoken';
 import { PERSON_TYPE } from '../../enum';
 import { getLanguage } from '../../language/languageHelper';
-import { io } from '../../../index'
+import { io } from '../../../index';
 
 import authTokenSchema from '../../models/authToken.schema';
 import CurrencySchema from '../../models/currency.schema';
@@ -45,13 +45,14 @@ import orderHistorySchema from '../../models/orderHistory.schema';
 import orderSchema from '../../models/order.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
 import subscribedSchema from '../../models/subcription.schema';
+import orderMulti from '../../models/orderMulti.schema';
+
 import {
   orderCount,
   paginationValidation,
 } from '../../utils/validation/adminSide.validation';
 import { verifyPassword } from '../deliveryBoy/auth.controller';
 import axios from 'axios';
-
 
 export const signUp = async (req: RequestParams, res: Response) => {
   try {
@@ -80,17 +81,56 @@ export const signUp = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: validateRequest.message });
     }
 
-
     const { value } = validateRequest;
     console.log(value);
     var merchantUserId;
-    var listoftext = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+    var listoftext = [
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '0',
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f',
+      'g',
+      'h',
+      'i',
+      'j',
+      'k',
+      'l',
+      'm',
+      'n',
+      'o',
+      'p',
+      'q',
+      'r',
+      's',
+      't',
+      'u',
+      'v',
+      'w',
+      'x',
+      'y',
+      'z',
+    ];
     do {
-      merchantUserId = listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))]
+      merchantUserId =
+        listoftext[Math.round(Math.random() * (listoftext.length - 1))] +
+        listoftext[Math.round(Math.random() * (listoftext.length - 1))] +
+        listoftext[Math.round(Math.random() * (listoftext.length - 1))] +
+        listoftext[Math.round(Math.random() * (listoftext.length - 1))];
 
-      console.log("merchantUserId", merchantUserId);
+      console.log('merchantUserId', merchantUserId);
     } while (await merchantSchema.findOne({ merchantUserId: merchantUserId }));
-
 
     const userExist = await merchantSchema.findOne({ email: value.email });
 
@@ -200,7 +240,6 @@ export const signIn = async (req: RequestParams, res: Response) => {
       refreshToken,
       createdAt: new Date(),
     });
-
 
     const { bankData, providerId, ...userData } = userExist;
 
@@ -418,7 +457,6 @@ export const sendEmailOrMobileOtp = async (
     }
     const { value } = validateRequest;
     console.log(value);
-
 
     let userExist;
 
@@ -802,9 +840,38 @@ export const getAllDeliveryManOfMerchant = async (
 export const getOrderCounts = async (req: RequestParams, res: Response) => {
   try {
     let merchantID = req.params.id;
-    const totalOrders = await orderSchema.countDocuments({
-      merchant: merchantID,
-    });
+    const totalOrders = await orderMulti
+      .aggregate([
+        {
+          $match: {
+            merchant: new mongoose.Types.ObjectId(merchantID),
+            trashed: { $ne: true },
+          },
+        },
+        {
+          $project: {
+            deliveryDetails: {
+              $filter: {
+                input: "$deliveryDetails",
+                as: "detail",
+                cond: { $eq: ["$$detail.trashed", false] }
+              }
+            }
+          }
+        },
+        {
+          $project: {
+            deliveryDetailsCount: { $size: '$deliveryDetails' },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$deliveryDetailsCount' },
+          },
+        },
+      ])
+      .then((result) => result[0]?.total || 0);
 
     const createdOrders = await orderHistorySchema.countDocuments({
       status: 'CREATED',
@@ -1211,7 +1278,6 @@ export const updateDeliveryManProfileAndPassword = async (
   }
 };
 
-
 export const getadmindata = async (req: RequestParams, res: Response) => {
   try {
     const data = await adminSchema.aggregate([
@@ -1439,10 +1505,22 @@ export const getUnreadNotificationCount = async (
 
 export const getAllDeliveryMans = async (req: RequestParams, res: Response) => {
   try {
+    const { createdByAdmin } = req.query;
+    var Query;
+    if (createdByAdmin === 'true') {
+      Query = {
+        status: 'ENABLE',
+        createdByAdmin: createdByAdmin === 'true',
+      };
+    } else {
+      Query = {
+        status: 'ENABLE',
+      };
+    }
     const data = await deliveryManSchema.aggregate([
       {
         $match: {
-          status: 'ENABLE',
+          ...Query,
         },
       },
 
@@ -1521,14 +1599,18 @@ export const getSubscriptions = async (req: RequestParams, res: Response) => {
   }
 };
 
-
-export const SupportTicketUpdate = async (req: RequestParams, res: Response) => {
+export const SupportTicketUpdate = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const { id, userId } = req.query;
     const data = await SupportTicket.findById(id);
-    console.log(data.userid, "User", userId);
+    console.log(data.userid, 'User', userId);
     if (data.userid == userId) {
-      const updateData = await SupportTicket.updateOne({ _id: id }, req.body, { new: true });
+      const updateData = await SupportTicket.updateOne({ _id: id }, req.body, {
+        new: true,
+      });
       return res.status(200).json({
         message: 'Support ticket updated successfully',
         data: updateData,
@@ -1544,8 +1626,7 @@ export const SupportTicketUpdate = async (req: RequestParams, res: Response) => 
       message: 'There was an error updating the support ticket',
     });
   }
-}
-
+};
 
 export const getAllTickets = async (req: RequestParams, res: Response) => {
   try {
@@ -1557,7 +1638,10 @@ export const getAllTickets = async (req: RequestParams, res: Response) => {
 };
 
 // Fetch messages for a specific ticket
-export const getMessagesByTicketId = async (req: RequestParams, res: Response) => {
+export const getMessagesByTicketId = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) {
@@ -1596,9 +1680,12 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
 };
 
 // Delete a message from a specific ticket
-export const deleteMessageFromTicket = async (req: RequestParams, res: Response) => {
+export const deleteMessageFromTicket = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
-    console.log("Gfgeguefg");
+    console.log('Gfgeguefg');
 
     const { ticketId, messageId } = req.params;
 
@@ -1609,7 +1696,9 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
     }
 
     // Find the index of the message to delete
-    const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId);
+    const messageIndex = ticket.messages.findIndex(
+      (msg) => msg._id.toString() === messageId,
+    );
     if (messageIndex === -1) {
       return res.status(404).json({ message: 'Message not found' });
     }
@@ -1631,21 +1720,24 @@ export const deleteMessageFromTicket = async (req: RequestParams, res: Response)
 
 export const getDistance = async (req: RequestParams, res: Response) => {
   const { origin, destination, apiKey } = req.query;
-  console.log(origin, "Origin", destination, "Destination", apiKey, "Api Key");
+  console.log(origin, 'Origin', destination, 'Destination', apiKey, 'Api Key');
   try {
-    const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
-      params: {
-        origins: origin,
-        destinations: destination,
-        key: apiKey
-      }
-    });
-    console.log(response, "Sdsdhdsfbsfsdfbf");
+    const response = await axios.get(
+      'https://maps.googleapis.com/maps/api/distancematrix/json',
+      {
+        params: {
+          origins: origin,
+          destinations: destination,
+          key: apiKey,
+        },
+      },
+    );
+    console.log(response, 'Sdsdhdsfbsfsdfbf');
     res.json(response.data.rows[0].elements[0]);
   } catch (error) {
     res.status(500).json({ error: 'Error calling Google Maps API' });
   }
-}
+};
 
 // export const forgotPassword = async (req: RequestParams, res: Response) => {
 //   try {
@@ -1700,11 +1792,12 @@ export const getDistance = async (req: RequestParams, res: Response) => {
 //   }
 // };
 
-
 export const sendOtp = async (req: RequestParams, res: Response) => {
   try {
-
-    const validateRequest = validateParamsWithJoi<{ email: string }>(req.body, sendOtpValidation);
+    const validateRequest = validateParamsWithJoi<{ email: string }>(
+      req.body,
+      sendOtpValidation,
+    );
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -1720,8 +1813,7 @@ export const sendOtp = async (req: RequestParams, res: Response) => {
     if (!user) {
       return res.badRequest({ message: getLanguage('en').emailNotRegistered });
     }
-    console.log("dfsad");
-
+    console.log('dfsad');
 
     // Generate OTP
     const otp = Math.floor(1000 + Math.random() * 9000);
@@ -1750,7 +1842,10 @@ export const sendOtp = async (req: RequestParams, res: Response) => {
 
 export const verifyOtp = async (req: RequestParams, res: Response) => {
   try {
-    const validateRequest = validateParamsWithJoi<{ otp: number }>(req.body, verifyOtpValidation);
+    const validateRequest = validateParamsWithJoi<{ otp: number }>(
+      req.body,
+      verifyOtpValidation,
+    );
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -1782,7 +1877,10 @@ export const verifyOtp = async (req: RequestParams, res: Response) => {
 
 export const resetPassword = async (req: RequestParams, res: Response) => {
   try {
-    const validateRequest = validateParamsWithJoi<{ email: string; newPassword: string }>(req.body, resetPasswordValidation);
+    const validateRequest = validateParamsWithJoi<{
+      email: string;
+      newPassword: string;
+    }>(req.body, resetPasswordValidation);
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -1798,12 +1896,14 @@ export const resetPassword = async (req: RequestParams, res: Response) => {
     }
 
     // Encrypt the new password
-    const encryptedPassword = await encryptPassword({ password: value.newPassword });
+    const encryptedPassword = await encryptPassword({
+      password: value.newPassword,
+    });
 
     // Update the user's password
     await merchantSchema.updateOne(
       { email: value.email },
-      { $set: { password: encryptedPassword } }
+      { $set: { password: encryptedPassword } },
     );
 
     return res.ok({ message: getLanguage('en').passwordResetSuccess });

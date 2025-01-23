@@ -142,9 +142,10 @@ exports.newOrderCreationMulti = joi_1.default.object({
     merchant: joi_1.default.string().required(),
     deliveryDetails: joi_1.default.array()
         .items(joi_1.default.object({
+        customerId: joi_1.default.string().required(),
         subOrderId: joi_1.default.number().required(),
         address: joi_1.default.string().required(),
-        email: joi_1.default.string().email().allow('').allow('-'),
+        email: joi_1.default.string().allow('').allow('-'),
         location: joi_1.default.object({
             latitude: joi_1.default.number().required(),
             longitude: joi_1.default.number().required(),

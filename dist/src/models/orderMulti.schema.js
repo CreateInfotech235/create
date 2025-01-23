@@ -103,6 +103,7 @@ const OrderSchema = new mongoose_1.default.Schema({
             deliveryBoySignature: { type: String },
             postCode: { type: String },
             cashOnDelivery: { type: Boolean, default: false },
+            customerId: { type: String },
             distance: {
                 type: Number,
             },

@@ -1422,7 +1422,6 @@ export const updateDeliveryManProfileAndPassword = async (
   }
 };
 
-
 export const getDeliveryManLocation = async (
   req: RequestParams,
   res: Response,
@@ -1430,11 +1429,11 @@ export const getDeliveryManLocation = async (
   try {
     const deliveryManId = req.params.deliveryManId;
     console.log(deliveryManId);
-    
+
     // Fetch only specific fields, for example: name, location, and contact
     const deliveryBoys = await deliveryManSchema.find(
-      { _id : deliveryManId},
-      { email: 1, location: 1, defaultLocation: 1 , status : 1} // Projection: only fetch these fields
+      { _id: deliveryManId },
+      { email: 1, location: 1, defaultLocation: 1, status: 1 }, // Projection: only fetch these fields
     );
 
     if (!deliveryBoys || deliveryBoys.length === 0) {

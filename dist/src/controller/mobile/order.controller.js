@@ -147,6 +147,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
     try {
         // Check if merchantId is provided and is a valid string
         const merchantId = req.id;
+        console.log("data1", req.body);
         // console.log(merchantId, 'merchantId');
         console.log(req.body, 'req.body');
         if (!merchantId) {
@@ -166,15 +167,18 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // Validate the cleaned body
         console.log('before', req.body);
         const validateRequest = (0, validateRequest_1.default)(cleanedBody, order_validation_1.newOrderCreationMulti);
+        console.log("data2", validateRequest);
         console.log('v:', validateRequest);
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
+        console.log("data3", validateRequest);
         // console.log("enter in orderCreationMulti4");
         const datamarcent = yield user_schema_1.default.findById(merchantId);
         if (!datamarcent) {
             return res.badRequest({ message: 'Merchant not found' });
         }
+        console.log("data4", datamarcent);
         // console.log("enter in orderCreationMulti5");
         yield user_schema_1.default.updateOne({ _id: merchantId }, { $set: { showOrderNumber: datamarcent.showOrderNumber + 1 } });
         if (!validateRequest.isValid) {
@@ -196,6 +200,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         value.pickupDetails.merchantId = merchantId.toString();
         // Filter out empty parcelType values before creating the order
         const sanitizedValue = Object.assign(Object.assign({}, value), { deliveryDetails: value.deliveryDetails.map((detail) => (Object.assign(Object.assign({}, detail), { parcelType: detail.parcelType || undefined }))) });
+        console.log("data33", sanitizedValue);
         const newOrder = yield orderMulti_schema_1.default.create(Object.assign(Object.assign({}, sanitizedValue), { merchant: merchantId.toString(), showOrderNumber: datamarcent.showOrderNumber }));
         const admin = yield admin_schema_1.default.findOne();
         const deliveryMan = yield deliveryMan_schema_1.default.findById({
@@ -1074,7 +1079,7 @@ const getAllOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0,
 });
 exports.getAllOrdersFromMerchant = getAllOrdersFromMerchant;
 const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('ENTER');
+    // console.log('ENTER');
     try {
         const { startDate, endDate } = req.query; // Get startDate and endDate from query params
         // Initialize dateFilter object
@@ -1094,7 +1099,7 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                 },
             };
         }
-        console.log(req.params.id);
+        // console.log(req.params.id);
         const data = yield orderMulti_schema_1.default.aggregate([
             {
                 $sort: {
@@ -1165,6 +1170,7 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                 $project: {
                     _id: 1,
                     orderId: 1,
+                    customerId: 1,
                     // parcelsCount: 1,
                     // customerName: '$deliveryDetails.name',
                     // cutomerEmail: '$deliveryDetails.email',
@@ -1216,7 +1222,7 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                 },
             },
         ]);
-        console.log('data', data);
+        // console.log('data', data);
         return res.ok({ data });
     }
     catch (error) {

@@ -38,6 +38,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -61,6 +62,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -84,6 +86,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -171,6 +174,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -194,6 +198,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -217,6 +222,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -304,6 +310,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -327,6 +334,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -350,6 +358,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -444,6 +453,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -467,6 +477,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -490,6 +501,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -577,6 +589,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -600,6 +613,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -623,6 +637,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -710,6 +725,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -733,6 +749,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;
@@ -756,6 +773,7 @@ declare const Model: mongoose.Model<{
         cashOnDelivery: boolean;
         name?: string;
         description?: string;
+        customerId?: string;
         address?: string;
         postCode?: string;
         mobileNumber?: string;

@@ -190,6 +190,7 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
   try {
     // Check if merchantId is provided and is a valid string
     const merchantId = req.id;
+    console.log("data1", req.body);
     // console.log(merchantId, 'merchantId');
     console.log(req.body, 'req.body');
 
@@ -222,17 +223,19 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
       cleanedBody,
       newOrderCreationMulti,
     );
-
+    console.log("data2", validateRequest);
     console.log('v:', validateRequest);
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
     }
+    console.log("data3", validateRequest);
     // console.log("enter in orderCreationMulti4");
     const datamarcent = await merchantSchema.findById(merchantId);
     if (!datamarcent) {
       return res.badRequest({ message: 'Merchant not found' });
     }
+    console.log("data4", datamarcent);
     // console.log("enter in orderCreationMulti5");
     await merchantSchema.updateOne(
       { _id: merchantId },
@@ -268,6 +271,7 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
         parcelType: detail.parcelType || undefined, // Convert empty string to undefined
       })),
     };
+console.log("data33", sanitizedValue);
 
     const newOrder = await orderSchemaMulti.create({
       ...sanitizedValue,
@@ -1385,7 +1389,7 @@ export const getAllOrdersFromMerchantMulti = async (
   req: RequestParams,
   res: Response,
 ) => {
-  console.log('ENTER');
+  // console.log('ENTER');
   try {
     const { startDate, endDate } = req.query; // Get startDate and endDate from query params
 
@@ -1410,7 +1414,7 @@ export const getAllOrdersFromMerchantMulti = async (
       };
     }
 
-    console.log(req.params.id);
+    // console.log(req.params.id);
 
     const data = await orderSchemaMulti.aggregate([
       {
@@ -1487,6 +1491,7 @@ export const getAllOrdersFromMerchantMulti = async (
         $project: {
           _id: 1,
           orderId: 1,
+          customerId: 1,
           // parcelsCount: 1,
           // customerName: '$deliveryDetails.name',
           // cutomerEmail: '$deliveryDetails.email',
@@ -1538,7 +1543,7 @@ export const getAllOrdersFromMerchantMulti = async (
         },
       },
     ]);
-    console.log('data', data);
+    // console.log('data', data);
     return res.ok({ data });
   } catch (error) {
     return res.failureResponse({

@@ -47,6 +47,7 @@ const auth_validation_1 = require("../../utils/validation/auth.validation");
 const orderHistory_schema_2 = __importDefault(require("../../models/orderHistory.schema"));
 const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
+const orderMulti_schema_1 = __importDefault(require("../../models/orderMulti.schema"));
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
 const auth_controller_1 = require("../deliveryBoy/auth.controller");
 const axios_1 = __importDefault(require("axios"));
@@ -59,10 +60,51 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { value } = validateRequest;
         console.log(value);
         var merchantUserId;
-        var listoftext = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+        var listoftext = [
+            '1',
+            '2',
+            '3',
+            '4',
+            '5',
+            '6',
+            '7',
+            '8',
+            '9',
+            '0',
+            'a',
+            'b',
+            'c',
+            'd',
+            'e',
+            'f',
+            'g',
+            'h',
+            'i',
+            'j',
+            'k',
+            'l',
+            'm',
+            'n',
+            'o',
+            'p',
+            'q',
+            'r',
+            's',
+            't',
+            'u',
+            'v',
+            'w',
+            'x',
+            'y',
+            'z',
+        ];
         do {
-            merchantUserId = listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))] + listoftext[Math.round(Math.random() * (listoftext.length - 1))];
-            console.log("merchantUserId", merchantUserId);
+            merchantUserId =
+                listoftext[Math.round(Math.random() * (listoftext.length - 1))] +
+                    listoftext[Math.round(Math.random() * (listoftext.length - 1))] +
+                    listoftext[Math.round(Math.random() * (listoftext.length - 1))] +
+                    listoftext[Math.round(Math.random() * (listoftext.length - 1))];
+            console.log('merchantUserId', merchantUserId);
         } while (yield user_schema_1.default.findOne({ merchantUserId: merchantUserId }));
         const userExist = yield user_schema_1.default.findOne({ email: value.email });
         if (userExist) {
@@ -638,9 +680,38 @@ exports.getAllDeliveryManOfMerchant = getAllDeliveryManOfMerchant;
 const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let merchantID = req.params.id;
-        const totalOrders = yield order_schema_1.default.countDocuments({
-            merchant: merchantID,
-        });
+        const totalOrders = yield orderMulti_schema_1.default
+            .aggregate([
+            {
+                $match: {
+                    merchant: new mongoose_1.default.Types.ObjectId(merchantID),
+                    trashed: { $ne: true },
+                },
+            },
+            {
+                $project: {
+                    deliveryDetails: {
+                        $filter: {
+                            input: "$deliveryDetails",
+                            as: "detail",
+                            cond: { $eq: ["$$detail.trashed", false] }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    deliveryDetailsCount: { $size: '$deliveryDetails' },
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: '$deliveryDetailsCount' },
+                },
+            },
+        ])
+            .then((result) => { var _a; return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.total) || 0; });
         const createdOrders = yield orderHistory_schema_2.default.countDocuments({
             status: 'CREATED',
             merchantID: merchantID,
@@ -1135,11 +1206,22 @@ const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 
 exports.getUnreadNotificationCount = getUnreadNotificationCount;
 const getAllDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const { createdByAdmin } = req.query;
+        var Query;
+        if (createdByAdmin === 'true') {
+            Query = {
+                status: 'ENABLE',
+                createdByAdmin: createdByAdmin === 'true',
+            };
+        }
+        else {
+            Query = {
+                status: 'ENABLE',
+            };
+        }
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
-                $match: {
-                    status: 'ENABLE',
-                },
+                $match: Object.assign({}, Query),
             },
             {
                 $lookup: {
@@ -1221,9 +1303,11 @@ const SupportTicketUpdate = (req, res) => __awaiter(void 0, void 0, void 0, func
     try {
         const { id, userId } = req.query;
         const data = yield SupportTicket_1.default.findById(id);
-        console.log(data.userid, "User", userId);
+        console.log(data.userid, 'User', userId);
         if (data.userid == userId) {
-            const updateData = yield SupportTicket_1.default.updateOne({ _id: id }, req.body, { new: true });
+            const updateData = yield SupportTicket_1.default.updateOne({ _id: id }, req.body, {
+                new: true,
+            });
             return res.status(200).json({
                 message: 'Support ticket updated successfully',
                 data: updateData,
@@ -1293,7 +1377,7 @@ exports.addMessageToTicket = addMessageToTicket;
 // Delete a message from a specific ticket
 const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("Gfgeguefg");
+        console.log('Gfgeguefg');
         const { ticketId, messageId } = req.params;
         // Find the ticket by ID
         const ticket = yield SupportTicket_1.default.findById(ticketId);
@@ -1320,16 +1404,16 @@ const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, 
 exports.deleteMessageFromTicket = deleteMessageFromTicket;
 const getDistance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { origin, destination, apiKey } = req.query;
-    console.log(origin, "Origin", destination, "Destination", apiKey, "Api Key");
+    console.log(origin, 'Origin', destination, 'Destination', apiKey, 'Api Key');
     try {
         const response = yield axios_1.default.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
             params: {
                 origins: origin,
                 destinations: destination,
-                key: apiKey
-            }
+                key: apiKey,
+            },
         });
-        console.log(response, "Sdsdhdsfbsfsdfbf");
+        console.log(response, 'Sdsdhdsfbsfsdfbf');
         res.json(response.data.rows[0].elements[0]);
     }
     catch (error) {
@@ -1393,7 +1477,7 @@ const sendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!user) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
         }
-        console.log("dfsad");
+        console.log('dfsad');
         // Generate OTP
         const otp = Math.floor(1000 + Math.random() * 9000);
         const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
@@ -1455,7 +1539,9 @@ const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
         }
         // Encrypt the new password
-        const encryptedPassword = yield (0, common_1.encryptPassword)({ password: value.newPassword });
+        const encryptedPassword = yield (0, common_1.encryptPassword)({
+            password: value.newPassword,
+        });
         // Update the user's password
         yield user_schema_1.default.updateOne({ email: value.email }, { $set: { password: encryptedPassword } });
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').passwordResetSuccess });

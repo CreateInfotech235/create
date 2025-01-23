@@ -151,9 +151,10 @@ export const newOrderCreationMulti = Joi.object({
   deliveryDetails: Joi.array()
     .items(
       Joi.object({
+        customerId: Joi.string().required(),
         subOrderId: Joi.number().required(),
         address: Joi.string().required(),
-        email: Joi.string().email().allow('').allow('-'),
+        email: Joi.string().allow('').allow('-'),
         location: Joi.object({
           latitude: Joi.number().required(),
           longitude: Joi.number().required(),

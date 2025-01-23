@@ -831,3 +831,4 @@ export const resetPassword = async (req: RequestParams, res: Response) => {
     });
   }
 };
+

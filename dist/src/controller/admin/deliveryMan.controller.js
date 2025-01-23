@@ -1229,8 +1229,7 @@ const getDeliveryManLocation = (req, res) => __awaiter(void 0, void 0, void 0, f
         const deliveryManId = req.params.deliveryManId;
         console.log(deliveryManId);
         // Fetch only specific fields, for example: name, location, and contact
-        const deliveryBoys = yield deliveryMan_schema_1.default.find({ _id: deliveryManId }, { email: 1, location: 1, defaultLocation: 1, status: 1 } // Projection: only fetch these fields
-        );
+        const deliveryBoys = yield deliveryMan_schema_1.default.find({ _id: deliveryManId }, { email: 1, location: 1, defaultLocation: 1, status: 1 });
         if (!deliveryBoys || deliveryBoys.length === 0) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').noDeliveryBoysFound });
         }
