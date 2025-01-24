@@ -1280,9 +1280,14 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // );
         // console.log(value.userSignature, 'value.userSignature');
         // console.log(value.pickupTimestamp, 'value.pickupTimestamp');
+        // Check if all delivery details are in PICKED_UP status
+        const order = yield orderMulti_schema_1.default.findOne({ orderId: value.orderId });
+        const allDeliveryDetails = order.deliveryDetails;
+        const remainingDeliveryDetails = allDeliveryDetails.filter(detail => !value.subOrderId.includes(detail.subOrderId));
+        const allPickedUp = remainingDeliveryDetails.every(detail => detail.status === enum_1.ORDER_HISTORY.PICKED_UP);
         yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
-                status: enum_1.ORDER_HISTORY.PICKED_UP,
+                status: allPickedUp ? enum_1.ORDER_HISTORY.PICKED_UP : isArrived.status,
                 'pickupDetails.userSignature': value.userSignature,
                 'pickupDetails.orderTimestamp': value.pickupTimestamp,
                 'deliveryDetails.$[elem].status': enum_1.ORDER_HISTORY.PICKED_UP,

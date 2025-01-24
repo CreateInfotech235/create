@@ -1581,11 +1581,21 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
     // console.log(value.userSignature, 'value.userSignature');
     // console.log(value.pickupTimestamp, 'value.pickupTimestamp');
 
+    // Check if all delivery details are in PICKED_UP status
+    const order = await orderSchemaMulti.findOne({ orderId: value.orderId });
+    const allDeliveryDetails = order.deliveryDetails;
+    const remainingDeliveryDetails = allDeliveryDetails.filter(
+      detail => !value.subOrderId.includes(detail.subOrderId)
+    );
+    const allPickedUp = remainingDeliveryDetails.every(
+      detail => detail.status === ORDER_HISTORY.PICKED_UP
+    );
+
     await orderSchemaMulti.findOneAndUpdate(
       { orderId: value.orderId },
       {
         $set: {
-          status: ORDER_HISTORY.PICKED_UP,
+          status: allPickedUp ? ORDER_HISTORY.PICKED_UP : isArrived.status,
           'pickupDetails.userSignature': value.userSignature,
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
           'deliveryDetails.$[elem].status': ORDER_HISTORY.PICKED_UP,
