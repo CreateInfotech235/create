@@ -219,6 +219,7 @@ export const orderListByDeliveryManValidation = Joi.object({
 
 export const orderPickUpValidation = Joi.object({
   orderId: Joi.number().required(),
+  subOrderId: Joi.array().required(),
   userSignature: Joi.string()
     .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
     .required(),

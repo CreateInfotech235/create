@@ -25,6 +25,7 @@ interface OrderCancelTypeMultiSubOrder
 
 interface OrderPickUpType {
   orderId: number;
+  subOrderId:number[];
   userSignature: string;
   pickupTimestamp: number;
   otp: number;

@@ -1422,7 +1422,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
   }
 };
 
-export const pickUpOrder = async (req: RequestParams, res: Response) => { 
+export const pickUpOrder = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<OrderPickUpType>(
       req.body,
@@ -1548,12 +1548,15 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       deliveryDetails: {
         $elemMatch: {
           status: ORDER_HISTORY.ARRIVED, // Match status inside deliveryDetails
+          subOrderId: { $in: value.subOrderId },
         },
       },
     });
-    console.log(isArrived);
+    console.log(isArrived, 'isArrived');
 
     if (!isArrived) {
+      console.log('en');
+
       return res.badRequest({ message: getLanguage('en').errorOrderArrived });
     }
 
@@ -1585,9 +1588,12 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
           status: ORDER_HISTORY.PICKED_UP,
           'pickupDetails.userSignature': value.userSignature,
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
-          'deliveryDetails.$[].status': ORDER_HISTORY.PICKED_UP,
+          'deliveryDetails.$[elem].status': ORDER_HISTORY.PICKED_UP,
         },
         $inc: { distance: tampdestens },
+      },
+      {
+        arrayFilters: [{ 'elem.subOrderId': { $in: value.subOrderId } }],
       },
     );
 
@@ -2553,7 +2559,6 @@ export const getOrderById = async (req: RequestParams, res: Response) => {
       .populate('city')
       .populate('vehicle');
     console.log(data, 'data');
-      
 
     // Set city and country to null
     if (data) {
@@ -2744,10 +2749,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       pageCount = 1,
     } = req.query;
 
-
-
-
-    
     const data = await OrderAssigneeSchemaMulti.aggregate([
       {
         $match: {
@@ -2775,43 +2776,62 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       {
         $addFields: {
           'orderData.deliveryDetails': {
-            $sortArray: {
-              input: {
-                $map: {
-                  input: '$orderData.deliveryDetails',
-                  as: 'detail',
-                  in: {
-                    $mergeObjects: [
-                      '$$detail',
-                      {
-                        location: {
-                          latitude: 51.5855125,
-                          longitude: -0.2717866,
-                        },
-                        subOrderId: '$$detail.subOrderId',
-                        address: '$$detail.address',
-                        mobileNumber: '$$detail.mobileNumber' || '',
-                        name: '$$detail.name' || '',
-                        email: '$$detail.email' || '',
-                        postCode: '$$detail.postCode' || '',
-                        cashOnDelivery: '$$detail.cashOnDelivery' || '',
-                        distance: '$$detail.distance' || '',
-                        duration: '$$detail.duration' || '',
-                        parcelsCount: '$$detail.parcelsCount' || '',
-                        paymentCollectionRupees: '$$detail.paymentCollectionRupees' || '',
-                        status: '$$detail.status' || '',
-                        trashed: '$$detail.trashed' || '',
-                        _id: '$$detail._id' || '',
-                        orderId: '$orderData.orderId' || '',
-                        description: '$$detail.description' || '',
+            $map: {
+              input: '$orderData.deliveryDetails',
+              as: 'detail',
+              in: {
+                $mergeObjects: [
+                  '$$detail',
+                  {
+                    sortOrder: {
+                      $switch: {
+                        branches: [
+                          {
+                            case: {
+                              $eq: ['$$detail.status', ORDER_HISTORY.PICKED_UP],
+                            },
+                            then: 1,
+                          },
+                          {
+                            case: {
+                              $eq: ['$$detail.status', ORDER_HISTORY.ARRIVED],
+                            },
+                            then: 2,
+                          },
+                          {
+                            case: {
+                              $eq: ['$$detail.status', ORDER_HISTORY.DEPARTED],
+                            },
+                            then: 3,
+                          },
+                          {
+                            case: {
+                              $eq: ['$$detail.status', ORDER_HISTORY.DELIVERED],
+                            },
+                            then: 4,
+                          },
+                        ],
+                        default: 5,
                       },
-                    ],
+                    },
                   },
-                },
+                ],
               },
-              sortBy: { distance: 1 }
-            }
-          }
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          'orderData.deliveryDetails': {
+            $sortArray: {
+              input: '$orderData.deliveryDetails',
+              sortBy: {
+                sortOrder: 1,
+                distance: 1,
+              },
+            },
+          },
         },
       },
       {
@@ -2868,6 +2888,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
 export const getMultiOrderById = async (req: RequestParams, res: Response) => {
   try {
     const id = req.params.id;
@@ -2879,12 +2900,72 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
         {
           $addFields: {
             deliveryDetails: {
+              $map: {
+                input: '$deliveryDetails',
+                as: 'detail',
+                in: {
+                  $mergeObjects: [
+                    '$$detail',
+                    {
+                      sortOrder: {
+                        $switch: {
+                          branches: [
+                            {
+                              case: {
+                                $eq: [
+                                  '$$detail.status',
+                                  ORDER_HISTORY.PICKED_UP,
+                                ],
+                              },
+                              then: 1,
+                            },
+                            {
+                              case: {
+                                $eq: ['$$detail.status', ORDER_HISTORY.ARRIVED],
+                              },
+                              then: 2,
+                            },
+                            {
+                              case: {
+                                $eq: [
+                                  '$$detail.status',
+                                  ORDER_HISTORY.DEPARTED,
+                                ],
+                              },
+                              then: 3,
+                            },
+                            {
+                              case: {
+                                $eq: [
+                                  '$$detail.status',
+                                  ORDER_HISTORY.DELIVERED,
+                                ],
+                              },
+                              then: 4,
+                            },
+                          ],
+                          default: 5,
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            deliveryDetails: {
               $sortArray: {
-                input: "$deliveryDetails",
-                sortBy: { distance: 1 }
-              }
-            }
-          }
+                input: '$deliveryDetails',
+                sortBy: {
+                  sortOrder: 1,
+                  distance: 1,
+                },
+              },
+            },
+          },
         },
         {
           $addFields: {

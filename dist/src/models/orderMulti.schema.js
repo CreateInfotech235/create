@@ -86,6 +86,7 @@ const OrderSchema = new mongoose_1.default.Schema({
     deliveryDetails: [
         {
             // type: {
+            index: { type: Number },
             location: {
                 type: Object,
                 properties: {

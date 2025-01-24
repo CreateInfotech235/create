@@ -195,6 +195,7 @@ exports.orderListByDeliveryManValidation = joi_1.default.object({
 });
 exports.orderPickUpValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),
+    subOrderId: joi_1.default.array().required(),
     userSignature: joi_1.default.string()
         .regex(/^data:([-\w]+\/[-+\w.]+)?((?:;?[\w]+=[-\w]+)*)(;base64)?,(.*)/i)
         .required(),

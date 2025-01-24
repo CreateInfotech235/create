@@ -266,8 +266,9 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
     // Filter out empty parcelType values before creating the order
     const sanitizedValue = {
       ...value,
-      deliveryDetails: value.deliveryDetails.map((detail) => ({
+      deliveryDetails: value.deliveryDetails.map((detail, index) => ({
         ...detail,
+        index: index + 1,
         parcelType: detail.parcelType || undefined, // Convert empty string to undefined
       })),
     };

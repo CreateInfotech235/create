@@ -86,6 +86,7 @@ const OrderSchema = new mongoose.Schema(
     deliveryDetails: [
       {
         // type: {
+        index: { type: Number },
           location: {
             type: Object,
             properties: {

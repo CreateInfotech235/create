@@ -199,7 +199,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         value.orderId = checkLastOrder.orderId;
         value.pickupDetails.merchantId = merchantId.toString();
         // Filter out empty parcelType values before creating the order
-        const sanitizedValue = Object.assign(Object.assign({}, value), { deliveryDetails: value.deliveryDetails.map((detail) => (Object.assign(Object.assign({}, detail), { parcelType: detail.parcelType || undefined }))) });
+        const sanitizedValue = Object.assign(Object.assign({}, value), { deliveryDetails: value.deliveryDetails.map((detail, index) => (Object.assign(Object.assign({}, detail), { index: index + 1, parcelType: detail.parcelType || undefined }))) });
         console.log("data33", sanitizedValue);
         const newOrder = yield orderMulti_schema_1.default.create(Object.assign(Object.assign({}, sanitizedValue), { merchant: merchantId.toString(), showOrderNumber: datamarcent.showOrderNumber }));
         const admin = yield admin_schema_1.default.findOne();

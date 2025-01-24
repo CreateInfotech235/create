@@ -37,6 +37,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -61,6 +62,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -85,6 +87,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -173,6 +176,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -197,6 +201,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -221,6 +226,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -309,6 +315,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -333,6 +340,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -357,6 +365,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -452,6 +461,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -476,6 +486,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -500,6 +511,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -588,6 +600,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -612,6 +625,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -636,6 +650,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -724,6 +739,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -748,6 +764,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
@@ -772,6 +789,7 @@ declare const Model: mongoose.Model<{
         status: string;
         cashOnDelivery: boolean;
         name?: string;
+        index?: number;
         description?: string;
         customerId?: string;
         address?: string;
