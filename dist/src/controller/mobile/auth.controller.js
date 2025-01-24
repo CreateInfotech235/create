@@ -48,6 +48,7 @@ const orderHistory_schema_2 = __importDefault(require("../../models/orderHistory
 const order_schema_1 = __importDefault(require("../../models/order.schema"));
 const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
 const orderMulti_schema_1 = __importDefault(require("../../models/orderMulti.schema"));
+const customer_schema_1 = __importDefault(require("../../models/customer.schema"));
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
 const auth_controller_1 = require("../deliveryBoy/auth.controller");
 const axios_1 = __importDefault(require("axios"));
@@ -680,89 +681,109 @@ exports.getAllDeliveryManOfMerchant = getAllDeliveryManOfMerchant;
 const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let merchantID = req.params.id;
-        const totalOrders = yield orderMulti_schema_1.default
-            .aggregate([
-            {
-                $match: {
-                    merchant: new mongoose_1.default.Types.ObjectId(merchantID),
-                    trashed: { $ne: true },
+        const statuses = [
+            { name: 'total', status: null },
+            { name: 'assigned', status: 'ASSIGNED' },
+            { name: 'arrived', status: 'ARRIVED' },
+            { name: 'picked', status: 'PICKED_UP' },
+            { name: 'departed', status: 'DEPARTED' },
+            { name: 'delivered', status: 'DELIVERED' }
+        ];
+        const counts = {};
+        // Get counts for each status using aggregation
+        for (const { name, status } of statuses) {
+            const result = yield orderMulti_schema_1.default
+                .aggregate([
+                {
+                    $match: {
+                        merchant: new mongoose_1.default.Types.ObjectId(merchantID),
+                        trashed: { $ne: true },
+                    },
                 },
-            },
-            {
-                $project: {
-                    deliveryDetails: {
-                        $filter: {
-                            input: "$deliveryDetails",
-                            as: "detail",
-                            cond: { $eq: ["$$detail.trashed", false] }
-                        }
-                    }
-                }
-            },
-            {
-                $project: {
-                    deliveryDetailsCount: { $size: '$deliveryDetails' },
+                {
+                    $project: {
+                        deliveryDetails: {
+                            $filter: {
+                                input: '$deliveryDetails',
+                                as: 'detail',
+                                cond: status ? {
+                                    $and: [
+                                        { $eq: ['$$detail.status', status] },
+                                        { $eq: ['$$detail.trashed', false] },
+                                    ],
+                                } : {
+                                    $eq: ['$$detail.trashed', false]
+                                },
+                            },
+                        },
+                    },
                 },
-            },
-            {
-                $group: {
-                    _id: null,
-                    total: { $sum: '$deliveryDetailsCount' },
+                {
+                    $project: {
+                        deliveryDetailsCount: { $size: '$deliveryDetails' },
+                    },
                 },
-            },
-        ])
-            .then((result) => { var _a; return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.total) || 0; });
-        const createdOrders = yield orderHistory_schema_2.default.countDocuments({
-            status: 'CREATED',
-            merchantID: merchantID,
-        });
-        const assignedOrders = yield orderHistory_schema_2.default.countDocuments({
-            status: 'ASSIGNED',
-            merchantID: merchantID,
-        });
-        const acceptedOrders = yield orderAssignee_schema_1.default.countDocuments({
-            status: 'ACCEPTED',
-            merchant: merchantID,
-        });
-        const arrivedOrders = yield orderHistory_schema_2.default.countDocuments({
-            status: 'ARRIVED',
-            merchantID: merchantID,
-        });
-        const pickedOrders = yield orderHistory_schema_2.default.countDocuments({
-            status: 'PICKED_UP',
-            merchantID: merchantID,
-        });
-        const departedOrders = yield orderHistory_schema_2.default.countDocuments({
-            status: 'DEPARTED',
-            merchantID: merchantID,
-        });
-        const deliveredOrders = yield orderHistory_schema_2.default.countDocuments({
-            status: 'DELIVERED',
-            merchantID: merchantID,
-        });
-        const cancelledOrders = yield orderHistory_schema_2.default.countDocuments({
-            status: 'CANCELLED',
-            merchantID: merchantID,
-        });
-        const deliveryMan = yield deliveryMan_schema_1.default.countDocuments({
-            merchantId: merchantID,
-        });
-        let totalCounts = {
-            totalOrders,
-            createdOrders,
-            assignedOrders,
-            acceptedOrders,
-            arrivedOrders,
-            pickedOrders,
-            departedOrders,
-            deliveredOrders,
-            cancelledOrders,
-            deliveryMan,
-        };
-        // return res.status(200).json({
-        //   success: true,
-        //   data: totalCounts
-        // });
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: '$deliveryDetailsCount' },
+                    },
+                },
+            ])
+                .then((result) => { var _a; return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.total) || 0; });
+            counts[`${name}Orders`] = result;
+        }
+        // Get other counts
+        const [mainTotalOrders, totalTrashed, totalCustomers, cancelledOrders, deliveryManCount] = yield Promise.all([
+            orderMulti_schema_1.default.countDocuments({
+                merchant: merchantID,
+                trashed: false,
+            }),
+            orderMulti_schema_1.default
+                .aggregate([
+                {
+                    $match: {
+                        merchant: new mongoose_1.default.Types.ObjectId(merchantID),
+                        trashed: true,
+                    },
+                },
+                {
+                    $project: {
+                        deliveryDetails: {
+                            $filter: {
+                                input: '$deliveryDetails',
+                                as: 'detail',
+                                cond: { $eq: ['$$detail.trashed', true] },
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        deliveryDetailsCount: { $size: '$deliveryDetails' },
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: '$deliveryDetailsCount' },
+                    },
+                },
+            ])
+                .then((result) => { var _a; return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.total) || 0; }),
+            customer_schema_1.default.countDocuments({
+                merchantId: merchantID,
+                trashed: false,
+            }),
+            orderHistory_schema_2.default.countDocuments({
+                status: 'CANCELLED',
+                merchantID: merchantID,
+            }),
+            deliveryMan_schema_1.default.countDocuments({
+                merchantId: merchantID,
+            })
+        ]);
+        const totalCounts = Object.assign({ toteltrashed: totalTrashed, totelcustomer: totalCustomers, maintotelOrders: mainTotalOrders, cancelledOrders, deliveryMan: deliveryManCount }, counts);
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').countedData,
             data: totalCounts,

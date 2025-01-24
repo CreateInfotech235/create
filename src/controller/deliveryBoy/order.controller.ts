@@ -1337,7 +1337,6 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       orderArriveValidationMulti,
     );
     // TODO: get distance from google map api
-    const tampdestens = 3.1;
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });

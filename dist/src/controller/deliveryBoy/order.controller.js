@@ -1086,7 +1086,6 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderArriveValidationMulti);
         // TODO: get distance from google map api
-        const tampdestens = 3.1;
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }

@@ -46,6 +46,7 @@ import orderSchema from '../../models/order.schema';
 import orderAssignSchema from '../../models/orderAssignee.schema';
 import subscribedSchema from '../../models/subcription.schema';
 import orderMulti from '../../models/orderMulti.schema';
+import CustomerSchema from '../../models/customer.schema';
 
 import {
   orderCount,
@@ -836,95 +837,132 @@ export const getAllDeliveryManOfMerchant = async (
     });
   }
 };
-
 export const getOrderCounts = async (req: RequestParams, res: Response) => {
   try {
     let merchantID = req.params.id;
-    const totalOrders = await orderMulti
-      .aggregate([
-        {
-          $match: {
-            merchant: new mongoose.Types.ObjectId(merchantID),
-            trashed: { $ne: true },
-          },
-        },
-        {
-          $project: {
-            deliveryDetails: {
-              $filter: {
-                input: "$deliveryDetails",
-                as: "detail",
-                cond: { $eq: ["$$detail.trashed", false] }
-              }
-            }
-          }
-        },
-        {
-          $project: {
-            deliveryDetailsCount: { $size: '$deliveryDetails' },
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: '$deliveryDetailsCount' },
-          },
-        },
-      ])
-      .then((result) => result[0]?.total || 0);
 
-    const createdOrders = await orderHistorySchema.countDocuments({
-      status: 'CREATED',
-      merchantID: merchantID,
-    });
-    const assignedOrders = await orderHistorySchema.countDocuments({
-      status: 'ASSIGNED',
-      merchantID: merchantID,
-    });
-    const acceptedOrders = await orderAssignSchema.countDocuments({
-      status: 'ACCEPTED',
-      merchant: merchantID,
-    });
-    const arrivedOrders = await orderHistorySchema.countDocuments({
-      status: 'ARRIVED',
-      merchantID: merchantID,
-    });
-    const pickedOrders = await orderHistorySchema.countDocuments({
-      status: 'PICKED_UP',
-      merchantID: merchantID,
-    });
-    const departedOrders = await orderHistorySchema.countDocuments({
-      status: 'DEPARTED',
-      merchantID: merchantID,
-    });
-    const deliveredOrders = await orderHistorySchema.countDocuments({
-      status: 'DELIVERED',
-      merchantID: merchantID,
-    });
-    const cancelledOrders = await orderHistorySchema.countDocuments({
-      status: 'CANCELLED',
-      merchantID: merchantID,
-    });
-    const deliveryMan = await deliveryManSchema.countDocuments({
-      merchantId: merchantID,
-    });
+    const statuses = [
+      { name: 'total', status: null },
+      { name: 'assigned', status: 'ASSIGNED' },
+      { name: 'arrived', status: 'ARRIVED' },
+      { name: 'picked', status: 'PICKED_UP' },
+      { name: 'departed', status: 'DEPARTED' },
+      { name: 'delivered', status: 'DELIVERED' }
+    ];
 
-    let totalCounts = {
-      totalOrders,
-      createdOrders,
-      assignedOrders,
-      acceptedOrders,
-      arrivedOrders,
-      pickedOrders,
-      departedOrders,
-      deliveredOrders,
+    const counts: any = {};
+
+    // Get counts for each status using aggregation
+    for (const { name, status } of statuses) {
+      const result = await orderMulti
+        .aggregate([
+          {
+            $match: {
+              merchant: new mongoose.Types.ObjectId(merchantID),
+              trashed: { $ne: true },
+            },
+          },
+          {
+            $project: {
+              deliveryDetails: {
+                $filter: {
+                  input: '$deliveryDetails',
+                  as: 'detail',
+                  cond: status ? {
+                    $and: [
+                      { $eq: ['$$detail.status', status] },
+                      { $eq: ['$$detail.trashed', false] },
+                    ],
+                  } : { 
+                    $eq: ['$$detail.trashed', false] 
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              deliveryDetailsCount: { $size: '$deliveryDetails' },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: '$deliveryDetailsCount' },
+            },
+          },
+        ])
+        .then((result) => result[0]?.total || 0);
+
+      counts[`${name}Orders`] = result;
+    }
+
+    // Get other counts
+    const [
+      mainTotalOrders,
+      totalTrashed,
+      totalCustomers,
       cancelledOrders,
-      deliveryMan,
+      deliveryManCount
+    ] = await Promise.all([
+      orderMulti.countDocuments({
+        merchant: merchantID,
+        trashed: false,
+      }),
+      orderMulti
+        .aggregate([
+          {
+            $match: {
+              merchant: new mongoose.Types.ObjectId(merchantID),
+              trashed: true,
+            },
+          },
+          {
+            $project: {
+              deliveryDetails: {
+                $filter: {
+                  input: '$deliveryDetails',
+                  as: 'detail',
+                  cond: { $eq: ['$$detail.trashed', true] },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              deliveryDetailsCount: { $size: '$deliveryDetails' },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: '$deliveryDetailsCount' },
+            },
+          },
+        ])
+        .then((result) => result[0]?.total || 0),
+      CustomerSchema.countDocuments({
+        merchantId: merchantID,
+        trashed: false,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'CANCELLED',
+        merchantID: merchantID,
+      }),
+      deliveryManSchema.countDocuments({
+        merchantId: merchantID,
+      })
+    ]);
+
+    const totalCounts = {
+      toteltrashed: totalTrashed,
+      totelcustomer: totalCustomers,
+      maintotelOrders: mainTotalOrders,
+      cancelledOrders,
+      deliveryMan: deliveryManCount,
+      ...counts
     };
-    // return res.status(200).json({
-    //   success: true,
-    //   data: totalCounts
-    // });
+
     return res.ok({
       message: getLanguage('en').countedData,
       data: totalCounts,
