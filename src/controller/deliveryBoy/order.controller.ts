@@ -1211,6 +1211,20 @@ export const cancelMultiSubOrder = async (
         reason: value.reason,
       });
     }
+    await OrderHistorySchema.deleteMany({
+      order: value.orderId,
+      subOrderId: value.subOrderId,
+      merchantID: existingOrder.merchant,
+    });
+
+    await OrderHistorySchema.create({
+      message: `Order ${value.orderId} has been canceled by the delivery man.`,
+      order: value.orderId,
+      subOrderId: value.subOrderId,
+      status: ORDER_HISTORY.UNASSIGNED,
+      merchantID: existingOrder.merchant,
+      deliveryBoy: value.deliveryManId,
+    });
 
     // const oderdata = await orderSchemaMulti.findOne({
     const oderdata = await orderSchemaMulti.findOne({
@@ -1226,20 +1240,6 @@ export const cancelMultiSubOrder = async (
     );
 
     console.log(isalloderdelevever, 'isalloderdelevever');
-
-    // await orderSchemaMulti.findOneAndUpdate(
-    //   {
-    //     orderId: value.orderId,
-    //     'deliveryDetails.subOrderId': value.orderId,
-    //   },
-    //   {
-    //     $set: {
-    //       'deliveryDetails.$.status': ORDER_HISTORY.UNASSIGNED,
-    //       'deliveryDetails.$.time.end': Date.now(),
-    //     },
-    //   },
-    // );
-    // console.log('Third');
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -1330,6 +1330,7 @@ export const departOrder = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
 export const departOrderMulti = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<OrderAcceptTypeMulti>(
@@ -1389,6 +1390,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been out for delivery`,
       order: value.orderId,
+      subOrderId: value.subOrderId,
       status: ORDER_HISTORY.DEPARTED,
       merchantID: isCreated.merchant,
       deliveryBoy: value.deliveryManId,
@@ -1396,6 +1398,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
 
     await OrderHistorySchema.deleteOne({
       order: value.orderId,
+      subOrderId: value.subOrderId,
       status: ORDER_HISTORY.PICKED_UP,
     });
     // io.to(`order_${value.orderId}`).emit('locationUpdate', {
@@ -1584,10 +1587,10 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
     const order = await orderSchemaMulti.findOne({ orderId: value.orderId });
     const allDeliveryDetails = order.deliveryDetails;
     const remainingDeliveryDetails = allDeliveryDetails.filter(
-      detail => !value.subOrderId.includes(detail.subOrderId)
+      (detail) => !value.subOrderId.includes(detail.subOrderId),
     );
     const allPickedUp = remainingDeliveryDetails.every(
-      detail => detail.status === ORDER_HISTORY.PICKED_UP
+      (detail) => detail.status === ORDER_HISTORY.PICKED_UP,
     );
 
     await orderSchemaMulti.findOneAndUpdate(
@@ -1619,18 +1622,24 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
     //   );
     // }
 
-    await OrderHistorySchema.create({
-      message:
-        'Delivery Person has been arrived at pick up location and waiting for client',
-      order: value.orderId,
-      status: ORDER_HISTORY.PICKED_UP,
-      merchantID: isArrived.merchant,
-    });
-    await OrderHistorySchema.deleteOne({
-      order: value.orderId,
-      status: ORDER_HISTORY.ARRIVED,
-    });
+    value.subOrderId.forEach(async (subOrderId) => {
+      await OrderHistorySchema.create({
+        message:
+          'Delivery Person has been arrived at pick up location and waiting for client',
+        order: value.orderId,
+        subOrderId: subOrderId,
+        status: ORDER_HISTORY.PICKED_UP,
+        merchantID: isArrived.merchant,
+      });
 
+      await OrderHistorySchema.deleteOne({
+        order: value.orderId,
+        subOrderId: subOrderId,
+        status: ORDER_HISTORY.ARRIVED,
+      });
+  
+    });
+    
     // await createNotification({
     //   userId: isArrived.merchant,
     //   orderId: isArrived.orderId,

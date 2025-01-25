@@ -69,7 +69,6 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         console.log(value.email, 'email');
         const userExist = yield deliveryMan_schema_1.default.findOne({
-            merchantId: value.merchantId,
             email: value.email,
         });
         if (userExist) {

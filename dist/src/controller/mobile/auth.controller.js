@@ -687,7 +687,8 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
             { name: 'arrived', status: 'ARRIVED' },
             { name: 'picked', status: 'PICKED_UP' },
             { name: 'departed', status: 'DEPARTED' },
-            { name: 'delivered', status: 'DELIVERED' }
+            { name: 'delivered', status: 'DELIVERED' },
+            { name: 'cancelled', status: 'CANCELLED' }
         ];
         const counts = {};
         // Get counts for each status using aggregation
@@ -783,7 +784,9 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 merchantId: merchantID,
             })
         ]);
-        const totalCounts = Object.assign({ toteltrashed: totalTrashed, totelcustomer: totalCustomers, maintotelOrders: mainTotalOrders, cancelledOrders, deliveryMan: deliveryManCount }, counts);
+        const totalCounts = Object.assign({ toteltrashed: totalTrashed, totelcustomer: totalCustomers, maintotelOrders: mainTotalOrders, 
+            // cancelledOrders,
+            deliveryMan: deliveryManCount }, counts);
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').countedData,
             data: totalCounts,

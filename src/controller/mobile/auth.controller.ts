@@ -847,7 +847,8 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       { name: 'arrived', status: 'ARRIVED' },
       { name: 'picked', status: 'PICKED_UP' },
       { name: 'departed', status: 'DEPARTED' },
-      { name: 'delivered', status: 'DELIVERED' }
+      { name: 'delivered', status: 'DELIVERED' },
+      { name: 'cancelled', status: 'CANCELLED' }
     ];
 
     const counts: any = {};
@@ -958,7 +959,7 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       toteltrashed: totalTrashed,
       totelcustomer: totalCustomers,
       maintotelOrders: mainTotalOrders,
-      cancelledOrders,
+      // cancelledOrders,
       deliveryMan: deliveryManCount,
       ...counts
     };

@@ -15,6 +15,10 @@ const OrderHistorySchema = new mongoose.Schema(
     order: {
       type: Number,
     },
+    subOrderId: {
+      type: Number,
+      default: 0,
+    },
     status: {
       type: String,
       default: ORDER_HISTORY.CREATED,

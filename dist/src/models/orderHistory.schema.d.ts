@@ -29,6 +29,7 @@ declare const Model: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    subOrderId: number;
     message?: string;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
@@ -38,6 +39,7 @@ declare const Model: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    subOrderId: number;
     message?: string;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
@@ -47,6 +49,7 @@ declare const Model: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    subOrderId: number;
     message?: string;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
@@ -63,6 +66,7 @@ declare const Model: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    subOrderId: number;
     message?: string;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
@@ -72,6 +76,7 @@ declare const Model: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    subOrderId: number;
     message?: string;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;
@@ -81,6 +86,7 @@ declare const Model: mongoose.Model<{
     updatedAt: NativeDate;
 } & {
     status: string;
+    subOrderId: number;
     message?: string;
     order?: number;
     deliveryBoy?: mongoose.Types.ObjectId;

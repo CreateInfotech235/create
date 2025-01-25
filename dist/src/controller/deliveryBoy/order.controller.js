@@ -984,6 +984,19 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                 reason: value.reason,
             });
         }
+        yield orderHistory_schema_1.default.deleteMany({
+            order: value.orderId,
+            subOrderId: value.subOrderId,
+            merchantID: existingOrder.merchant,
+        });
+        yield orderHistory_schema_1.default.create({
+            message: `Order ${value.orderId} has been canceled by the delivery man.`,
+            order: value.orderId,
+            subOrderId: value.subOrderId,
+            status: enum_1.ORDER_HISTORY.UNASSIGNED,
+            merchantID: existingOrder.merchant,
+            deliveryBoy: value.deliveryManId,
+        });
         // const oderdata = await orderSchemaMulti.findOne({
         const oderdata = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
@@ -994,19 +1007,6 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         const isalloderdelevever = oderdata.deliveryDetails.every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED ||
             item.status === enum_1.ORDER_HISTORY.DELIVERED);
         console.log(isalloderdelevever, 'isalloderdelevever');
-        // await orderSchemaMulti.findOneAndUpdate(
-        //   {
-        //     orderId: value.orderId,
-        //     'deliveryDetails.subOrderId': value.orderId,
-        //   },
-        //   {
-        //     $set: {
-        //       'deliveryDetails.$.status': ORDER_HISTORY.UNASSIGNED,
-        //       'deliveryDetails.$.time.end': Date.now(),
-        //     },
-        //   },
-        // );
-        // console.log('Third');
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
         });
@@ -1126,12 +1126,14 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         yield orderHistory_schema_1.default.create({
             message: `Your order ${value.orderId} has been out for delivery`,
             order: value.orderId,
+            subOrderId: value.subOrderId,
             status: enum_1.ORDER_HISTORY.DEPARTED,
             merchantID: isCreated.merchant,
             deliveryBoy: value.deliveryManId,
         });
         yield orderHistory_schema_1.default.deleteOne({
             order: value.orderId,
+            subOrderId: value.subOrderId,
             status: enum_1.ORDER_HISTORY.PICKED_UP,
         });
         // io.to(`order_${value.orderId}`).emit('locationUpdate', {
@@ -1282,8 +1284,8 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // Check if all delivery details are in PICKED_UP status
         const order = yield orderMulti_schema_1.default.findOne({ orderId: value.orderId });
         const allDeliveryDetails = order.deliveryDetails;
-        const remainingDeliveryDetails = allDeliveryDetails.filter(detail => !value.subOrderId.includes(detail.subOrderId));
-        const allPickedUp = remainingDeliveryDetails.every(detail => detail.status === enum_1.ORDER_HISTORY.PICKED_UP);
+        const remainingDeliveryDetails = allDeliveryDetails.filter((detail) => !value.subOrderId.includes(detail.subOrderId));
+        const allPickedUp = remainingDeliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.PICKED_UP);
         yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
                 status: allPickedUp ? enum_1.ORDER_HISTORY.PICKED_UP : isArrived.status,
@@ -1302,16 +1304,20 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         //     { $set: { status: PAYMENT_INFO.SUCCESS } },
         //   );
         // }
-        yield orderHistory_schema_1.default.create({
-            message: 'Delivery Person has been arrived at pick up location and waiting for client',
-            order: value.orderId,
-            status: enum_1.ORDER_HISTORY.PICKED_UP,
-            merchantID: isArrived.merchant,
-        });
-        yield orderHistory_schema_1.default.deleteOne({
-            order: value.orderId,
-            status: enum_1.ORDER_HISTORY.ARRIVED,
-        });
+        value.subOrderId.forEach((subOrderId) => __awaiter(void 0, void 0, void 0, function* () {
+            yield orderHistory_schema_1.default.create({
+                message: 'Delivery Person has been arrived at pick up location and waiting for client',
+                order: value.orderId,
+                subOrderId: subOrderId,
+                status: enum_1.ORDER_HISTORY.PICKED_UP,
+                merchantID: isArrived.merchant,
+            });
+            yield orderHistory_schema_1.default.deleteOne({
+                order: value.orderId,
+                subOrderId: subOrderId,
+                status: enum_1.ORDER_HISTORY.ARRIVED,
+            });
+        }));
         // await createNotification({
         //   userId: isArrived.merchant,
         //   orderId: isArrived.orderId,

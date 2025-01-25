@@ -111,7 +111,6 @@ export const signUp = async (req: RequestParams, res: Response) => {
     console.log(value.email, 'email');
 
     const userExist = await deliveryManSchema.findOne({
-      merchantId: value.merchantId,
       email: value.email,
     });
     if (userExist) {
@@ -831,4 +830,6 @@ export const resetPassword = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
+
 

@@ -18,6 +18,10 @@ const OrderHistorySchema = new mongoose_1.default.Schema({
     order: {
         type: Number,
     },
+    subOrderId: {
+        type: Number,
+        default: 0,
+    },
     status: {
         type: String,
         default: enum_1.ORDER_HISTORY.CREATED,

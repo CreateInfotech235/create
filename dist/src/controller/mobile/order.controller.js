@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.moveToTrashSubOrderMulti = exports.moveToTrashMulti = exports.deleteOrderFormMerchantMulti = exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchantMulti = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderUpdateMulti = exports.orderCreationMulti = exports.orderCreation = void 0;
+exports.sendNotificationToDeliveryMan = exports.moveToTrashSubOrderMulti = exports.moveToTrashMulti = exports.deleteOrderFormMerchantMulti = exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchantMulti = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderUpdateMulti = exports.orderCreationMulti = exports.orderCreation = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -147,7 +147,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
     try {
         // Check if merchantId is provided and is a valid string
         const merchantId = req.id;
-        console.log("data1", req.body);
+        console.log('data1', req.body);
         // console.log(merchantId, 'merchantId');
         console.log(req.body, 'req.body');
         if (!merchantId) {
@@ -167,18 +167,18 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // Validate the cleaned body
         console.log('before', req.body);
         const validateRequest = (0, validateRequest_1.default)(cleanedBody, order_validation_1.newOrderCreationMulti);
-        console.log("data2", validateRequest);
+        console.log('data2', validateRequest);
         console.log('v:', validateRequest);
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
-        console.log("data3", validateRequest);
+        console.log('data3', validateRequest);
         // console.log("enter in orderCreationMulti4");
         const datamarcent = yield user_schema_1.default.findById(merchantId);
         if (!datamarcent) {
             return res.badRequest({ message: 'Merchant not found' });
         }
-        console.log("data4", datamarcent);
+        console.log('data4', datamarcent);
         // console.log("enter in orderCreationMulti5");
         yield user_schema_1.default.updateOne({ _id: merchantId }, { $set: { showOrderNumber: datamarcent.showOrderNumber + 1 } });
         if (!validateRequest.isValid) {
@@ -200,7 +200,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         value.pickupDetails.merchantId = merchantId.toString();
         // Filter out empty parcelType values before creating the order
         const sanitizedValue = Object.assign(Object.assign({}, value), { deliveryDetails: value.deliveryDetails.map((detail, index) => (Object.assign(Object.assign({}, detail), { index: index + 1, parcelType: detail.parcelType || undefined }))) });
-        console.log("data33", sanitizedValue);
+        console.log('data33', sanitizedValue);
         const newOrder = yield orderMulti_schema_1.default.create(Object.assign(Object.assign({}, sanitizedValue), { merchant: merchantId.toString(), showOrderNumber: datamarcent.showOrderNumber }));
         const admin = yield admin_schema_1.default.findOne();
         const deliveryMan = yield deliveryMan_schema_1.default.findById({
@@ -1617,3 +1617,29 @@ const moveToTrashSubOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.moveToTrashSubOrderMulti = moveToTrashSubOrderMulti;
+const sendNotificationToDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { deliveryManId, title, message } = req.body;
+        if (!deliveryManId || !title || !message) {
+            return res.badRequest({ message: 'Missing required fields' });
+        }
+        const deliveryMan = yield deliveryMan_schema_1.default.findById(deliveryManId);
+        if (!deliveryMan) {
+            return res.badRequest({ message: 'Delivery man not found' });
+        }
+        yield (0, common_1.createNotification)({
+            userId: deliveryManId,
+            title,
+            message,
+            type: 'DELIVERYMAN',
+        });
+        return res.ok({ message: 'Notification sent successfully' });
+    }
+    catch (error) {
+        console.error('Error sending notification:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendNotificationToDeliveryMan = sendNotificationToDeliveryMan;
