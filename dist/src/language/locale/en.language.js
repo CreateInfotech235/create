@@ -54,6 +54,7 @@ const messages = {
     orderUpdatedSuccessfully: 'Order updated successfully',
     invalidOrNonCancellableOrder: 'Invalid Order Or Non Cancellable Order',
     errorOrderArrived: 'Order arrived already',
+    errorOrderPickedUp: 'Order picked up already',
     orderCancelledSuccessfully: 'Order Cancel successfully',
     orderAlreadyCancelled: 'Order already cancelled',
     errorDataNotFound: 'Free Plan Data Not Found',

@@ -123,6 +123,7 @@ declare const Model: mongoose.Model<{
     }>;
     dayChargeNumber: number;
     distance: number;
+    route: any[];
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -262,6 +263,7 @@ declare const Model: mongoose.Model<{
     }>;
     dayChargeNumber: number;
     distance: number;
+    route: any[];
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -401,6 +403,7 @@ declare const Model: mongoose.Model<{
     }>;
     dayChargeNumber: number;
     distance: number;
+    route: any[];
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -547,6 +550,7 @@ declare const Model: mongoose.Model<{
     }>;
     dayChargeNumber: number;
     distance: number;
+    route: any[];
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -686,6 +690,7 @@ declare const Model: mongoose.Model<{
     }>;
     dayChargeNumber: number;
     distance: number;
+    route: any[];
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;
@@ -825,6 +830,7 @@ declare const Model: mongoose.Model<{
     }>;
     dayChargeNumber: number;
     distance: number;
+    route: any[];
     description?: string;
     country?: mongoose.Types.ObjectId;
     city?: mongoose.Types.ObjectId;

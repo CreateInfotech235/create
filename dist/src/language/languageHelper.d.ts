@@ -53,6 +53,7 @@ export declare const getLanguage: (lang: language) => {
     orderUpdatedSuccessfully: string;
     invalidOrNonCancellableOrder: string;
     errorOrderArrived: string;
+    errorOrderPickedUp: string;
     orderCancelledSuccessfully: string;
     orderAlreadyCancelled: string;
     errorDataNotFound: string;

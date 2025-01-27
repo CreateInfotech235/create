@@ -178,6 +178,7 @@ const OrderSchema = new mongoose.Schema(
     pickupExpress: { type: Boolean },
     cashCollection: { type: Number },
     isCustomer: { type: Boolean, default: false },
+    route: { type: Array, default: [] },
   },
   { timestamps: true, versionKey: false },
 );

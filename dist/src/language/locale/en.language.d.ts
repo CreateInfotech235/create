@@ -52,6 +52,7 @@ declare const messages: {
     orderUpdatedSuccessfully: string;
     invalidOrNonCancellableOrder: string;
     errorOrderArrived: string;
+    errorOrderPickedUp: string;
     orderCancelledSuccessfully: string;
     orderAlreadyCancelled: string;
     errorDataNotFound: string;
