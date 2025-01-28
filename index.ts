@@ -6,6 +6,7 @@ import http from 'http';
 import logger from 'morgan';
 import { Server } from 'socket.io';
 import mobileSwaggerUI from 'swagger-ui-express';
+// import mongoose from 'mongoose';
 import databaseConnection from './src/db/conn';
 import swaggerDocs from './src/docs/SwaggerDocs';
 import { ORDER_HISTORY } from './src/enum';
@@ -27,6 +28,7 @@ config({ path: `.env.development.local` });
 const server = http.createServer(app);
 
 // Database connection and seeders
+// mongoose.set('bufferTimeoutMS', 30000); // Increase timeout to 30 seconds
 databaseConnection(process.env.DB_URI);
 loadSeeders();
 

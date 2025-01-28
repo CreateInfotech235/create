@@ -1244,7 +1244,6 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
-        // TODO: get distance from google map api
         const { value } = validateRequest;
         // Get already picked up orders
         const order = yield orderMulti_schema_1.default.findOne({ orderId: value.orderId });
@@ -1266,35 +1265,42 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 if (optimizedRoute.find((d) => d.subOrderId === delivery.subOrderId)) {
                     continue;
                 }
-                const response = yield axios_1.default.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
-                    params: {
-                        origins: `${currentLocation.latitude},${currentLocation.longitude}`,
-                        destinations: `${delivery.location.latitude},${delivery.location.longitude}`,
-                        key: apiKey
+                try {
+                    const response = yield axios_1.default.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
+                        params: {
+                            origins: `${currentLocation.latitude},${currentLocation.longitude}`,
+                            destinations: `${delivery.location.latitude},${delivery.location.longitude}`,
+                            key: apiKey
+                        },
+                        timeout: 5000 // 5 second timeout
+                    });
+                    const distance = (_f = (_e = (_d = (_c = response.data) === null || _c === void 0 ? void 0 : _c.rows[0]) === null || _d === void 0 ? void 0 : _d.elements[0]) === null || _e === void 0 ? void 0 : _e.distance) === null || _f === void 0 ? void 0 : _f.value;
+                    if (distance && distance < shortestDistance) {
+                        shortestDistance = distance;
+                        nearestLocation = {
+                            subOrderId: delivery.subOrderId,
+                            location: delivery.location,
+                            distance: distance
+                        };
                     }
-                });
-                const distance = (_f = (_e = (_d = (_c = response.data) === null || _c === void 0 ? void 0 : _c.rows[0]) === null || _d === void 0 ? void 0 : _d.elements[0]) === null || _e === void 0 ? void 0 : _e.distance) === null || _f === void 0 ? void 0 : _f.value;
-                if (distance < shortestDistance) {
-                    shortestDistance = distance;
-                    nearestLocation = {
-                        subOrderId: delivery.subOrderId,
-                        location: delivery.location,
-                        distance: distance
-                    };
                 }
+                catch (err) {
+                    console.error('Error getting distance:', err);
+                    continue;
+                }
+            }
+            if (!nearestLocation) {
+                break;
             }
             optimizedRoute.push(nearestLocation);
             currentLocation = nearestLocation.location;
         }
-        const newallDeliveryDetails = optimizedRoute.forEach((data) => {
-            if (newSubOrderIds.includes(data.subOrderId)) {
-                allDeliveryDetails.find((detail) => detail.subOrderId === data.subOrderId).status = enum_1.ORDER_HISTORY.PICKED_UP;
+        // Update delivery details status
+        allDeliveryDetails.forEach((detail) => {
+            if (newSubOrderIds.includes(detail.subOrderId)) {
+                detail.status = enum_1.ORDER_HISTORY.PICKED_UP;
             }
         });
-        console.log(newallDeliveryDetails, 'newallDeliveryDetails');
-        // const leftOverDeliveryDetails= allDeliveryDetails.filter((detail:any)=> !newallDeliveryDetails.includes(detail))
-        // newallDeliveryDetails.push(...leftOverDeliveryDetails)
-        console.log('Optimized delivery route:', optimizedRoute);
         if (newSubOrderIds.length === 0) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorOrderPickedUp });
         }
@@ -1324,13 +1330,8 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             arrayFilters: [{ 'elem.subOrderId': { $in: newSubOrderIds } }],
         });
         yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'PICKED_UP' } }, { new: true });
-        // if (isArrived.cashOnDelivery) {
-        //   await PaymentInfoSchema.updateOne(
-        //     { order: value.orderId },
-        //     { $set: { status: PAYMENT_INFO.SUCCESS } },
-        //   );
-        // }
-        newSubOrderIds.forEach((subOrderId) => __awaiter(void 0, void 0, void 0, function* () {
+        // Create order history entries
+        yield Promise.all(newSubOrderIds.map((subOrderId) => __awaiter(void 0, void 0, void 0, function* () {
             yield orderHistory_schema_1.default.create({
                 message: 'Delivery Person has been arrived at pick up location and waiting for client',
                 order: value.orderId,
@@ -1343,14 +1344,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 subOrderId: subOrderId,
                 status: enum_1.ORDER_HISTORY.ARRIVED,
             });
-        }));
-        // await createNotification({
-        //   userId: isArrived.merchant,
-        //   orderId: isArrived.orderId,
-        //   title: 'Order Picked Up',
-        //   message: `Your order ${isArrived.orderId} has been picked up`,
-        //   type: 'MERCHANT',
-        // });
+        })));
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -2238,7 +2232,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                 default: 5,
                                             },
                                         },
-                                        distanceInMiles: {
+                                        distance: {
                                             $divide: ['$$detail.distance', 1609.34] // Convert meters to miles
                                         }
                                     },
@@ -2299,7 +2293,9 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                         ]
                                     },
                                     {
-                                        distance: '$$routeItem.distance'
+                                        distance: {
+                                            $divide: ['$$routeItem.distance', 1609.34] // Convert meters to miles
+                                        }
                                     }
                                 ]
                             }
@@ -2410,15 +2406,33 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             {
                 $addFields: {
                     deliveryDetails: {
-                        $sortArray: {
-                            input: '$deliveryDetails',
-                            sortBy: {
-                                sortOrder: 1,
-                                distance: 1,
-                            },
-                        },
-                    },
-                },
+                        $map: {
+                            input: '$route',
+                            as: 'routeItem',
+                            in: {
+                                $mergeObjects: [
+                                    {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$deliveryDetails',
+                                                    as: 'detail',
+                                                    cond: { $eq: ['$$detail.subOrderId', '$$routeItem.subOrderId'] }
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    },
+                                    {
+                                        distance: {
+                                            $divide: ['$$routeItem.distance', 1609.34] // Convert meters to miles
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
             },
             {
                 $addFields: {
@@ -2446,6 +2460,11 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     },
                 },
             },
+            {
+                $project: {
+                    route: 0
+                }
+            }
         ])
             .exec();
         const oder = yield orderAssigneeMulti_schema_1.default.findOne({
