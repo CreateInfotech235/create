@@ -371,7 +371,7 @@ export const updateLocation = async (req: RequestParams, res: Response) => {
     const { value } = validateRequest;
 
     console.log(value);
-
+    console.log(req.id);
     await deliveryManSchema.updateOne(
       { _id: req.id },
       {

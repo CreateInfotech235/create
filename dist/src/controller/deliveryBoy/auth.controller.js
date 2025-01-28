@@ -260,6 +260,7 @@ const updateLocation = (req, res) => __awaiter(void 0, void 0, void 0, function*
         }
         const { value } = validateRequest;
         console.log(value);
+        console.log(req.id);
         yield deliveryMan_schema_1.default.updateOne({ _id: req.id }, {
             $set: {
                 // countryId: value.country,

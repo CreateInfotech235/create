@@ -2904,7 +2904,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                   },
                 },
               },
-              else: []
+              else: '$orderData.deliveryDetails'
             }
           }
         },
@@ -2990,7 +2990,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                   }
                 }
               },
-              else: []
+              else: '$orderData.deliveryDetails'
             }
           }
         }

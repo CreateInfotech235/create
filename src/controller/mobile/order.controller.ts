@@ -1518,20 +1518,20 @@ export const getAllOrdersFromMerchantMulti = async (
           },
           pickupRequest: '$pickupDetails.request',
           postCode: '$pickupDetails.postCode',
-          cashOnDelivery: 1,
+          // cashOnDelivery: 1,
           status: 1,
           dateTime: 1,
-          distance: {
-            $ifNull: ['$distance', '-'],
-          },
-          duration: {
-            $ifNull: ['$duration', '-'],
-          },
+          // distance: {
+          //   $ifNull: ['$distance', '-'],
+          // },
+          // duration: {
+          //   $ifNull: ['$duration', '-'],
+          // },
           trashed: {
             $ifNull: ['$trashed', false],
           },
           showOrderNumber: 1,
-          paymentCollectionRupees: 1,
+          // paymentCollectionRupees: 1,
         },
       },
     ]);

@@ -2259,7 +2259,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                     },
                                 },
                             },
-                            else: []
+                            else: '$orderData.deliveryDetails'
                         }
                     }
                 },
@@ -2343,7 +2343,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                     }
                                 }
                             },
-                            else: []
+                            else: '$orderData.deliveryDetails'
                         }
                     }
                 }
