@@ -21,7 +21,7 @@ const http_1 = __importDefault(require("http"));
 const morgan_1 = __importDefault(require("morgan"));
 const socket_io_1 = require("socket.io");
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-// import mongoose from 'mongoose';
+const mongoose_1 = __importDefault(require("mongoose"));
 const conn_1 = __importDefault(require("./src/db/conn"));
 const SwaggerDocs_1 = __importDefault(require("./src/docs/SwaggerDocs"));
 const enum_1 = require("./src/enum");
@@ -39,7 +39,7 @@ app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
 // Set up server
 const server = http_1.default.createServer(app);
 // Database connection and seeders
-// mongoose.set('bufferTimeoutMS', 30000); // Increase timeout to 30 seconds
+mongoose_1.default.set('bufferTimeoutMS', 30000); // Increase timeout to 30 seconds
 (0, conn_1.default)(process.env.DB_URI);
 (0, seeders_1.default)();
 // Set server port
