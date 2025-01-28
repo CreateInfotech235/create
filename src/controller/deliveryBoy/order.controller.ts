@@ -1644,6 +1644,9 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       (detail) => detail.status === ORDER_HISTORY.PICKED_UP,
     );
 
+
+
+  
     await orderSchemaMulti.findOneAndUpdate(
       { orderId: value.orderId },
       {
@@ -1652,6 +1655,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
           'pickupDetails.userSignature': value.userSignature,
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
           'deliveryDetails.$[elem].status': ORDER_HISTORY.PICKED_UP,
+          // 'deliveryDetails':deliveryDetails,
           route: optimizedRoute,
         },
       },

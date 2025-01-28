@@ -1493,9 +1493,6 @@ export const getAllOrdersFromMerchantMulti = async (
           _id: 1,
           orderId: 1,
           customerId: 1,
-          // parcelsCount: 1,
-          // customerName: '$deliveryDetails.name',
-          // cutomerEmail: '$deliveryDetails.email',
           pickupAddress: '$pickupDetails',
           deliveryAddress: '$deliveryDetails',
           deliveryMan: {
@@ -1513,12 +1510,6 @@ export const getAllOrdersFromMerchantMulti = async (
             },
           },
           merchantId: '$pickupDetails.merchantId',
-          // deliveryDate: {
-          //   $dateToString: {
-          //     format: '%d-%m-%Y , %H:%M',
-          //     date: '$deliveryDetails.orderTimestamp',
-          //   },
-          // },
           createdDate: {
             $dateToString: {
               format: '%d-%m-%Y , %H:%M',
@@ -1527,20 +1518,20 @@ export const getAllOrdersFromMerchantMulti = async (
           },
           pickupRequest: '$pickupDetails.request',
           postCode: '$pickupDetails.postCode',
-          // cashOnDelivery: 1,
+          cashOnDelivery: 1,
           status: 1,
           dateTime: 1,
-          // distance: {
-          //   $ifNull: ['$distance', '-'],
-          // },
-          // duration: {
-          //   $ifNull: ['$duration', '-'],
-          // },
+          distance: {
+            $ifNull: ['$distance', '-'],
+          },
+          duration: {
+            $ifNull: ['$duration', '-'],
+          },
           trashed: {
             $ifNull: ['$trashed', false],
           },
           showOrderNumber: 1,
-          // paymentCollectionRupees: 1,
+          paymentCollectionRupees: 1,
         },
       },
     ]);
