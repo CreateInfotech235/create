@@ -26,6 +26,7 @@ const auth_validation_1 = require("../../utils/validation/auth.validation");
 const auth_validation_2 = require("../../utils/validation/auth.validation");
 const deliveryMan_validation_1 = require("../../utils/validation/deliveryMan.validation");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const orderAssigneeMulti_schema_1 = __importDefault(require("../../models/orderAssigneeMulti.schema"));
 const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const verifyPassword = (_a) => __awaiter(void 0, [_a], void 0, function* ({ password, hash, }) {
     return bcrypt_1.default.compare(password, hash);
@@ -299,6 +300,49 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
         if (!mongoose_1.default.Types.ObjectId.isValid(req.params.id)) {
             return res.badRequest({ message: 'Invalid delivery man ID' });
         }
+        // const totalOrders = await OrderAssigneeSchema.countDocuments({
+        //   deliveryBoy: req.params.id,
+        // });
+        console.log(req.params.id, 'id');
+        const totalsuboder = yield orderAssigneeMulti_schema_1.default.aggregate([
+            {
+                $match: {
+                    deliveryBoy: new mongoose_1.default.Types.ObjectId(req.params.id),
+                },
+            },
+            {
+                $lookup: {
+                    from: 'ordermultis',
+                    localField: 'order',
+                    foreignField: 'orderId',
+                    as: 'orderMultiData',
+                },
+            },
+        ]);
+        let totalOrderCount = 0;
+        let totalAssignedOrdersCount = 0;
+        let totalCancelledOrders = 0;
+        let totalDeliveredOrders = 0;
+        for (const item of totalsuboder) {
+            if (item.orderMultiData && Array.isArray(item.orderMultiData)) {
+                for (const orderMulti of item.orderMultiData) {
+                    if (orderMulti.deliveryDetails && Array.isArray(orderMulti.deliveryDetails)) {
+                        for (const deliveryDetail of orderMulti.deliveryDetails) {
+                            if (deliveryDetail.status === enum_1.ORDER_STATUS.ASSIGNED) {
+                                totalAssignedOrdersCount++;
+                            }
+                            else if (deliveryDetail.status === enum_1.ORDER_STATUS.CANCELLED) {
+                                totalCancelledOrders++;
+                            }
+                            else if (deliveryDetail.status === enum_1.ORDER_STATUS.DELIVERED) {
+                                totalDeliveredOrders++;
+                            }
+                            totalOrderCount++;
+                        }
+                    }
+                }
+            }
+        }
         const result = yield deliveryMan_schema_1.default.aggregate([
             {
                 $match: {
@@ -380,10 +424,11 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
             },
             {
                 $addFields: {
-                    totalOrderCount: { $ifNull: [{ $size: '$allOrders' }, 0] },
-                    totalAcceptedOrders: { $ifNull: [{ $size: '$acceptedOrders' }, 0] },
-                    totalCancelledOrders: { $ifNull: [{ $size: '$rejectedOrders' }, 0] },
-                    totalDeliveredOrders: { $ifNull: [{ $size: '$orderDetails' }, 0] },
+                    totalOrderCount: totalOrderCount,
+                    totalAcceptedOrders: totalAssignedOrdersCount,
+                    totalCancelledOrders: totalCancelledOrders,
+                    totalDeliveredOrders: totalDeliveredOrders,
+                    totalAssignedOrdersCount: totalAssignedOrdersCount,
                 },
             },
             {
@@ -424,6 +469,7 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     totalAcceptedOrders: 1,
                     totalCancelledOrders: 1,
                     totalDeliveredOrders: 1,
+                    totalAssignedOrdersCount: 1,
                     location: 1,
                     postCode: 1,
                     balance: 1,

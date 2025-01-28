@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import mongoose from 'mongoose';
-import { CHARGE_METHOD, ORDER_REQUEST, SWITCH } from '../../enum';
+import { CHARGE_METHOD, ORDER_REQUEST, ORDER_STATUS, SWITCH } from '../../enum';
 import { getLanguage } from '../../language/languageHelper';
 import deliveryManSchema from '../../models/deliveryMan.schema';
 import DeliveryManDocumentSchema from '../../models/deliveryManDocument.schema';
@@ -25,8 +25,12 @@ import { updateLocationValidation } from '../../utils/validation/deliveryMan.val
 import { IUpdateLocation } from './types/auth';
 import bcrypt from 'bcrypt';
 import OrderAssigneeSchema from '../../models/orderAssignee.schema';
+import OrderAssigneeMultiSchema from '../../models/orderAssigneeMulti.schema';
 import OrderSchema from '../../models/order.schema';
+import orderMulti from '../../models/orderMulti.schema';
+
 import merchantSchema from '../../models/user.schema';
+
 import { log } from 'console';
 export const verifyPassword = async ({
   password,
@@ -419,6 +423,51 @@ export const getDeliveryManProfile = async (
       return res.badRequest({ message: 'Invalid delivery man ID' });
     }
 
+    // const totalOrders = await OrderAssigneeSchema.countDocuments({
+    //   deliveryBoy: req.params.id,
+    // });
+    console.log(req.params.id, 'id')
+    const totalsuboder = await OrderAssigneeMultiSchema.aggregate([
+      {
+        $match: {
+          deliveryBoy: new mongoose.Types.ObjectId(req.params.id),
+        },
+      },
+      {
+        $lookup: {
+          from: 'ordermultis',
+          localField: 'order',
+          foreignField: 'orderId',
+          as: 'orderMultiData',
+        },
+      },
+    ]);
+    
+    let totalOrderCount =0;
+    let totalAssignedOrdersCount = 0;
+    let totalCancelledOrders = 0;
+    let totalDeliveredOrders = 0;
+
+    for (const item of totalsuboder) {
+      if (item.orderMultiData && Array.isArray(item.orderMultiData)) {
+        for (const orderMulti of item.orderMultiData) {
+          if (orderMulti.deliveryDetails && Array.isArray(orderMulti.deliveryDetails)) {
+            for (const deliveryDetail of orderMulti.deliveryDetails) {
+              if (deliveryDetail.status === ORDER_STATUS.ASSIGNED) {
+                totalAssignedOrdersCount++;
+              } else if (deliveryDetail.status === ORDER_STATUS.CANCELLED) {
+                totalCancelledOrders++;
+              } else if (deliveryDetail.status === ORDER_STATUS.DELIVERED) {
+                totalDeliveredOrders++;
+              }
+              totalOrderCount++;
+            }
+          }
+        }
+      }
+    }
+
+
     const result = await deliveryManSchema.aggregate([
       {
         $match: {
@@ -500,10 +549,11 @@ export const getDeliveryManProfile = async (
       },
       {
         $addFields: {
-          totalOrderCount: { $ifNull: [{ $size: '$allOrders' }, 0] },
-          totalAcceptedOrders: { $ifNull: [{ $size: '$acceptedOrders' }, 0] },
-          totalCancelledOrders: { $ifNull: [{ $size: '$rejectedOrders' }, 0] },
-          totalDeliveredOrders: { $ifNull: [{ $size: '$orderDetails' }, 0] },
+          totalOrderCount: totalOrderCount,
+          totalAcceptedOrders: totalAssignedOrdersCount,
+          totalCancelledOrders: totalCancelledOrders,
+          totalDeliveredOrders: totalDeliveredOrders,
+          totalAssignedOrdersCount: totalAssignedOrdersCount,
         },
       },
       {
@@ -544,6 +594,7 @@ export const getDeliveryManProfile = async (
           totalAcceptedOrders: 1,
           totalCancelledOrders: 1,
           totalDeliveredOrders: 1,
+          totalAssignedOrdersCount: 1,
           location: 1,
           postCode: 1,
           balance: 1,
