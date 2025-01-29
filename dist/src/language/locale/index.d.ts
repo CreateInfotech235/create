@@ -46,6 +46,7 @@ declare const _default: {
         loginSuccessfully: string;
         orderCreatedSuccessfully: string;
         invalidOrder: string;
+        orderAlreadyArrived: string;
         orderAlreadyAssigned: string;
         invalidDeliveryMan: string;
         orderNotAssigned: string;
@@ -53,6 +54,7 @@ declare const _default: {
         orderUpdatedSuccessfully: string;
         invalidOrNonCancellableOrder: string;
         errorOrderArrived: string;
+        invalidSubOrderId: string;
         errorOrderPickedUp: string;
         orderCancelledSuccessfully: string;
         orderAlreadyCancelled: string;

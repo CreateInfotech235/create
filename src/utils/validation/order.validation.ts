@@ -183,6 +183,7 @@ export const orderAssignValidation = Joi.object({
   orderId: Joi.number().required(),
 });
 
+
 export const orderAcceptValidation = Joi.object({
   orderId: Joi.number().required(),
   status: Joi.string()

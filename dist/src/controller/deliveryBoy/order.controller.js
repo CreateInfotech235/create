@@ -652,12 +652,6 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         value.deliveryManId = req.id.toString();
         const isCreated = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
-            status: { $eq: enum_1.ORDER_HISTORY.ASSIGNED },
-            deliveryDetails: {
-                $elemMatch: {
-                    status: { $eq: enum_1.ORDER_HISTORY.ASSIGNED }, // Match the specific status
-                },
-            },
         });
         if (!isCreated) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
@@ -670,6 +664,9 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.badRequest({
                 message: (0, languageHelper_1.getLanguage)('en').invalidDeliveryMan,
             });
+        }
+        if (isCreated.deliveryDetails.some(item => item.status === enum_1.ORDER_HISTORY.ARRIVED)) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').orderAlreadyArrived });
         }
         // TODO: add distance to the order
         console.log('fgsdfsdfsdhiffh 1');
@@ -1095,7 +1092,7 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         value.deliveryManId = req.id.toString();
         const isCreated = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
-            status: { $eq: enum_1.ORDER_HISTORY.PICKED_UP },
+            // status: { $eq: ORDER_HISTORY.PICKED_UP },
             deliveryDetails: {
                 $elemMatch: {
                     status: { $eq: enum_1.ORDER_HISTORY.PICKED_UP },
@@ -1103,6 +1100,7 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 },
             },
         });
+        console.log(isCreated, 'isCreated');
         if (!isCreated) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
@@ -1248,12 +1246,21 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const { value } = validateRequest;
         // Get already picked up orders
         const order = yield orderMulti_schema_1.default.findOne({ orderId: value.orderId });
+        if (!order) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
         const allDeliveryDetails = order.deliveryDetails;
         const arrayofpickupoder = allDeliveryDetails.filter((detail) => detail.status === enum_1.ORDER_HISTORY.PICKED_UP);
         // Filter out already picked up orders
         const newSubOrderIds = value.subOrderId.filter((subId) => !arrayofpickupoder.find((order) => order.subOrderId === subId));
+        if (newSubOrderIds.length === 0) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorOrderPickedUp });
+        }
         const pickupLocation = order.pickupDetails.location;
         const deliveryLocations = allDeliveryDetails.filter((detail) => newSubOrderIds.includes(detail.subOrderId));
+        if (deliveryLocations.length !== newSubOrderIds.length) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidSubOrderId });
+        }
         const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
         const optimizedRoute = [];
         let currentLocation = pickupLocation;
@@ -1270,8 +1277,8 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                     params: {
                         origins: `${currentLocation.latitude},${currentLocation.longitude}`,
                         destinations: `${delivery.location.latitude},${delivery.location.longitude}`,
-                        key: apiKey
-                    }
+                        key: apiKey,
+                    },
                 });
                 // console.log(response.data.rows[0].elements[0],'response.data')
                 const distance = (_g = (_f = (_e = (_d = (_c = response.data) === null || _c === void 0 ? void 0 : _c.rows[0]) === null || _d === void 0 ? void 0 : _d.elements[0]) === null || _e === void 0 ? void 0 : _e.distance) === null || _f === void 0 ? void 0 : _f.value) !== null && _g !== void 0 ? _g : 0;
@@ -1282,7 +1289,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                     nearestLocation = {
                         subOrderId: delivery.subOrderId,
                         location: delivery.location,
-                        distance: distance
+                        distance: distance,
                     };
                 }
             }
@@ -1298,9 +1305,6 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // const leftOverDeliveryDetails= allDeliveryDetails.filter((detail:any)=> !newallDeliveryDetails.includes(detail))
         // newallDeliveryDetails.push(...leftOverDeliveryDetails)
         console.log('Optimized delivery route:', optimizedRoute);
-        if (newSubOrderIds.length === 0) {
-            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorOrderPickedUp });
-        }
         const isArrived = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
             deliveryDetails: {
@@ -1315,6 +1319,15 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
         const remainingDeliveryDetails = allDeliveryDetails.filter((detail) => !newSubOrderIds.includes(detail.subOrderId));
         const allPickedUp = remainingDeliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.PICKED_UP);
+        const nowdata = allDeliveryDetails.map((data) => {
+            if (optimizedRoute.includes(data.subOrderId)) {
+                return Object.assign(Object.assign({}, data), { status: enum_1.ORDER_HISTORY.PICKED_UP, time: {
+                        start: Date.now(),
+                        end: Date.now()
+                    } });
+            }
+        });
+        console.log(nowdata, 'nowdata');
         yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
                 status: allPickedUp ? enum_1.ORDER_HISTORY.PICKED_UP : isArrived.status,
@@ -2182,7 +2195,8 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const { startDate, endDate, status, pageLimit = 10, pageCount = 1, } = req.query;
         const data = yield orderAssigneeMulti_schema_1.default.aggregate([
             {
-                $match: Object.assign({ deliveryBoy: new mongoose_1.default.Types.ObjectId(req.id) }, (startDate && endDate && {
+                $match: Object.assign({ deliveryBoy: new mongoose_1.default.Types.ObjectId(req.id) }, (startDate &&
+                    endDate && {
                     createdAt: {
                         $gte: new Date(startDate),
                         $lte: new Date(endDate),
@@ -2200,7 +2214,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             {
                 $unwind: {
                     path: '$orderData',
-                    preserveNullAndEmptyArrays: true
+                    preserveNullAndEmptyArrays: true,
                 },
             },
             {
@@ -2221,25 +2235,37 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                         branches: [
                                                             {
                                                                 case: {
-                                                                    $eq: ['$$detail.status', enum_1.ORDER_HISTORY.PICKED_UP],
+                                                                    $eq: [
+                                                                        '$$detail.status',
+                                                                        enum_1.ORDER_HISTORY.PICKED_UP,
+                                                                    ],
                                                                 },
                                                                 then: 1,
                                                             },
                                                             {
                                                                 case: {
-                                                                    $eq: ['$$detail.status', enum_1.ORDER_HISTORY.ARRIVED],
+                                                                    $eq: [
+                                                                        '$$detail.status',
+                                                                        enum_1.ORDER_HISTORY.ARRIVED,
+                                                                    ],
                                                                 },
                                                                 then: 2,
                                                             },
                                                             {
                                                                 case: {
-                                                                    $eq: ['$$detail.status', enum_1.ORDER_HISTORY.DEPARTED],
+                                                                    $eq: [
+                                                                        '$$detail.status',
+                                                                        enum_1.ORDER_HISTORY.DEPARTED,
+                                                                    ],
                                                                 },
                                                                 then: 3,
                                                             },
                                                             {
                                                                 case: {
-                                                                    $eq: ['$$detail.status', enum_1.ORDER_HISTORY.DELIVERED],
+                                                                    $eq: [
+                                                                        '$$detail.status',
+                                                                        enum_1.ORDER_HISTORY.DELIVERED,
+                                                                    ],
                                                                 },
                                                                 then: 4,
                                                             },
@@ -2251,17 +2277,17 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                     $cond: {
                                                         if: { $gt: ['$$detail.distance', 0] },
                                                         then: { $divide: ['$$detail.distance', 1609.34] },
-                                                        else: 0
-                                                    }
-                                                }
+                                                        else: 0,
+                                                    },
+                                                },
                                             },
                                         ],
                                     },
                                 },
                             },
-                            else: '$orderData.deliveryDetails'
-                        }
-                    }
+                            else: '$orderData.deliveryDetails',
+                        },
+                    },
                 },
             },
             {
@@ -2290,10 +2316,12 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 $addFields: {
                     'orderData.deliveryDetails': {
                         $cond: {
-                            if: { $and: [
+                            if: {
+                                $and: [
                                     { $isArray: '$orderData.route' },
-                                    { $isArray: '$orderData.deliveryDetails' }
-                                ] },
+                                    { $isArray: '$orderData.deliveryDetails' },
+                                ],
+                            },
                             then: {
                                 $let: {
                                     vars: {
@@ -2309,21 +2337,29 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                                     $filter: {
                                                                         input: '$orderData.deliveryDetails',
                                                                         as: 'detail',
-                                                                        cond: { $eq: ['$$detail.subOrderId', '$$routeItem.subOrderId'] }
-                                                                    }
+                                                                        cond: {
+                                                                            $eq: [
+                                                                                '$$detail.subOrderId',
+                                                                                '$$routeItem.subOrderId',
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 },
-                                                                0
-                                                            ]
+                                                                0,
+                                                            ],
                                                         },
                                                         {
                                                             distance: {
-                                                                $divide: [{ $ifNull: ['$$routeItem.distance', 0] }, 1609.34]
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            }
-                                        }
+                                                                $divide: [
+                                                                    { $ifNull: ['$$routeItem.distance', 0] },
+                                                                    1609.34,
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        },
                                     },
                                     in: {
                                         $concatArrays: [
@@ -2334,19 +2370,22 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                     as: 'detail',
                                                     cond: {
                                                         $not: {
-                                                            $in: ['$$detail.subOrderId', '$orderData.route.subOrderId']
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        ]
-                                    }
-                                }
+                                                            $in: [
+                                                                '$$detail.subOrderId',
+                                                                '$orderData.route.subOrderId',
+                                                            ],
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             },
-                            else: '$orderData.deliveryDetails'
-                        }
-                    }
-                }
+                            else: '$orderData.deliveryDetails',
+                        },
+                    },
+                },
             },
             {
                 $addFields: {
@@ -2369,9 +2408,9 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             },
             {
                 $project: {
-                    'orderData.route': 0
-                }
-            }
+                    'orderData.route': 0,
+                },
+            },
         ]);
         return res.ok({
             data: data || [],
@@ -2410,25 +2449,37 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                         branches: [
                                                             {
                                                                 case: {
-                                                                    $eq: ['$$detail.status', enum_1.ORDER_HISTORY.PICKED_UP],
+                                                                    $eq: [
+                                                                        '$$detail.status',
+                                                                        enum_1.ORDER_HISTORY.PICKED_UP,
+                                                                    ],
                                                                 },
                                                                 then: 1,
                                                             },
                                                             {
                                                                 case: {
-                                                                    $eq: ['$$detail.status', enum_1.ORDER_HISTORY.ARRIVED],
+                                                                    $eq: [
+                                                                        '$$detail.status',
+                                                                        enum_1.ORDER_HISTORY.ARRIVED,
+                                                                    ],
                                                                 },
                                                                 then: 2,
                                                             },
                                                             {
                                                                 case: {
-                                                                    $eq: ['$$detail.status', enum_1.ORDER_HISTORY.DEPARTED],
+                                                                    $eq: [
+                                                                        '$$detail.status',
+                                                                        enum_1.ORDER_HISTORY.DEPARTED,
+                                                                    ],
                                                                 },
                                                                 then: 3,
                                                             },
                                                             {
                                                                 case: {
-                                                                    $eq: ['$$detail.status', enum_1.ORDER_HISTORY.DELIVERED],
+                                                                    $eq: [
+                                                                        '$$detail.status',
+                                                                        enum_1.ORDER_HISTORY.DELIVERED,
+                                                                    ],
                                                                 },
                                                                 then: 4,
                                                             },
@@ -2440,27 +2491,29 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                     $cond: {
                                                         if: { $gt: ['$$detail.distance', 0] },
                                                         then: { $divide: ['$$detail.distance', 1609.34] },
-                                                        else: 0
-                                                    }
-                                                }
+                                                        else: 0,
+                                                    },
+                                                },
                                             },
                                         ],
                                     },
                                 },
                             },
-                            else: '$deliveryDetails'
-                        }
-                    }
+                            else: '$deliveryDetails',
+                        },
+                    },
                 },
             },
             {
                 $addFields: {
                     deliveryDetails: {
                         $cond: {
-                            if: { $and: [
+                            if: {
+                                $and: [
                                     { $isArray: '$route' },
-                                    { $isArray: '$deliveryDetails' }
-                                ] },
+                                    { $isArray: '$deliveryDetails' },
+                                ],
+                            },
                             then: {
                                 $let: {
                                     vars: {
@@ -2476,21 +2529,29 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                                     $filter: {
                                                                         input: '$deliveryDetails',
                                                                         as: 'detail',
-                                                                        cond: { $eq: ['$$detail.subOrderId', '$$routeItem.subOrderId'] }
-                                                                    }
+                                                                        cond: {
+                                                                            $eq: [
+                                                                                '$$detail.subOrderId',
+                                                                                '$$routeItem.subOrderId',
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 },
-                                                                0
-                                                            ]
+                                                                0,
+                                                            ],
                                                         },
                                                         {
                                                             distance: {
-                                                                $divide: [{ $ifNull: ['$$routeItem.distance', 0] }, 1609.34]
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            }
-                                        }
+                                                                $divide: [
+                                                                    { $ifNull: ['$$routeItem.distance', 0] },
+                                                                    1609.34,
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        },
                                     },
                                     in: {
                                         $concatArrays: [
@@ -2501,19 +2562,22 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                     as: 'detail',
                                                     cond: {
                                                         $not: {
-                                                            $in: ['$$detail.subOrderId', '$route.subOrderId']
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        ]
-                                    }
-                                }
+                                                            $in: [
+                                                                '$$detail.subOrderId',
+                                                                '$route.subOrderId',
+                                                            ],
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             },
-                            else: '$deliveryDetails'
-                        }
-                    }
-                }
+                            else: '$deliveryDetails',
+                        },
+                    },
+                },
             },
             {
                 $addFields: {
@@ -2547,9 +2611,9 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             {
                 $project: {
                     'orderData.route': 0,
-                    route: 0
-                }
-            }
+                    route: 0,
+                },
+            },
         ])
             .exec();
         const oder = yield orderAssigneeMulti_schema_1.default.findOne({

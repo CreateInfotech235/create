@@ -46,6 +46,7 @@ export declare const getLanguage: (lang: language) => {
     loginSuccessfully: string;
     orderCreatedSuccessfully: string;
     invalidOrder: string;
+    orderAlreadyArrived: string;
     orderAlreadyAssigned: string;
     invalidDeliveryMan: string;
     orderNotAssigned: string;
@@ -53,6 +54,7 @@ export declare const getLanguage: (lang: language) => {
     orderUpdatedSuccessfully: string;
     invalidOrNonCancellableOrder: string;
     errorOrderArrived: string;
+    invalidSubOrderId: string;
     errorOrderPickedUp: string;
     orderCancelledSuccessfully: string;
     orderAlreadyCancelled: string;

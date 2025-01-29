@@ -1196,24 +1196,15 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                     },
                     pickupRequest: '$pickupDetails.request',
                     postCode: '$pickupDetails.postCode',
-                    // cashOnDelivery: 1,
                     status: 1,
                     dateTime: 1,
-                    // distance: {
-                    //   $ifNull: ['$distance', '-'],
-                    // },
-                    // duration: {
-                    //   $ifNull: ['$duration', '-'],
-                    // },
                     trashed: {
                         $ifNull: ['$trashed', false],
                     },
                     showOrderNumber: 1,
-                    // paymentCollectionRupees: 1,
                 },
             },
         ]);
-        // console.log('data', data);
         return res.ok({ data });
     }
     catch (error) {

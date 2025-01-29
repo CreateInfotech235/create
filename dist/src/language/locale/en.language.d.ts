@@ -45,6 +45,7 @@ declare const messages: {
     loginSuccessfully: string;
     orderCreatedSuccessfully: string;
     invalidOrder: string;
+    orderAlreadyArrived: string;
     orderAlreadyAssigned: string;
     invalidDeliveryMan: string;
     orderNotAssigned: string;
@@ -52,6 +53,7 @@ declare const messages: {
     orderUpdatedSuccessfully: string;
     invalidOrNonCancellableOrder: string;
     errorOrderArrived: string;
+    invalidSubOrderId: string;
     errorOrderPickedUp: string;
     orderCancelledSuccessfully: string;
     orderAlreadyCancelled: string;
