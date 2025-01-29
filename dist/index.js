@@ -39,9 +39,13 @@ app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
 // Set up server
 const server = http_1.default.createServer(app);
 // Database connection and seeders
+// var db;
+// do{
 mongoose_1.default.set('bufferTimeoutMS', 30000); // Increase timeout to 30 seconds
+// console.log(process.env.DB_URI);
 (0, conn_1.default)(process.env.DB_URI);
 (0, seeders_1.default)();
+// }while(db === undefined)
 // Set server port
 const PORT = process.env.PORT || 1000;
 // Logger middleware

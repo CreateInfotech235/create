@@ -3097,7 +3097,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                     },
                   },
                 },
-                else: []
+                else: '$deliveryDetails'
               }
             }
           },
@@ -3159,7 +3159,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                     }
                   }
                 },
-                else: []
+                else: '$deliveryDetails'
               }
             }
           }

@@ -28,9 +28,15 @@ config({ path: `.env.development.local` });
 const server = http.createServer(app);
 
 // Database connection and seeders
+
+// var db;
+// do{
 mongoose.set('bufferTimeoutMS', 30000); // Increase timeout to 30 seconds
+// console.log(process.env.DB_URI);
+
 databaseConnection(process.env.DB_URI);
 loadSeeders();
+// }while(db === undefined)
 
 // Set server port
 const PORT = process.env.PORT || 1000;
@@ -76,7 +82,7 @@ const io = new Server(server, {
   },
 });
 
-export {io}
+export { io };
 io.on('connection', (socket) => {
   console.log('🚀 ~ io.on ~ socket:', 'socket connected');
 
