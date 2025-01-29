@@ -112,7 +112,7 @@ const DeliveryManSchema = new mongoose_1.default.Schema({
     chargeMethod: {
         type: String,
         enum: enum_1.CHARGE_METHOD,
-        default: enum_1.CHARGE_METHOD.DISTANCE,
+        default: enum_1.CHARGE_METHOD.TIME,
     },
     // charge method delivery boy
     charge: {

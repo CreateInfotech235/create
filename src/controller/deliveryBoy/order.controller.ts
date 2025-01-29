@@ -57,6 +57,9 @@ import {
   OrderDeliverTypeMulti,
   OrderPickUpType,
 } from './types/order';
+
+
+import BileSchema from '../../models/bile.Schema';
 import paymentGetSchema from '../../models/paymentGet.schema';
 import axios from 'axios';
 
@@ -785,7 +788,7 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
     const isCreated = await orderSchemaMulti.findOne({
       orderId: value.orderId,
     });
-
+    console.log(isCreated, 'isCreated');
     if (!isCreated) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
@@ -804,7 +807,7 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
     if (isCreated.deliveryDetails.some(item => item.status === ORDER_HISTORY.ARRIVED)) {
       return res.badRequest({ message: getLanguage('en').orderAlreadyArrived });
     }
-   
+
     // TODO: add distance to the order
     console.log('fgsdfsdfsdhiffh 1');
 
@@ -825,7 +828,6 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       },
     );
 
-    console.log('fgsdfsdfsdhiffh');
 
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been arrived`,
@@ -838,6 +840,31 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       order: value.orderId,
       status: ORDER_HISTORY.ASSIGNED,
     });
+    console.log(isCreated, 'isCreated.deliveryDetails');
+
+    const deliveryBoydata = await DeliveryManSchema.findById(value.deliveryManId);
+
+    if (isCreated.deliveryDetails && Array.isArray(isCreated.deliveryDetails)) {
+      for (const item of isCreated.deliveryDetails) {
+        try {
+          const bile = await BileSchema.create({
+            pickupTime: Date.now(),
+            orderId: value.orderId,
+            subOrderId: item.subOrderId,
+            deliveryBoyId: value.deliveryManId,
+            merchantId: isCreated.merchant,
+            chargeMethod: deliveryBoydata.chargeMethod,
+            charge: deliveryBoydata.charge,
+            orderStatus: ORDER_HISTORY.ARRIVED,
+            pickupAddress: isCreated.pickupDetails.address,
+            deliveryAddress: item.address,
+          });
+          console.log(bile, 'bile');
+        } catch (error) {
+          console.log(error, 'error');
+        }
+      }
+    }
 
     // await createNotification({
     //   userId: isCreated.merchant,
@@ -1122,6 +1149,7 @@ export const cancelMultiOrder = async (req: RequestParams, res: Response) => {
       message: `Order ${existingOrder.orderId} has been cancelled by deliveryman`,
       type: 'MERCHANT',
     });
+    
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -1239,6 +1267,16 @@ export const cancelMultiSubOrder = async (
     );
 
     console.log(isalloderdelevever, 'isalloderdelevever');
+
+
+    await BileSchema.deleteMany({
+      orderId: value.orderId,
+      deliveryBoyId: value.deliveryManId,
+      subOrderId: value.subOrderId,
+    });
+
+
+
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -1358,7 +1396,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
         },
       },
     });
-console.log(isCreated,'isCreated');
+    console.log(isCreated, 'isCreated');
 
     if (!isCreated) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
@@ -1555,18 +1593,18 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
     const newSubOrderIds = value.subOrderId.filter(
       (subId) => !arrayofpickupoder.find((order) => order.subOrderId === subId),
     );
-    
-    if(newSubOrderIds.length === 0){
-         return res.badRequest({ message: getLanguage('en').errorOrderPickedUp });
+
+    if (newSubOrderIds.length === 0) {
+      return res.badRequest({ message: getLanguage('en').errorOrderPickedUp });
     }
 
     const pickupLocation = order.pickupDetails.location;
     const deliveryLocations = allDeliveryDetails.filter((detail) =>
       newSubOrderIds.includes(detail.subOrderId),
     );
-    
+
     if (deliveryLocations.length !== newSubOrderIds.length) {
-        return res.badRequest({ message: getLanguage('en').invalidSubOrderId });
+      return res.badRequest({ message: getLanguage('en').invalidSubOrderId });
     }
 
     const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
@@ -1600,7 +1638,11 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
 
         const distance =
           response.data?.rows[0]?.elements[0]?.distance?.value ?? 0;
+        const duration =
+          response.data?.rows[0]?.elements[0]?.duration?.value ?? 0;
         console.log(distance, 'distance');
+        console.log(duration, 'duration');
+
         console.log(shortestDistance, 'shortestDistance');
 
         if (distance < shortestDistance) {
@@ -1609,6 +1651,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
             subOrderId: delivery.subOrderId,
             location: delivery.location,
             distance: distance,
+            duration: duration,
           };
         }
       }
@@ -1655,19 +1698,56 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       (detail) => detail.status === ORDER_HISTORY.PICKED_UP,
     );
 
-    const nowdata =allDeliveryDetails.map((data:any)=>{
-      if(optimizedRoute.includes(data.subOrderId)){
+    const nowdata = allDeliveryDetails.map((data: any) => {
+      if (optimizedRoute.includes(data.subOrderId)) {
         return {
           ...data,
           status: ORDER_HISTORY.PICKED_UP,
-          time:{
-            start:Date.now(),
-            end:Date.now()
+          time: {
+            start: Date.now(),
+            end: Date.now()
           }
         }
       }
     })
-    console.log(nowdata,'nowdata')
+    console.log(nowdata, 'nowdata')
+    var totaltimedata = 0;
+    for (const elem of optimizedRoute) {
+      totaltimedata += elem.duration;
+      // convert to minutes
+      const time = totaltimedata / 60;
+      console.log(time, 'time');
+      console.log(totaltimedata, 'totaltimedata');
+      console.log(value.orderId, 'order');
+      console.log(elem.subOrderId, 'elem.subOrderId');
+      console.log(elem.location, 'pickupLocation');
+
+      try {
+        const bile = await BileSchema.findOneAndUpdate(
+          {
+            orderId: value.orderId,
+            subOrderId: elem.subOrderId,
+          },
+          {
+            $set: {
+              averageTime: `${time.toFixed(2)} minutes`,
+              pickupLocation: pickupLocation,
+              deliveryLocation: elem.location,
+              // distance in mille
+              orderStatus:ORDER_HISTORY.PICKED_UP,
+              distance : (elem.distance/1609.34).toFixed(2),
+            },
+          },
+          { new: true }
+        );
+        console.log(bile, 'bile');
+      } catch (error) {
+        console.log(error, 'error');
+      }
+    }
+
+
+
 
     await orderSchemaMulti.findOneAndUpdate(
       { orderId: value.orderId },
@@ -1677,7 +1757,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
           'pickupDetails.userSignature': value.userSignature,
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
           'deliveryDetails.$[elem].status': ORDER_HISTORY.PICKED_UP,
-          // 'deliveryDetails':deliveryDetails,
+          'deliveryDetails.$[elem].deliverysignature': value.userSignature,
           route: optimizedRoute,
         },
       },
@@ -1685,6 +1765,16 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
         arrayFilters: [{ 'elem.subOrderId': { $in: newSubOrderIds } }],
       },
     );
+    // in milles
+    for (const elem of newSubOrderIds) {
+      const distance = optimizedRoute.find((data: any) => data.subOrderId === elem)?.distance;
+      if (distance) {
+        await orderSchemaMulti.findOneAndUpdate(
+          { orderId: value.orderId, 'deliveryDetails.subOrderId': elem },
+          { $set: { 'deliveryDetails.$.distance': distance / 1609.34 } },
+        );
+      }
+    }
 
     await paymentGetSchema.findOneAndUpdate(
       { orderId: value.orderId },
@@ -2409,7 +2499,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
               value.deliveryManSignature,
             'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
             'deliveryDetails.$.status': ORDER_HISTORY.DELIVERED,
-            'time.end': endTime, // Use dot notation to set only the 'end' field
+            'deliveryDetails.$.time.end': endTime, // Use dot notation to set only the 'end' field
           },
         },
         { new: true },
@@ -2601,6 +2691,17 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       adminCommission: adminCommission,
       totalCharge: isArrived.totalCharge,
     });
+
+    await BileSchema.updateOne({
+      order: value.orderId,
+      subOrderId: value.subOrderId,
+    }, {
+      $set: {
+        deliverysignature: value.deliveryManSignature,
+        deliveryTimestamp: value.deliverTimestamp,
+      },
+    });
+
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -2850,11 +2951,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           deliveryBoy: new mongoose.Types.ObjectId(req.id),
           ...(startDate &&
             endDate && {
-              createdAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
-              },
-            }),
+            createdAt: {
+              $gte: new Date(startDate),
+              $lte: new Date(endDate),
+            },
+          }),
         },
       },
       {

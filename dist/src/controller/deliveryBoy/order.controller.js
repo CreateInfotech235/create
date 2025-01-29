@@ -31,6 +31,7 @@ const cancelOderbyDeliveryManSchema_1 = __importDefault(require("../../models/ca
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const order_validation_1 = require("../../utils/validation/order.validation");
+const bile_Schema_1 = __importDefault(require("../../models/bile.Schema"));
 const paymentGet_schema_1 = __importDefault(require("../../models/paymentGet.schema"));
 const axios_1 = __importDefault(require("axios"));
 const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -653,6 +654,7 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const isCreated = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
         });
+        console.log(isCreated, 'isCreated');
         if (!isCreated) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
@@ -680,7 +682,6 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 'deliveryDetails.$[].time.start': Date.now(), // Update all elements' time.start
             },
         });
-        console.log('fgsdfsdfsdhiffh');
         yield orderHistory_schema_1.default.create({
             message: `Your order ${value.orderId} has been arrived`,
             order: value.orderId,
@@ -692,6 +693,30 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.ASSIGNED,
         });
+        console.log(isCreated, 'isCreated.deliveryDetails');
+        const deliveryBoydata = yield deliveryMan_schema_1.default.findById(value.deliveryManId);
+        if (isCreated.deliveryDetails && Array.isArray(isCreated.deliveryDetails)) {
+            for (const item of isCreated.deliveryDetails) {
+                try {
+                    const bile = yield bile_Schema_1.default.create({
+                        pickupTime: Date.now(),
+                        orderId: value.orderId,
+                        subOrderId: item.subOrderId,
+                        deliveryBoyId: value.deliveryManId,
+                        merchantId: isCreated.merchant,
+                        chargeMethod: deliveryBoydata.chargeMethod,
+                        charge: deliveryBoydata.charge,
+                        orderStatus: enum_1.ORDER_HISTORY.ARRIVED,
+                        pickupAddress: isCreated.pickupDetails.address,
+                        deliveryAddress: item.address,
+                    });
+                    console.log(bile, 'bile');
+                }
+                catch (error) {
+                    console.log(error, 'error');
+                }
+            }
+        }
         // await createNotification({
         //   userId: isCreated.merchant,
         //   orderId: isCreated.orderId,
@@ -1005,6 +1030,11 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         const isalloderdelevever = oderdata.deliveryDetails.every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED ||
             item.status === enum_1.ORDER_HISTORY.DELIVERED);
         console.log(isalloderdelevever, 'isalloderdelevever');
+        yield bile_Schema_1.default.deleteMany({
+            orderId: value.orderId,
+            deliveryBoyId: value.deliveryManId,
+            subOrderId: value.subOrderId,
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
         });
@@ -1236,7 +1266,7 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.pickUpOrder = pickUpOrder;
 const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g;
+    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderPickUpValidation);
         if (!validateRequest.isValid) {
@@ -1282,7 +1312,9 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 });
                 // console.log(response.data.rows[0].elements[0],'response.data')
                 const distance = (_g = (_f = (_e = (_d = (_c = response.data) === null || _c === void 0 ? void 0 : _c.rows[0]) === null || _d === void 0 ? void 0 : _d.elements[0]) === null || _e === void 0 ? void 0 : _e.distance) === null || _f === void 0 ? void 0 : _f.value) !== null && _g !== void 0 ? _g : 0;
+                const duration = (_m = (_l = (_k = (_j = (_h = response.data) === null || _h === void 0 ? void 0 : _h.rows[0]) === null || _j === void 0 ? void 0 : _j.elements[0]) === null || _k === void 0 ? void 0 : _k.duration) === null || _l === void 0 ? void 0 : _l.value) !== null && _m !== void 0 ? _m : 0;
                 console.log(distance, 'distance');
+                console.log(duration, 'duration');
                 console.log(shortestDistance, 'shortestDistance');
                 if (distance < shortestDistance) {
                     shortestDistance = distance;
@@ -1290,6 +1322,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                         subOrderId: delivery.subOrderId,
                         location: delivery.location,
                         distance: distance,
+                        duration: duration,
                     };
                 }
             }
@@ -1328,18 +1361,55 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             }
         });
         console.log(nowdata, 'nowdata');
+        var totaltimedata = 0;
+        for (const elem of optimizedRoute) {
+            totaltimedata += elem.duration;
+            // convert to minutes
+            const time = totaltimedata / 60;
+            console.log(time, 'time');
+            console.log(totaltimedata, 'totaltimedata');
+            console.log(value.orderId, 'order');
+            console.log(elem.subOrderId, 'elem.subOrderId');
+            console.log(elem.location, 'pickupLocation');
+            try {
+                const bile = yield bile_Schema_1.default.findOneAndUpdate({
+                    orderId: value.orderId,
+                    subOrderId: elem.subOrderId,
+                }, {
+                    $set: {
+                        averageTime: `${time.toFixed(2)} minutes`,
+                        pickupLocation: pickupLocation,
+                        deliveryLocation: elem.location,
+                        // distance in mille
+                        orderStatus: enum_1.ORDER_HISTORY.PICKED_UP,
+                        distance: (elem.distance / 1609.34).toFixed(2),
+                    },
+                }, { new: true });
+                console.log(bile, 'bile');
+            }
+            catch (error) {
+                console.log(error, 'error');
+            }
+        }
         yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
                 status: allPickedUp ? enum_1.ORDER_HISTORY.PICKED_UP : isArrived.status,
                 'pickupDetails.userSignature': value.userSignature,
                 'pickupDetails.orderTimestamp': value.pickupTimestamp,
                 'deliveryDetails.$[elem].status': enum_1.ORDER_HISTORY.PICKED_UP,
-                // 'deliveryDetails':deliveryDetails,
+                'deliveryDetails.$[elem].deliverysignature': value.userSignature,
                 route: optimizedRoute,
             },
         }, {
             arrayFilters: [{ 'elem.subOrderId': { $in: newSubOrderIds } }],
         });
+        // in milles
+        for (const elem of newSubOrderIds) {
+            const distance = (_o = optimizedRoute.find((data) => data.subOrderId === elem)) === null || _o === void 0 ? void 0 : _o.distance;
+            if (distance) {
+                yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId, 'deliveryDetails.subOrderId': elem }, { $set: { 'deliveryDetails.$.distance': distance / 1609.34 } });
+            }
+        }
         yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'PICKED_UP' } }, { new: true });
         // if (isArrived.cashOnDelivery) {
         //   await PaymentInfoSchema.updateOne(
@@ -1853,7 +1923,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
                     'deliveryDetails.$.deliveryBoySignature': value.deliveryManSignature,
                     'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
                     'deliveryDetails.$.status': enum_1.ORDER_HISTORY.DELIVERED,
-                    'time.end': endTime, // Use dot notation to set only the 'end' field
+                    'deliveryDetails.$.time.end': endTime, // Use dot notation to set only the 'end' field
                 },
             }, { new: true }),
         ]);
@@ -1971,6 +2041,15 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             paymentInfo: paymentInfo,
             adminCommission: adminCommission,
             totalCharge: isArrived.totalCharge,
+        });
+        yield bile_Schema_1.default.updateOne({
+            order: value.orderId,
+            subOrderId: value.subOrderId,
+        }, {
+            $set: {
+                deliverysignature: value.deliveryManSignature,
+                deliveryTimestamp: value.deliverTimestamp,
+            },
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,

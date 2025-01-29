@@ -134,6 +134,9 @@ const OrderSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'parcel',
           },
+          pickupsignature: { type: String },
+    deliverysignature: { type: String },
+
         // },
       },
     ],
@@ -179,6 +182,9 @@ const OrderSchema = new mongoose.Schema(
     cashCollection: { type: Number },
     isCustomer: { type: Boolean, default: false },
     route: { type: Array, default: [] },
+    
+    
+
   },
   { timestamps: true, versionKey: false },
 );

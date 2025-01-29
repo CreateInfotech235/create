@@ -57,6 +57,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         trashed: boolean;
         status: string;
@@ -82,6 +84,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }> & {
         trashed: boolean;
         status: string;
@@ -107,6 +111,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }>;
     charges: mongoose.Types.DocumentArray<{
         charge?: number;
@@ -197,6 +203,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         trashed: boolean;
         status: string;
@@ -222,6 +230,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }> & {
         trashed: boolean;
         status: string;
@@ -247,6 +257,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }>;
     charges: mongoose.Types.DocumentArray<{
         charge?: number;
@@ -337,6 +349,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         trashed: boolean;
         status: string;
@@ -362,6 +376,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }> & {
         trashed: boolean;
         status: string;
@@ -387,6 +403,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }>;
     charges: mongoose.Types.DocumentArray<{
         charge?: number;
@@ -484,6 +502,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         trashed: boolean;
         status: string;
@@ -509,6 +529,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }> & {
         trashed: boolean;
         status: string;
@@ -534,6 +556,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }>;
     charges: mongoose.Types.DocumentArray<{
         charge?: number;
@@ -624,6 +648,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         trashed: boolean;
         status: string;
@@ -649,6 +675,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }> & {
         trashed: boolean;
         status: string;
@@ -674,6 +702,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }>;
     charges: mongoose.Types.DocumentArray<{
         charge?: number;
@@ -764,6 +794,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         trashed: boolean;
         status: string;
@@ -789,6 +821,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }> & {
         trashed: boolean;
         status: string;
@@ -814,6 +848,8 @@ declare const Model: mongoose.Model<{
         distance?: number;
         duration?: string;
         subOrderId?: number;
+        pickupsignature?: string;
+        deliverysignature?: string;
     }>;
     charges: mongoose.Types.DocumentArray<{
         charge?: number;
