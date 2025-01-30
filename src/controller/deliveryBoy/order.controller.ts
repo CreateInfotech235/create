@@ -2932,6 +2932,7 @@ export const getPaymentDataForDeliveryBoy = async (
     });
   }
 };
+
 export const getMultiOrder = async (req: RequestParams, res: Response) => {
   try {
     const {
@@ -2976,7 +2977,12 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
               if: { $isArray: '$orderData.deliveryDetails' },
               then: {
                 $map: {
-                  input: '$orderData.deliveryDetails',
+                  input: {
+                    $sortArray: {
+                      input: '$orderData.deliveryDetails',
+                      sortBy: { sortOrder: 1 }
+                    }
+                  },
                   as: 'detail',
                   in: {
                     $mergeObjects: [
@@ -3094,6 +3100,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                 {
                                   $filter: {
                                     input: '$orderData.deliveryDetails',
+                                    
                                     as: 'detail',
                                     cond: {
                                       $eq: [
@@ -3105,6 +3112,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                 },
                                 0,
                               ],
+                              
                             },
                             {
                               distance: {
@@ -3155,24 +3163,10 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           },
         },
       },
+      
+    
       {
-        $addFields: {
-          'orderData.deliveryDetails': {
-            $map: {
-              input: { $ifNull: ['$orderData.deliveryDetails', []] },
-              as: 'detail',
-              in: {
-                $mergeObjects: [
-                  '$$detail',
-                  { index: { $add: [{ $indexOfArray: ['$orderData.deliveryDetails', '$$detail'] }, 1] } }
-                ]
-              }
-            }
-          },
-        },
-      },
-      {
-        $sort: { createdAt: -1 },
+        $sort: { createdAt: -1  },
       },
       {
         $skip: (Number(pageCount) - 1) * Number(pageLimit),
@@ -3187,6 +3181,15 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       },
     ]);
 
+
+    for (const item of data) {
+      item.orderData.deliveryDetails.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+    }
+    for (const item of data) {
+      item.orderData.deliveryDetails.forEach((detail: any, index: number) => {
+        detail.index = index + 1;
+      });
+    }
     return res.ok({
       data: data || [],
     });
@@ -3399,6 +3402,12 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
     if (oder.deliveryBoy.toString() != req.id.toString()) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
+    multiOrder.deliveryDetails.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+
+
+    multiOrder.deliveryDetails.forEach((detail: any, index: number) => {
+      detail.index = index + 1;
+    });
 
     return res.ok({ data: multiOrder });
   } catch (error) {

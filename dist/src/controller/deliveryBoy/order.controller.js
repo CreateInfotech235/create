@@ -2303,7 +2303,12 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                             if: { $isArray: '$orderData.deliveryDetails' },
                             then: {
                                 $map: {
-                                    input: '$orderData.deliveryDetails',
+                                    input: {
+                                        $sortArray: {
+                                            input: '$orderData.deliveryDetails',
+                                            sortBy: { sortOrder: 1 }
+                                        }
+                                    },
                                     as: 'detail',
                                     in: {
                                         $mergeObjects: [
@@ -2481,22 +2486,6 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             },
             {
-                $addFields: {
-                    'orderData.deliveryDetails': {
-                        $map: {
-                            input: { $ifNull: ['$orderData.deliveryDetails', []] },
-                            as: 'detail',
-                            in: {
-                                $mergeObjects: [
-                                    '$$detail',
-                                    { index: { $add: [{ $indexOfArray: ['$orderData.deliveryDetails', '$$detail'] }, 1] } }
-                                ]
-                            }
-                        }
-                    },
-                },
-            },
-            {
                 $sort: { createdAt: -1 },
             },
             {
@@ -2511,6 +2500,14 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             },
         ]);
+        for (const item of data) {
+            item.orderData.deliveryDetails.sort((a, b) => a.sortOrder - b.sortOrder);
+        }
+        for (const item of data) {
+            item.orderData.deliveryDetails.forEach((detail, index) => {
+                detail.index = index + 1;
+            });
+        }
         return res.ok({
             data: data || [],
         });
@@ -2721,6 +2718,10 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
         if (oder.deliveryBoy.toString() != req.id.toString()) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
+        multiOrder.deliveryDetails.sort((a, b) => a.sortOrder - b.sortOrder);
+        multiOrder.deliveryDetails.forEach((detail, index) => {
+            detail.index = index + 1;
+        });
         return res.ok({ data: multiOrder });
     }
     catch (error) {
