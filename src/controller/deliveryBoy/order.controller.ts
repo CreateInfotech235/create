@@ -58,7 +58,6 @@ import {
   OrderPickUpType,
 } from './types/order';
 
-
 import BileSchema from '../../models/bile.Schema';
 import paymentGetSchema from '../../models/paymentGet.schema';
 import axios from 'axios';
@@ -804,7 +803,11 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       });
     }
 
-    if (isCreated.deliveryDetails.some(item => item.status === ORDER_HISTORY.ARRIVED)) {
+    if (
+      isCreated.deliveryDetails.some(
+        (item) => item.status === ORDER_HISTORY.ARRIVED,
+      )
+    ) {
       return res.badRequest({ message: getLanguage('en').orderAlreadyArrived });
     }
 
@@ -828,7 +831,6 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       },
     );
 
-
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been arrived`,
       order: value.orderId,
@@ -842,7 +844,9 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
     });
     console.log(isCreated, 'isCreated.deliveryDetails');
 
-    const deliveryBoydata = await DeliveryManSchema.findById(value.deliveryManId);
+    const deliveryBoydata = await DeliveryManSchema.findById(
+      value.deliveryManId,
+    );
 
     if (isCreated.deliveryDetails && Array.isArray(isCreated.deliveryDetails)) {
       for (const item of isCreated.deliveryDetails) {
@@ -1149,7 +1153,6 @@ export const cancelMultiOrder = async (req: RequestParams, res: Response) => {
       message: `Order ${existingOrder.orderId} has been cancelled by deliveryman`,
       type: 'MERCHANT',
     });
-    
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -1268,15 +1271,11 @@ export const cancelMultiSubOrder = async (
 
     console.log(isalloderdelevever, 'isalloderdelevever');
 
-
     await BileSchema.deleteMany({
       orderId: value.orderId,
       deliveryBoyId: value.deliveryManId,
       subOrderId: value.subOrderId,
     });
-
-
-
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -1379,7 +1378,6 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
     }
-
 
     const { value } = validateRequest;
     console.log(value);
@@ -1675,7 +1673,6 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
 
     console.log('Optimized delivery route:', optimizedRoute);
 
-
     const isArrived = await orderSchemaMulti.findOne({
       orderId: value.orderId,
       deliveryDetails: {
@@ -1705,12 +1702,12 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
           status: ORDER_HISTORY.PICKED_UP,
           time: {
             start: Date.now(),
-            end: Date.now()
-          }
-        }
+            end: Date.now(),
+          },
+        };
       }
-    })
-    console.log(nowdata, 'nowdata')
+    });
+    console.log(nowdata, 'nowdata');
     var totaltimedata = 0;
     for (const elem of optimizedRoute) {
       totaltimedata += elem.duration;
@@ -1734,20 +1731,17 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
               pickupLocation: pickupLocation,
               deliveryLocation: elem.location,
               // distance in mille
-              orderStatus:ORDER_HISTORY.PICKED_UP,
-              distance : (elem.distance/1609.34).toFixed(2),
+              orderStatus: ORDER_HISTORY.PICKED_UP,
+              distance: (elem.distance / 1609.34).toFixed(2),
             },
           },
-          { new: true }
+          { new: true },
         );
         console.log(bile, 'bile');
       } catch (error) {
         console.log(error, 'error');
       }
     }
-
-
-
 
     await orderSchemaMulti.findOneAndUpdate(
       { orderId: value.orderId },
@@ -1767,7 +1761,9 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
     );
     // in milles
     for (const elem of newSubOrderIds) {
-      const distance = optimizedRoute.find((data: any) => data.subOrderId === elem)?.distance;
+      const distance = optimizedRoute.find(
+        (data: any) => data.subOrderId === elem,
+      )?.distance;
       if (distance) {
         await orderSchemaMulti.findOneAndUpdate(
           { orderId: value.orderId, 'deliveryDetails.subOrderId': elem },
@@ -2692,16 +2688,18 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       totalCharge: isArrived.totalCharge,
     });
 
-    await BileSchema.updateOne({
-      order: value.orderId,
-      subOrderId: value.subOrderId,
-    }, {
-      $set: {
-        deliverysignature: value.deliveryManSignature,
-        deliveryTimestamp: value.deliverTimestamp,
+    await BileSchema.updateOne(
+      {
+        order: value.orderId,
+        subOrderId: value.subOrderId,
       },
-    });
-
+      {
+        $set: {
+          deliverysignature: value.deliveryManSignature,
+          deliveryTimestamp: value.deliverTimestamp,
+        },
+      },
+    );
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -2934,7 +2932,6 @@ export const getPaymentDataForDeliveryBoy = async (
     });
   }
 };
-
 export const getMultiOrder = async (req: RequestParams, res: Response) => {
   try {
     const {
@@ -2951,11 +2948,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           deliveryBoy: new mongoose.Types.ObjectId(req.id),
           ...(startDate &&
             endDate && {
-            createdAt: {
-              $gte: new Date(startDate),
-              $lte: new Date(endDate),
-            },
-          }),
+              createdAt: {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+              },
+            }),
         },
       },
       {
@@ -2986,47 +2983,51 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                       '$$detail',
                       {
                         sortOrder: {
-                          $switch: {
-                            branches: [
-                              {
-                                case: {
-                                  $eq: [
-                                    '$$detail.status',
-                                    ORDER_HISTORY.PICKED_UP,
-                                  ],
-                                },
-                                then: 1,
+                          $add: [
+                            {
+                              $switch: {
+                                branches: [
+                                  {
+                                    case: {
+                                      $eq: [
+                                        '$$detail.status',
+                                        ORDER_HISTORY.PICKED_UP,
+                                      ],
+                                    },
+                                    then: 1,
+                                  },
+                                  {
+                                    case: {
+                                      $eq: [
+                                        '$$detail.status',
+                                        ORDER_HISTORY.ARRIVED,
+                                      ],
+                                    },
+                                    then: 2,
+                                  },
+                                  {
+                                    case: {
+                                      $eq: [
+                                        '$$detail.status',
+                                        ORDER_HISTORY.DEPARTED,
+                                      ],
+                                    },
+                                    then: 3,
+                                  },
+                                  {
+                                    case: {
+                                      $eq: [
+                                        '$$detail.status',
+                                        ORDER_HISTORY.DELIVERED,
+                                      ],
+                                    },
+                                    then: 4,
+                                  },
+                                ],
+                                default: 5,
                               },
-                              {
-                                case: {
-                                  $eq: [
-                                    '$$detail.status',
-                                    ORDER_HISTORY.ARRIVED,
-                                  ],
-                                },
-                                then: 2,
-                              },
-                              {
-                                case: {
-                                  $eq: [
-                                    '$$detail.status',
-                                    ORDER_HISTORY.DEPARTED,
-                                  ],
-                                },
-                                then: 3,
-                              },
-                              {
-                                case: {
-                                  $eq: [
-                                    '$$detail.status',
-                                    ORDER_HISTORY.DELIVERED,
-                                  ],
-                                },
-                                then: 4,
-                              },
-                            ],
-                            default: 5,
-                          },
+                            },
+                          ],
                         },
                         distance: {
                           $cond: {
@@ -3151,6 +3152,22 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
               { $ifNull: ['$orderData.totalOrders', 0] },
               { $ifNull: ['$orderData.totalDeliveredOrders', 0] },
             ],
+          },
+        },
+      },
+      {
+        $addFields: {
+          'orderData.deliveryDetails': {
+            $map: {
+              input: { $ifNull: ['$orderData.deliveryDetails', []] },
+              as: 'detail',
+              in: {
+                $mergeObjects: [
+                  '$$detail',
+                  { index: { $add: [{ $indexOfArray: ['$orderData.deliveryDetails', '$$detail'] }, 1] } }
+                ]
+              }
+            }
           },
         },
       },

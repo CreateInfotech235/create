@@ -2,34 +2,36 @@ import mongoose from 'mongoose';
 // bile of delivery boy payment
 const BileSchema = new mongoose.Schema(
   {
-    deliveryBoyId: { type: mongoose.Schema.Types.ObjectId, required: true },
-    merchantId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    deliveryBoyId: { type: mongoose.Schema.Types.ObjectId, required: true },//ok
+    merchantId: { type: mongoose.Schema.Types.ObjectId, required: true },//ok
 
-    orderId: { type: String, required: true },
-    subOrderId: { type: String },
+    orderId: { type: String, required: true },//ok
+    subOrderId: { type: String },//ok
 
-    averageTime: { type: String },
+    averageTime: { type: String },//ok
 
-    pickupTime: { type: Date, required: true },
+    pickupTime: { type: Date, required: true },//ok
     deliveryTime: { type: Date },
 
-    pickupLocation: { type: Object },
-    deliveryLocation: { type: Object },
+    pickupLocation: { type: Object },//ok
+    deliveryLocation: { type: Object },//ok
 
-    pickupAddress: { type: String },
-    deliveryAddress: { type: String },
+    pickupAddress: { type: String },//ok
+    deliveryAddress: { type: String },//ok
+
 
     DelawareDate: { type: Date },
     amount: { type: Number },
 
-    charge: { type: Number, required: true },
-    distance: { type: Number },
+    charge: { type: Number, required: true }, //ok
+    distance: { type: Number },//ok
+    totalCharge: { type: Number },
 
-    orderStatus: { type: String, required: true },
+    orderStatus: { type: String, required: true },//ok
 
-    chargeMethod: { type: String },
-    isApproved: { type: Boolean, default: false },
-    isPaid: { type: Boolean, default: false },
+    chargeMethod: { type: String },//ok
+    isApproved: { type: Boolean, default: false },//ok
+    isPaid: { type: Boolean, default: false },//ok
   },
   { timestamps: true, versionKey: false },
 );

@@ -667,7 +667,7 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 message: (0, languageHelper_1.getLanguage)('en').invalidDeliveryMan,
             });
         }
-        if (isCreated.deliveryDetails.some(item => item.status === enum_1.ORDER_HISTORY.ARRIVED)) {
+        if (isCreated.deliveryDetails.some((item) => item.status === enum_1.ORDER_HISTORY.ARRIVED)) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').orderAlreadyArrived });
         }
         // TODO: add distance to the order
@@ -1356,7 +1356,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             if (optimizedRoute.includes(data.subOrderId)) {
                 return Object.assign(Object.assign({}, data), { status: enum_1.ORDER_HISTORY.PICKED_UP, time: {
                         start: Date.now(),
-                        end: Date.now()
+                        end: Date.now(),
                     } });
             }
         });
@@ -2310,47 +2310,51 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                             '$$detail',
                                             {
                                                 sortOrder: {
-                                                    $switch: {
-                                                        branches: [
-                                                            {
-                                                                case: {
-                                                                    $eq: [
-                                                                        '$$detail.status',
-                                                                        enum_1.ORDER_HISTORY.PICKED_UP,
-                                                                    ],
-                                                                },
-                                                                then: 1,
+                                                    $add: [
+                                                        {
+                                                            $switch: {
+                                                                branches: [
+                                                                    {
+                                                                        case: {
+                                                                            $eq: [
+                                                                                '$$detail.status',
+                                                                                enum_1.ORDER_HISTORY.PICKED_UP,
+                                                                            ],
+                                                                        },
+                                                                        then: 1,
+                                                                    },
+                                                                    {
+                                                                        case: {
+                                                                            $eq: [
+                                                                                '$$detail.status',
+                                                                                enum_1.ORDER_HISTORY.ARRIVED,
+                                                                            ],
+                                                                        },
+                                                                        then: 2,
+                                                                    },
+                                                                    {
+                                                                        case: {
+                                                                            $eq: [
+                                                                                '$$detail.status',
+                                                                                enum_1.ORDER_HISTORY.DEPARTED,
+                                                                            ],
+                                                                        },
+                                                                        then: 3,
+                                                                    },
+                                                                    {
+                                                                        case: {
+                                                                            $eq: [
+                                                                                '$$detail.status',
+                                                                                enum_1.ORDER_HISTORY.DELIVERED,
+                                                                            ],
+                                                                        },
+                                                                        then: 4,
+                                                                    },
+                                                                ],
+                                                                default: 5,
                                                             },
-                                                            {
-                                                                case: {
-                                                                    $eq: [
-                                                                        '$$detail.status',
-                                                                        enum_1.ORDER_HISTORY.ARRIVED,
-                                                                    ],
-                                                                },
-                                                                then: 2,
-                                                            },
-                                                            {
-                                                                case: {
-                                                                    $eq: [
-                                                                        '$$detail.status',
-                                                                        enum_1.ORDER_HISTORY.DEPARTED,
-                                                                    ],
-                                                                },
-                                                                then: 3,
-                                                            },
-                                                            {
-                                                                case: {
-                                                                    $eq: [
-                                                                        '$$detail.status',
-                                                                        enum_1.ORDER_HISTORY.DELIVERED,
-                                                                    ],
-                                                                },
-                                                                then: 4,
-                                                            },
-                                                        ],
-                                                        default: 5,
-                                                    },
+                                                        },
+                                                    ],
                                                 },
                                                 distance: {
                                                     $cond: {
@@ -2473,6 +2477,22 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                             { $ifNull: ['$orderData.totalOrders', 0] },
                             { $ifNull: ['$orderData.totalDeliveredOrders', 0] },
                         ],
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    'orderData.deliveryDetails': {
+                        $map: {
+                            input: { $ifNull: ['$orderData.deliveryDetails', []] },
+                            as: 'detail',
+                            in: {
+                                $mergeObjects: [
+                                    '$$detail',
+                                    { index: { $add: [{ $indexOfArray: ['$orderData.deliveryDetails', '$$detail'] }, 1] } }
+                                ]
+                            }
+                        }
                     },
                 },
             },

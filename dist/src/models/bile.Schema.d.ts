@@ -38,6 +38,7 @@ declare const Model: mongoose.Model<{
     isApproved: boolean;
     chargeMethod?: string;
     deliveryLocation?: any;
+    totalCharge?: number;
     distance?: number;
     subOrderId?: string;
     amount?: number;
@@ -61,6 +62,7 @@ declare const Model: mongoose.Model<{
     isApproved: boolean;
     chargeMethod?: string;
     deliveryLocation?: any;
+    totalCharge?: number;
     distance?: number;
     subOrderId?: string;
     amount?: number;
@@ -84,6 +86,7 @@ declare const Model: mongoose.Model<{
     isApproved: boolean;
     chargeMethod?: string;
     deliveryLocation?: any;
+    totalCharge?: number;
     distance?: number;
     subOrderId?: string;
     amount?: number;
@@ -114,6 +117,7 @@ declare const Model: mongoose.Model<{
     isApproved: boolean;
     chargeMethod?: string;
     deliveryLocation?: any;
+    totalCharge?: number;
     distance?: number;
     subOrderId?: string;
     amount?: number;
@@ -137,6 +141,7 @@ declare const Model: mongoose.Model<{
     isApproved: boolean;
     chargeMethod?: string;
     deliveryLocation?: any;
+    totalCharge?: number;
     distance?: number;
     subOrderId?: string;
     amount?: number;
@@ -160,6 +165,7 @@ declare const Model: mongoose.Model<{
     isApproved: boolean;
     chargeMethod?: string;
     deliveryLocation?: any;
+    totalCharge?: number;
     distance?: number;
     subOrderId?: string;
     amount?: number;
