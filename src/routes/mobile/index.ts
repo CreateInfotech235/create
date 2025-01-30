@@ -5,10 +5,12 @@ import orderRoutes from './order.routes';
 import subscriptionRoutes from './subscription.routes';
 import invoiceRoutes from './invoice.routes';
 import parcelTypeRoutes from './parcelType.routes';
+import billingRoutes from './billing.routes';
 const router = express.Router();
 
 router.use('/auth', authRoutes);
 router.use(mobileAuth);
+router.use('/billing', billingRoutes);
 router.use('/order', orderRoutes);
 router.use('/subscription', subscriptionRoutes);
 router.use('/invoice', invoiceRoutes);
