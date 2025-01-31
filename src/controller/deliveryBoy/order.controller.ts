@@ -1180,26 +1180,32 @@ export const cancelMultiSubOrder = async (
 
     const { value } = validateRequest;
     value.deliveryManId = req.id.toString();
-
+console.log(value,'value')
     // Check if the order exists and is not yet completed
     const existingOrder = await orderSchemaMulti.findOne({
       orderId: value.orderId,
-      'deliveryDetails.status': {
-        $in: [
-          ORDER_HISTORY.CREATED,
-          ORDER_HISTORY.ASSIGNED,
-          ORDER_HISTORY.ARRIVED,
-          ORDER_HISTORY.PICKED_UP,
-          ORDER_HISTORY.DEPARTED,
-        ],
-      },
+      'deliveryDetails': {
+        $elemMatch: {
+          subOrderId: { $in: value.subOrderId },
+          status: {
+            $in: [
+              ORDER_HISTORY.CREATED,
+              ORDER_HISTORY.ASSIGNED, 
+              ORDER_HISTORY.ARRIVED,
+              ORDER_HISTORY.PICKED_UP,
+              ORDER_HISTORY.DEPARTED
+            ]
+          }
+        }
+      }
     });
+
     console.log(existingOrder, 'existingOrder');
     if (!existingOrder) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
 
-    console.log(existingOrder, 'First');
+    // console.log(existingOrder, 'First');
     const isAssigned = await OrderAssigneeSchemaMulti.findOne({
       order: value.orderId,
       deliveryBoy: value.deliveryManId,
@@ -1214,8 +1220,8 @@ export const cancelMultiSubOrder = async (
 
     const nowdata = existingOrder;
     // console.log(value.subOrderId, 'value');
-    nowdata.deliveryDetails.map((item) => {
-      if (item.subOrderId == value.subOrderId) {
+    for (const item of nowdata.deliveryDetails) {
+      if (Array.isArray(value.subOrderId) && value.subOrderId.includes(item.subOrderId)) {
         if (item.status !== ORDER_HISTORY.CANCELLED) {
           item.status = ORDER_HISTORY.CANCELLED;
         } else {
@@ -1224,16 +1230,26 @@ export const cancelMultiSubOrder = async (
           });
         }
       }
-    });
+    }
     console.log(nowdata, 'nowdata');
+
+    // Check if all sub-orders are cancelled
+    const allCancelled = nowdata.deliveryDetails.every(
+      item => item.status === ORDER_HISTORY.CANCELLED
+    );
+
+    const updateData = {
+      deliveryDetails: nowdata.deliveryDetails,
+      ...(allCancelled && { status: ORDER_HISTORY.CANCELLED })
+    };
 
     const newoder = await orderSchemaMulti.findOneAndUpdate(
       { orderId: value.orderId },
-      { $set: { deliveryDetails: nowdata.deliveryDetails } },
+      { $set: updateData },
       { new: true },
     );
     if (newoder) {
-      console.log(value.reason, 'value.reason');
+      // console.log(value.reason, 'value.reason');
       // Handle type safety by ensuring subOrderId is an array
       if (Array.isArray(value.subOrderId)) {
         for (const subOrder of value.subOrderId) {
@@ -1273,7 +1289,7 @@ export const cancelMultiSubOrder = async (
       orderId: value.orderId,
       // 'deliveryDetails.subOrderId': value.subOrderId,
     });
-    console.log(oderdata, 'oderdata');
+    // console.log(oderdata, 'oderdata');
     // IF ALL ODER IN CANCELLED OR DELIVERED THEN TRUE ELSE FALSE
     const isalloderdelevever = oderdata.deliveryDetails.every(
       (item) =>
@@ -1282,12 +1298,16 @@ export const cancelMultiSubOrder = async (
     );
 
     console.log(isalloderdelevever, 'isalloderdelevever');
-
-    await BileSchema.deleteMany({
-      orderId: value.orderId,
-      deliveryBoyId: value.deliveryManId,
-      subOrderId: { $in: value.subOrderId },
-    });
+    try {
+      await BileSchema.deleteMany({
+        orderId: value.orderId,
+        deliveryBoyId: value.deliveryManId,
+        subOrderId: { $in: value.subOrderId },
+      });
+    } catch (error) {
+      // Silently handle error if BileSchema not found
+      console.log('Error deleting from BileSchema:', error);
+    }
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -2955,6 +2975,10 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       pageCount = 1,
     } = req.query;
 
+    if (status === ORDER_HISTORY.CANCELLED) {
+
+    }
+
     const data = await OrderAssigneeSchemaMulti.aggregate([
       {
         $match: {
@@ -2966,6 +2990,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                 $lte: new Date(endDate),
               },
             }),
+            // ...(status && { 'orderData.status': status }),
         },
       },
       {
@@ -3187,8 +3212,15 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         $limit: Number(pageLimit),
       },
       {
+        $match: {
+          'orderData.status': { $ne: ORDER_HISTORY.CANCELLED },
+        },
+      },
+      {
         $project: {
           'orderData.route': 0,
+          // status: { $ne: ORDER_HISTORY.CANCELLED },
+          // 'orderData.status':{$ne:ORDER_HISTORY.CANCELLED}
         },
       },
     ]);

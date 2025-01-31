@@ -954,24 +954,30 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         }
         const { value } = validateRequest;
         value.deliveryManId = req.id.toString();
+        console.log(value, 'value');
         // Check if the order exists and is not yet completed
         const existingOrder = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
-            'deliveryDetails.status': {
-                $in: [
-                    enum_1.ORDER_HISTORY.CREATED,
-                    enum_1.ORDER_HISTORY.ASSIGNED,
-                    enum_1.ORDER_HISTORY.ARRIVED,
-                    enum_1.ORDER_HISTORY.PICKED_UP,
-                    enum_1.ORDER_HISTORY.DEPARTED,
-                ],
-            },
+            'deliveryDetails': {
+                $elemMatch: {
+                    subOrderId: { $in: value.subOrderId },
+                    status: {
+                        $in: [
+                            enum_1.ORDER_HISTORY.CREATED,
+                            enum_1.ORDER_HISTORY.ASSIGNED,
+                            enum_1.ORDER_HISTORY.ARRIVED,
+                            enum_1.ORDER_HISTORY.PICKED_UP,
+                            enum_1.ORDER_HISTORY.DEPARTED
+                        ]
+                    }
+                }
+            }
         });
         console.log(existingOrder, 'existingOrder');
         if (!existingOrder) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
-        console.log(existingOrder, 'First');
+        // console.log(existingOrder, 'First');
         const isAssigned = yield orderAssigneeMulti_schema_1.default.findOne({
             order: value.orderId,
             deliveryBoy: value.deliveryManId,
@@ -984,8 +990,8 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         }
         const nowdata = existingOrder;
         // console.log(value.subOrderId, 'value');
-        nowdata.deliveryDetails.map((item) => {
-            if (item.subOrderId == value.subOrderId) {
+        for (const item of nowdata.deliveryDetails) {
+            if (Array.isArray(value.subOrderId) && value.subOrderId.includes(item.subOrderId)) {
                 if (item.status !== enum_1.ORDER_HISTORY.CANCELLED) {
                     item.status = enum_1.ORDER_HISTORY.CANCELLED;
                 }
@@ -995,11 +1001,14 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                     });
                 }
             }
-        });
+        }
         console.log(nowdata, 'nowdata');
-        const newoder = yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { deliveryDetails: nowdata.deliveryDetails } }, { new: true });
+        // Check if all sub-orders are cancelled
+        const allCancelled = nowdata.deliveryDetails.every(item => item.status === enum_1.ORDER_HISTORY.CANCELLED);
+        const updateData = Object.assign({ deliveryDetails: nowdata.deliveryDetails }, (allCancelled && { status: enum_1.ORDER_HISTORY.CANCELLED }));
+        const newoder = yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: updateData }, { new: true });
         if (newoder) {
-            console.log(value.reason, 'value.reason');
+            // console.log(value.reason, 'value.reason');
             // Handle type safety by ensuring subOrderId is an array
             if (Array.isArray(value.subOrderId)) {
                 for (const subOrder of value.subOrderId) {
@@ -1034,16 +1043,22 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
             orderId: value.orderId,
             // 'deliveryDetails.subOrderId': value.subOrderId,
         });
-        console.log(oderdata, 'oderdata');
+        // console.log(oderdata, 'oderdata');
         // IF ALL ODER IN CANCELLED OR DELIVERED THEN TRUE ELSE FALSE
         const isalloderdelevever = oderdata.deliveryDetails.every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED ||
             item.status === enum_1.ORDER_HISTORY.DELIVERED);
         console.log(isalloderdelevever, 'isalloderdelevever');
-        yield bile_Schema_1.default.deleteMany({
-            orderId: value.orderId,
-            deliveryBoyId: value.deliveryManId,
-            subOrderId: { $in: value.subOrderId },
-        });
+        try {
+            yield bile_Schema_1.default.deleteMany({
+                orderId: value.orderId,
+                deliveryBoyId: value.deliveryManId,
+                subOrderId: { $in: value.subOrderId },
+            });
+        }
+        catch (error) {
+            // Silently handle error if BileSchema not found
+            console.log('Error deleting from BileSchema:', error);
+        }
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
         });
@@ -2281,6 +2296,8 @@ exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
 const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { startDate, endDate, status, pageLimit = 10, pageCount = 1, } = req.query;
+        if (status === enum_1.ORDER_HISTORY.CANCELLED) {
+        }
         const data = yield orderAssigneeMulti_schema_1.default.aggregate([
             {
                 $match: Object.assign({ deliveryBoy: new mongoose_1.default.Types.ObjectId(req.id) }, (startDate &&
@@ -2504,8 +2521,15 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 $limit: Number(pageLimit),
             },
             {
+                $match: {
+                    'orderData.status': { $ne: enum_1.ORDER_HISTORY.CANCELLED },
+                },
+            },
+            {
                 $project: {
                     'orderData.route': 0,
+                    // status: { $ne: ORDER_HISTORY.CANCELLED },
+                    // 'orderData.status':{$ne:ORDER_HISTORY.CANCELLED}
                 },
             },
         ]);
