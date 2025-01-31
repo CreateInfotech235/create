@@ -52,6 +52,10 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     orderStatus: 1,
                     chargeMethod: 1,
                     isApproved: 1,
+                    pickupAddress: 1,
+                    deliveryAddress: 1,
+                    pickupLocation: 1,
+                    deliveryLocation: 1,
                     isPaid: 1,
                     averageTime: 1,
                     createdAt: 1,
@@ -83,6 +87,10 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     charge: (_a = curr.totalCharge) !== null && _a !== void 0 ? _a : 0,
                     orderStatus: curr.orderStatus,
                     chargeMethod: curr.chargeMethod,
+                    pickupAddress: curr.pickupAddress,
+                    deliveryAddress: curr.deliveryAddress,
+                    pickupLocation: curr.pickupLocation,
+                    deliveryLocation: curr.deliveryLocation,
                     isApproved: curr.isApproved,
                     isPaid: curr.isPaid,
                     averageTime: curr.averageTime
@@ -105,6 +113,10 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                             orderStatus: curr.orderStatus,
                             chargeMethod: curr.chargeMethod,
                             isApproved: curr.isApproved,
+                            pickupAddress: curr.pickupAddress,
+                            deliveryAddress: curr.deliveryAddress,
+                            pickupLocation: curr.pickupLocation,
+                            deliveryLocation: curr.deliveryLocation,
                             isPaid: curr.isPaid,
                             averageTime: curr.averageTime
                         }]

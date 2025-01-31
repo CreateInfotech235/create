@@ -234,7 +234,7 @@ exports.orderCancelValidation = joi_1.default.object({
 exports.orderCancelMultiValidation = joi_1.default.object({
     orderId: joi_1.default.number().required(),
     reason: joi_1.default.string().required(),
-    subOrderId: joi_1.default.number().required(),
+    subOrderId: joi_1.default.array().required(),
 });
 exports.invoiceValidation = joi_1.default.object({
     companyName: joi_1.default.string().required(),

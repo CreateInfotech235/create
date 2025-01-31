@@ -1000,26 +1000,35 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         const newoder = yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { deliveryDetails: nowdata.deliveryDetails } }, { new: true });
         if (newoder) {
             console.log(value.reason, 'value.reason');
-            yield cancelOderbyDeliveryManSchema_1.default.create({
-                deliveryBoy: value.deliveryManId,
-                order: value.orderId,
-                subOrderId: value.subOrderId,
-                reason: value.reason,
-            });
+            // Handle type safety by ensuring subOrderId is an array
+            if (Array.isArray(value.subOrderId)) {
+                for (const subOrder of value.subOrderId) {
+                    yield cancelOderbyDeliveryManSchema_1.default.create({
+                        deliveryBoy: value.deliveryManId,
+                        order: value.orderId,
+                        subOrderId: subOrder,
+                        reason: value.reason,
+                    });
+                }
+            }
         }
         yield orderHistory_schema_1.default.deleteMany({
             order: value.orderId,
-            subOrderId: value.subOrderId,
+            subOrderId: { $in: value.subOrderId },
             merchantID: existingOrder.merchant,
         });
-        yield orderHistory_schema_1.default.create({
-            message: `Order ${value.orderId} has been canceled by the delivery man.`,
-            order: value.orderId,
-            subOrderId: value.subOrderId,
-            status: enum_1.ORDER_HISTORY.UNASSIGNED,
-            merchantID: existingOrder.merchant,
-            deliveryBoy: value.deliveryManId,
-        });
+        if (Array.isArray(value.subOrderId)) {
+            for (const subOrder of value.subOrderId) {
+                yield orderHistory_schema_1.default.create({
+                    message: `Order ${value.orderId} suborder ${subOrder} has been canceled by the delivery man.`,
+                    order: value.orderId,
+                    subOrderId: subOrder,
+                    status: enum_1.ORDER_HISTORY.UNASSIGNED,
+                    merchantID: existingOrder.merchant,
+                    deliveryBoy: value.deliveryManId,
+                });
+            }
+        }
         // const oderdata = await orderSchemaMulti.findOne({
         const oderdata = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
@@ -1033,7 +1042,7 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         yield bile_Schema_1.default.deleteMany({
             orderId: value.orderId,
             deliveryBoyId: value.deliveryManId,
-            subOrderId: value.subOrderId,
+            subOrderId: { $in: value.subOrderId },
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
@@ -1397,7 +1406,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 'pickupDetails.userSignature': value.userSignature,
                 'pickupDetails.orderTimestamp': value.pickupTimestamp,
                 'deliveryDetails.$[elem].status': enum_1.ORDER_HISTORY.PICKED_UP,
-                'deliveryDetails.$[elem].deliverysignature': value.userSignature,
+                'deliveryDetails.$[elem].pickupsignature': value.userSignature,
                 route: optimizedRoute,
             },
         }, {

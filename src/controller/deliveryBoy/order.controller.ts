@@ -1234,27 +1234,39 @@ export const cancelMultiSubOrder = async (
     );
     if (newoder) {
       console.log(value.reason, 'value.reason');
-      await cancelOderbyDeliveryMan.create({
-        deliveryBoy: value.deliveryManId,
-        order: value.orderId,
-        subOrderId: value.subOrderId,
-        reason: value.reason,
-      });
+      // Handle type safety by ensuring subOrderId is an array
+      if (Array.isArray(value.subOrderId)) {
+        for (const subOrder of value.subOrderId) {
+          await cancelOderbyDeliveryMan.create({
+            deliveryBoy: value.deliveryManId,
+            order: value.orderId,
+            subOrderId: subOrder,
+            reason: value.reason,
+          });
+        }
+      }
     }
+
+
     await OrderHistorySchema.deleteMany({
       order: value.orderId,
-      subOrderId: value.subOrderId,
+      subOrderId: { $in: value.subOrderId },
       merchantID: existingOrder.merchant,
     });
 
-    await OrderHistorySchema.create({
-      message: `Order ${value.orderId} has been canceled by the delivery man.`,
-      order: value.orderId,
-      subOrderId: value.subOrderId,
-      status: ORDER_HISTORY.UNASSIGNED,
-      merchantID: existingOrder.merchant,
-      deliveryBoy: value.deliveryManId,
-    });
+
+    if (Array.isArray(value.subOrderId)) {
+      for (const subOrder of value.subOrderId) {
+        await OrderHistorySchema.create({
+          message: `Order ${value.orderId} suborder ${subOrder} has been canceled by the delivery man.`,
+          order: value.orderId,
+          subOrderId: subOrder,
+          status: ORDER_HISTORY.UNASSIGNED,
+          merchantID: existingOrder.merchant,
+          deliveryBoy: value.deliveryManId,
+        });
+      }
+    }
 
     // const oderdata = await orderSchemaMulti.findOne({
     const oderdata = await orderSchemaMulti.findOne({
@@ -1274,7 +1286,7 @@ export const cancelMultiSubOrder = async (
     await BileSchema.deleteMany({
       orderId: value.orderId,
       deliveryBoyId: value.deliveryManId,
-      subOrderId: value.subOrderId,
+      subOrderId: { $in: value.subOrderId },
     });
 
     return res.ok({
@@ -1751,7 +1763,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
           'pickupDetails.userSignature': value.userSignature,
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
           'deliveryDetails.$[elem].status': ORDER_HISTORY.PICKED_UP,
-          'deliveryDetails.$[elem].deliverysignature': value.userSignature,
+          'deliveryDetails.$[elem].pickupsignature': value.userSignature,
           route: optimizedRoute,
         },
       },

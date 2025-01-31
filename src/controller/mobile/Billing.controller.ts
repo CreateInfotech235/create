@@ -43,6 +43,10 @@ export const getBilling = async (req: RequestParams, res: Response) => {
           orderStatus: 1,
           chargeMethod: 1,
           isApproved: 1,
+          pickupAddress:1,
+          deliveryAddress:1,
+          pickupLocation:1,
+          deliveryLocation:1,
           isPaid: 1,
           averageTime: 1,
           createdAt: 1,
@@ -75,6 +79,10 @@ export const getBilling = async (req: RequestParams, res: Response) => {
           charge: curr.totalCharge??0,
           orderStatus: curr.orderStatus,
           chargeMethod: curr.chargeMethod,
+          pickupAddress:curr.pickupAddress,
+          deliveryAddress:curr.deliveryAddress,
+          pickupLocation:curr.pickupLocation,
+          deliveryLocation:curr.deliveryLocation,
           isApproved: curr.isApproved,
           isPaid: curr.isPaid,
           averageTime: curr.averageTime
@@ -96,6 +104,10 @@ export const getBilling = async (req: RequestParams, res: Response) => {
             orderStatus: curr.orderStatus,
             chargeMethod: curr.chargeMethod,
             isApproved: curr.isApproved,
+            pickupAddress:curr.pickupAddress,
+            deliveryAddress:curr.deliveryAddress,
+            pickupLocation:curr.pickupLocation,
+            deliveryLocation:curr.deliveryLocation,
             isPaid: curr.isPaid,
             averageTime: curr.averageTime
           }]
