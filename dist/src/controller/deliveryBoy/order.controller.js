@@ -1915,7 +1915,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.deliverOrder = deliverOrder;
 const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _p, _q, _r, _s, _t, _u;
+    var _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
     try {
         console.log('req.body', req.body);
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderDeliverValidationMulti);
@@ -2027,6 +2027,25 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             // Round charge to 2 decimal places
             chargeofDeliveryBoy = Math.round(chargeofDeliveryBoy * 100) / 100;
         }
+        else {
+            if (BileSchemaData.chargeMethod === enum_1.CHARGE_METHOD.TIME) {
+                // For time-based charging, calculate based on total minutes
+                chargeofDeliveryBoy = (totalMinutes / 60) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
+                // if cash on delivery then add amount of package
+                if (iscasondelivery) {
+                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, { $inc: { balance: (_u = (_t = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _t === void 0 ? void 0 : _t.paymentCollectionRupees) !== null && _u !== void 0 ? _u : 0 } });
+                }
+            }
+            else if (BileSchemaData.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
+                // For distance-based charging
+                chargeofDeliveryBoy = (BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
+                if (iscasondelivery) {
+                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, { $inc: { balance: (_w = (_v = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _v === void 0 ? void 0 : _v.paymentCollectionRupees) !== null && _w !== void 0 ? _w : 0 } });
+                }
+            }
+            // Round charge to 2 decimal places
+            chargeofDeliveryBoy = Math.round(chargeofDeliveryBoy * 100) / 100;
+        }
         console.log(chargeofDeliveryBoy, 'chargeofDeliveryBoy');
         yield bile_Schema_1.default.updateOne({
             orderId: value.orderId,
@@ -2035,7 +2054,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             $set: {
                 totalCharge: chargeofDeliveryBoy,
                 isCashOnDelivery: iscasondelivery,
-                amountOfPackage: (_u = (_t = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _t === void 0 ? void 0 : _t.paymentCollectionRupees) !== null && _u !== void 0 ? _u : 0,
+                amountOfPackage: (_y = (_x = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _x === void 0 ? void 0 : _x.paymentCollectionRupees) !== null && _y !== void 0 ? _y : 0,
             },
         });
         return res.ok({

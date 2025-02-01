@@ -2628,6 +2628,25 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
 
       // Round charge to 2 decimal places
       chargeofDeliveryBoy = Math.round(chargeofDeliveryBoy * 100) / 100;
+    }else {
+      if (BileSchemaData.chargeMethod === CHARGE_METHOD.TIME) {
+        // For time-based charging, calculate based on total minutes
+        chargeofDeliveryBoy = (totalMinutes / 60) * dataofdeliveryboy?.charge;
+        // if cash on delivery then add amount of package
+        if(iscasondelivery){  
+          await DeliveryManSchema.updateOne({_id: dataofdeliveryboy._id}, {$inc: {balance:  isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0}});
+        }
+      } else if (BileSchemaData.chargeMethod === CHARGE_METHOD.DISTANCE) {
+        // For distance-based charging
+        chargeofDeliveryBoy = BileSchemaData?.distance * dataofdeliveryboy?.charge;
+        if(iscasondelivery){  
+          await DeliveryManSchema.updateOne({_id: dataofdeliveryboy._id}, {$inc: {balance:  isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0}});
+        }
+       
+      }
+
+      // Round charge to 2 decimal places
+      chargeofDeliveryBoy = Math.round(chargeofDeliveryBoy * 100) / 100;
     }
 
     console.log(chargeofDeliveryBoy, 'chargeofDeliveryBoy');
