@@ -325,7 +325,7 @@ const orderUpdateMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const updateData = req.body; // Get the fields to update from request body
         console.log(req.body, 'updateData');
         // Validate the incoming data using Joi (if needed)
-        const validateRequest = (0, validateRequest_1.default)(updateData, order_validation_1.newOrderCreationMulti);
+        const validateRequest = (0, validateRequest_1.default)(updateData, order_validation_1.newOrderUpdateMulti);
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
@@ -395,7 +395,9 @@ const orderUpdateMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
         // If deliveryManId is updated, update the assignee table too
         if (value.deliveryManId) {
+            console.log(existingOrder.status, 'existingOrder.status');
             if (existingOrder.status === 'UNASSIGNED') {
+                console.log('enter in if');
                 const updatedOrder = yield orderMulti_schema_1.default.findOneAndUpdate({ _id: orderId }, { status: 'ASSIGNED' });
                 yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: updatedOrder.orderId }, { $set: { statusOfOrder: 'ASSIGNED' } }, { new: true });
                 yield orderAssigneeMulti_schema_1.default.updateOne({ _id: orderId }, { deliveryBoy: value.deliveryManId });

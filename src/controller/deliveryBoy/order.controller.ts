@@ -2620,6 +2620,9 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       } else if (BileSchemaData.chargeMethod === CHARGE_METHOD.DISTANCE) {
         // For distance-based charging
         chargeofDeliveryBoy = BileSchemaData?.distance * dataofdeliveryboy?.charge;
+        if(iscasondelivery){  
+          await DeliveryManSchema.updateOne({_id: dataofdeliveryboy._id}, {$inc: {balance:  isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0}});
+        }
        
       }
 

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBilling = void 0;
+exports.BillingApprove = exports.getBilling = void 0;
 const bile_Schema_1 = __importDefault(require("../../models/bile.Schema"));
 const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -50,6 +50,9 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     charge: 1,
                     totalCharge: 1,
                     orderStatus: 1,
+                    isCashOnDelivery: 1,
+                    amountOfPackage: 1,
+                    distance: 1,
                     chargeMethod: 1,
                     isApproved: 1,
                     pickupAddress: 1,
@@ -58,6 +61,7 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     deliveryLocation: 1,
                     isPaid: 1,
                     averageTime: 1,
+                    deliveryTime: 1,
                     createdAt: 1,
                     updatedAt: 1,
                     deliveryMan: {
@@ -84,8 +88,12 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 existingGroup.subdata.push({
                     subOrderId: curr.subOrderId,
                     pickupTime: curr.pickupTime,
+                    deliveryTime: curr.deliveryTime,
                     charge: (_a = curr.totalCharge) !== null && _a !== void 0 ? _a : 0,
                     orderStatus: curr.orderStatus,
+                    isCashOnDelivery: curr.isCashOnDelivery,
+                    distance: curr.distance,
+                    amountOfPackage: curr.amountOfPackage,
                     chargeMethod: curr.chargeMethod,
                     pickupAddress: curr.pickupAddress,
                     deliveryAddress: curr.deliveryAddress,
@@ -109,8 +117,12 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     subdata: [{
                             subOrderId: curr.subOrderId,
                             pickupTime: curr.pickupTime,
+                            deliveryTime: curr.deliveryTime,
                             charge: (_b = curr.totalCharge) !== null && _b !== void 0 ? _b : 0,
                             orderStatus: curr.orderStatus,
+                            distance: curr.distance,
+                            isCashOnDelivery: curr.isCashOnDelivery,
+                            amountOfPackage: curr.amountOfPackage,
                             chargeMethod: curr.chargeMethod,
                             isApproved: curr.isApproved,
                             pickupAddress: curr.pickupAddress,
@@ -145,3 +157,14 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getBilling = getBilling;
+const BillingApprove = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const data = yield bile_Schema_1.default.findByIdAndUpdate(id, { isApproved: true });
+        return res.ok({ message: "Billing approved successfully", data: data });
+    }
+    catch (error) {
+        return res.failureResponse({ message: "Something went wrong", data: null });
+    }
+});
+exports.BillingApprove = BillingApprove;

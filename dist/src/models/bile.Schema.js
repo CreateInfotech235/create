@@ -18,7 +18,8 @@ const BileSchema = new mongoose_1.default.Schema({
     pickupAddress: { type: String }, //ok
     deliveryAddress: { type: String }, //ok
     DelawareDate: { type: Date },
-    amount: { type: Number },
+    isCashOnDelivery: { type: Boolean },
+    amountOfPackage: { type: Number, default: 0 },
     charge: { type: Number, required: true }, //ok
     distance: { type: Number }, //ok
     totalCharge: { type: Number },

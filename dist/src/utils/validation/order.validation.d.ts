@@ -2,6 +2,7 @@ import Joi from 'joi';
 export declare const orderCreateValidation: Joi.ObjectSchema<any>;
 export declare const newOrderCreation: Joi.ObjectSchema<any>;
 export declare const newOrderCreationMulti: Joi.ObjectSchema<any>;
+export declare const newOrderUpdateMulti: Joi.ObjectSchema<any>;
 export declare const orderAssignValidation: Joi.ObjectSchema<any>;
 export declare const orderAcceptValidation: Joi.ObjectSchema<any>;
 export declare const orderArriveValidation: Joi.ObjectSchema<any>;

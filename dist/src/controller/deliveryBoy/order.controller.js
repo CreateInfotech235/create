@@ -958,7 +958,7 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         // Check if the order exists and is not yet completed
         const existingOrder = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
-            'deliveryDetails': {
+            deliveryDetails: {
                 $elemMatch: {
                     subOrderId: { $in: value.subOrderId },
                     status: {
@@ -967,11 +967,11 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                             enum_1.ORDER_HISTORY.ASSIGNED,
                             enum_1.ORDER_HISTORY.ARRIVED,
                             enum_1.ORDER_HISTORY.PICKED_UP,
-                            enum_1.ORDER_HISTORY.DEPARTED
-                        ]
-                    }
-                }
-            }
+                            enum_1.ORDER_HISTORY.DEPARTED,
+                        ],
+                    },
+                },
+            },
         });
         console.log(existingOrder, 'existingOrder');
         if (!existingOrder) {
@@ -991,7 +991,8 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         const nowdata = existingOrder;
         // console.log(value.subOrderId, 'value');
         for (const item of nowdata.deliveryDetails) {
-            if (Array.isArray(value.subOrderId) && value.subOrderId.includes(item.subOrderId)) {
+            if (Array.isArray(value.subOrderId) &&
+                value.subOrderId.includes(item.subOrderId)) {
                 if (item.status !== enum_1.ORDER_HISTORY.CANCELLED) {
                     item.status = enum_1.ORDER_HISTORY.CANCELLED;
                 }
@@ -1004,7 +1005,8 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         }
         console.log(nowdata, 'nowdata');
         // Check if all sub-orders are cancelled
-        const allCancelled = nowdata.deliveryDetails.every(item => item.status === enum_1.ORDER_HISTORY.CANCELLED);
+        const allCancelled = nowdata.deliveryDetails.every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED);
+        console.log(allCancelled, 'allCancelled');
         const updateData = Object.assign({ deliveryDetails: nowdata.deliveryDetails }, (allCancelled && { status: enum_1.ORDER_HISTORY.CANCELLED }));
         const newoder = yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: updateData }, { new: true });
         if (newoder) {
@@ -1189,6 +1191,19 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             subOrderId: value.subOrderId,
             status: enum_1.ORDER_HISTORY.PICKED_UP,
         });
+        try {
+            yield bile_Schema_1.default.updateOne({
+                orderId: value.orderId,
+                subOrderId: value.subOrderId,
+            }, {
+                $set: {
+                    orderStatus: enum_1.ORDER_HISTORY.DEPARTED,
+                },
+            });
+        }
+        catch (error) {
+            // Ignore error if document not found
+        }
         // io.to(`order_${value.orderId}`).emit('locationUpdate', {
         //   latitude: value.latitude,
         //   longitude: value.longitude,
@@ -1784,11 +1799,14 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (DeliveryMan.chargeMethod === enum_1.CHARGE_METHOD.TIME) {
             // time in hours
             const timeTaken = endTime - startTime;
-            const hour = timeTaken / 3600000;
+            console.log(endTime, 'endTime');
+            console.log(startTime, 'startTime');
+            console.log(timeTaken, 'timeTaken');
+            const minutes = timeTaken / (1000 * 60); // Convert milliseconds to minutes
             // charge per hour
-            chargeofDeliveryBoy = hour * DeliveryMan.charge;
+            chargeofDeliveryBoy = (minutes / 60) * DeliveryMan.charge; // Convert minutes to hours for hourly charge
             console.log(`Charge: ${chargeofDeliveryBoy}`);
-            console.log(`Time taken: ${timeTaken} ms`);
+            console.log(`Time taken: ${minutes} minutes`);
         }
         else if (DeliveryMan.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
             //  distance in miles
@@ -1897,6 +1915,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.deliverOrder = deliverOrder;
 const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _p, _q, _r, _s, _t, _u;
     try {
         console.log('req.body', req.body);
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderDeliverValidationMulti);
@@ -1914,143 +1933,42 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         if (!isArrived) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
-        // otp verification START
-        // const otpData = await otpSchema.findOne({
-        //   value: value.otp,
-        //   subOrderId: value.subOrderId,
-        //   customerEmail: (deliveryEmail[0] as { email?: string }).email,
-        //   expiry: { $gte: Date.now() },
-        // });
-        // console.log('OTP Data:', otpData);
-        // if (!otpData) {
-        //   return res.badRequest({ message: getLanguage('en').otpExpired });
-        // }
-        // otp verification END
-        // total amount to be paid
-        const endTime = Date.now(); // Current time in milliseconds
-        const startTime = new Date(isArrived.time.start).getTime();
-        var totalAmount = isArrived.paymentCollectionRupees;
-        // delivery boy charge
-        var chargeofDeliveryBoy = 0;
-        // admin balance
-        var adminBalance = 0;
-        // if delivery boy is created by admin
-        // then totalamount - adminCommission
-        //
-        const [paymentInfo] = yield Promise.all([
-            paymentInfo_schema_1.default.findOne({ order: value.orderId }),
-            orderMulti_schema_1.default.updateOne({
-                orderId: value.orderId,
-                'deliveryDetails.subOrderId': value.subOrderId,
-            }, {
-                $set: {
-                    'deliveryDetails.$.deliveryBoySignature': value.deliveryManSignature,
-                    'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
-                    'deliveryDetails.$.status': enum_1.ORDER_HISTORY.DELIVERED,
-                    'deliveryDetails.$.time.end': endTime, // Use dot notation to set only the 'end' field
-                },
-            }, { new: true }),
-        ]);
-        console.log('Payment Info:', paymentInfo);
-        const admin = yield admin_schema_1.default.findOne();
-        console.log('Admin Details:', admin);
-        const assignData = yield orderAssigneeMulti_schema_1.default.findOne({
-            order: value.orderId,
+        const endTime = Date.now();
+        // Just update order status to delivered
+        yield orderMulti_schema_1.default.updateOne({
+            orderId: value.orderId,
+            'deliveryDetails.subOrderId': value.subOrderId,
+        }, {
+            $set: {
+                'deliveryDetails.$.deliveryBoySignature': value.deliveryManSignature,
+                'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
+                'deliveryDetails.$.status': enum_1.ORDER_HISTORY.DELIVERED,
+                'deliveryDetails.$.time.end': endTime,
+            },
         });
-        console.log('Order Assignment:', assignData);
-        console.log('Order Assignee details', assignData.deliveryBoy);
-        const deliveryBoyId = new mongoose_1.default.Types.ObjectId(assignData.deliveryBoy);
-        // delivery boy details
-        const DeliveryMan = yield deliveryMan_schema_1.default.findById(deliveryBoyId);
-        // charge of delivery boy
-        console.log(DeliveryMan);
-        if (DeliveryMan.chargeMethod === enum_1.CHARGE_METHOD.TIME) {
-            // time in hours
-            const timeTaken = endTime - startTime;
-            const hour = timeTaken / 3600000;
-            // charge per hour
-            chargeofDeliveryBoy = hour * DeliveryMan.charge;
-            console.log(`Charge: ${chargeofDeliveryBoy}`);
-            console.log(`Time taken: ${timeTaken} ms`);
-        }
-        else if (DeliveryMan.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
-            //  distance in miles
-            const distance = isArrived.distance;
-            chargeofDeliveryBoy = distance * DeliveryMan.charge;
-            console.log(`Charge: ${chargeofDeliveryBoy}`);
-            console.log(`Distance: ${distance} miles`);
-        }
-        // if delivery boy is created by admin
-        if (DeliveryMan.createdByAdmin) {
-            console.log('Processing Cash on Delivery Payment');
-            if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
-                yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
-            }
-            console.log('chargeofDeliveryBoy', chargeofDeliveryBoy);
-            console.log(value.orderId);
-            yield (0, common_1.updateWallet)(chargeofDeliveryBoy, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Delivery Boy Commission`, false);
-        }
-        // Only update delivery boy balance if it's cash on delivery
-        if (isArrived.cashOnDelivery) {
-            const balance = totalAmount;
-            const deliveryBoy = yield deliveryMan_schema_1.default.findByIdAndUpdate(assignData.deliveryBoy, { $inc: { balance: balance } }, { $inc: { earning: chargeofDeliveryBoy } });
-            console.log('Delivery Boy Details', deliveryBoy);
-        }
-        else {
-            console.log('Delivery Boy Details', 'Not updated');
-            console.log('isArrived.cashOnDelivery is false');
-        }
-        const city = yield city_schema_1.default.findById(isArrived.city);
-        console.log('City Details:', city);
-        const chargeData = yield productCharges_schema_1.default.findOne({
-            pickupRequest: isArrived.pickupDetails.request,
-            isCustomer: isArrived.isCustomer,
+        // Check if all sub-orders are delivered
+        const updatedOrder = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId
         });
-        console.log('Charge Data:', chargeData);
-        const adminCommission = chargeData.adminCommission;
-        console.log('Admin Commission:', adminCommission);
-        const message = `Order ${value.orderId} Amount`;
-        console.log('isArrived.cashOnDelivery', isArrived.cashOnDelivery);
-        if (isArrived.cashOnDelivery) {
-            // if cash on delivery
-            console.log('Processing Cash on Delivery Payment');
-            if (paymentInfo.status !== enum_1.PAYMENT_INFO.SUCCESS) {
-                yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
-            }
-            console.log('adminCommission', adminCommission);
-            console.log(value.orderId);
-            yield (0, common_1.updateWallet)(adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Admin Commission`, false);
+        const allDelivered = updatedOrder.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED);
+        if (allDelivered) {
+            yield orderMulti_schema_1.default.updateOne({ orderId: value.orderId }, { $set: { status: enum_1.ORDER_HISTORY.DELIVERED } });
         }
-        else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.WALLET) {
-            console.log('Processing Wallet Payment');
-            yield Promise.all([
-                (0, common_1.updateWallet)(isArrived.totalCharge, admin._id.toString(), assignData.merchant.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, message),
-                (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false),
-            ]);
-        }
-        else if (paymentInfo.paymentThrough === enum_1.PAYMENT_TYPE.ONLINE) {
-            console.log('Processing Online Payment');
-            const admin = yield admin_schema_1.default.findOneAndUpdate({}, {
-                $inc: { balance: adminCommission },
-            });
-            yield (0, common_1.updateWallet)(isArrived.totalCharge - adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.DEPOSIT, message, false);
-        }
-        else {
-            console.log('Processing Other Payment Type');
-            yield (0, common_1.updateWallet)(adminCommission, admin._id.toString(), req.id.toString(), enum_1.TRANSACTION_TYPE.WITHDRAW, `Order ${value.orderId} Admin Commission`, false);
-        }
+        // Update payment status
+        yield paymentInfo_schema_1.default.updateOne({ order: value.orderId }, { $set: { status: enum_1.PAYMENT_INFO.SUCCESS } });
+        // Create order history
         yield orderHistory_schema_1.default.create({
             message: `Your order ${value.orderId} has been successfully delivered`,
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.DELIVERED,
             merchantID: isArrived.merchant,
         });
-        console.log('Order History Created');
+        // Delete departed status
         yield orderHistory_schema_1.default.deleteOne({
             order: value.orderId,
             status: enum_1.ORDER_HISTORY.DEPARTED,
         });
-        console.log('Old Order History Deleted');
+        // Create notification
         yield (0, common_1.createNotification)({
             userId: isArrived.merchant,
             orderId: isArrived.orderId,
@@ -2058,21 +1976,66 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: `Your order ${isArrived.orderId} has been delivered`,
             type: 'MERCHANT',
         });
-        console.log('Notification Created');
-        console.log('Final Order Details:', {
-            orderId: value.orderId,
-            status: enum_1.ORDER_HISTORY.DELIVERED,
-            paymentInfo: paymentInfo,
-            adminCommission: adminCommission,
-            totalCharge: isArrived.totalCharge,
-        });
+        // Update bile schema status
         yield bile_Schema_1.default.updateOne({
-            order: value.orderId,
+            orderId: value.orderId,
+            subOrderId: value.subOrderId,
+            orderStatus: enum_1.ORDER_STATUS.DEPARTED,
+        }, {
+            $set: {
+                orderStatus: enum_1.ORDER_STATUS.DELIVERED,
+                deliveryTime: endTime,
+                deliverysignature: value.deliveryManSignature,
+                deliveryTimestamp: value.deliverTimestamp,
+            },
+        });
+        const BileSchemaData = yield bile_Schema_1.default.findOne({
+            orderId: value.orderId,
+            subOrderId: value.subOrderId,
+        });
+        const dataofdeliveryboy = yield deliveryMan_schema_1.default.findById(BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.deliveryBoyId);
+        // console.log(dataofdeliveryboy, 'dataofdeliveryboy');
+        const iscreatedByMerchant = dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.createdByMerchant;
+        console.log(dataofdeliveryboy, 'dataofdeliveryboy');
+        const iscasondelivery = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId).cashOnDelivery;
+        let chargeofDeliveryBoy = 0;
+        const startTime = new Date((BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.pickupTime) || 0);
+        const endTimeDate = new Date(endTime);
+        const timeDiffMs = endTimeDate.getTime() - startTime.getTime();
+        const hours = Math.floor(timeDiffMs / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiffMs % (1000 * 60)) / 1000);
+        console.log(`Time difference: ${hours}h ${minutes}m ${seconds}s`);
+        const totalMinutes = hours * 60 + minutes + (seconds >= 30 ? 1 : 0);
+        // Calculate charge based on delivery boy type and charge method
+        if (iscreatedByMerchant) {
+            if (BileSchemaData.chargeMethod === enum_1.CHARGE_METHOD.TIME) {
+                // For time-based charging, calculate based on total minutes
+                chargeofDeliveryBoy = (totalMinutes / 60) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
+                // if cash on delivery then add amount of package
+                if (iscasondelivery) {
+                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, { $inc: { balance: (_q = (_p = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _p === void 0 ? void 0 : _p.paymentCollectionRupees) !== null && _q !== void 0 ? _q : 0 } });
+                }
+            }
+            else if (BileSchemaData.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
+                // For distance-based charging
+                chargeofDeliveryBoy = (BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
+                if (iscasondelivery) {
+                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, { $inc: { balance: (_s = (_r = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _r === void 0 ? void 0 : _r.paymentCollectionRupees) !== null && _s !== void 0 ? _s : 0 } });
+                }
+            }
+            // Round charge to 2 decimal places
+            chargeofDeliveryBoy = Math.round(chargeofDeliveryBoy * 100) / 100;
+        }
+        console.log(chargeofDeliveryBoy, 'chargeofDeliveryBoy');
+        yield bile_Schema_1.default.updateOne({
+            orderId: value.orderId,
             subOrderId: value.subOrderId,
         }, {
             $set: {
-                deliverysignature: value.deliveryManSignature,
-                deliveryTimestamp: value.deliverTimestamp,
+                totalCharge: chargeofDeliveryBoy,
+                isCashOnDelivery: iscasondelivery,
+                amountOfPackage: (_u = (_t = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _t === void 0 ? void 0 : _t.paymentCollectionRupees) !== null && _u !== void 0 ? _u : 0,
             },
         });
         return res.ok({
@@ -2332,8 +2295,8 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                     input: {
                                         $sortArray: {
                                             input: '$orderData.deliveryDetails',
-                                            sortBy: { sortOrder: 1 }
-                                        }
+                                            sortBy: { sortOrder: 1 },
+                                        },
                                     },
                                     as: 'detail',
                                     in: {

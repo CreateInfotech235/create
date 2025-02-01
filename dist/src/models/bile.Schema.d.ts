@@ -34,6 +34,7 @@ declare const Model: mongoose.Model<{
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
     pickupTime: NativeDate;
+    amountOfPackage: number;
     orderStatus: string;
     isApproved: boolean;
     chargeMethod?: string;
@@ -41,13 +42,13 @@ declare const Model: mongoose.Model<{
     totalCharge?: number;
     distance?: number;
     subOrderId?: string;
-    amount?: number;
     pickupLocation?: any;
     pickupAddress?: string;
     deliveryAddress?: string;
     averageTime?: string;
     deliveryTime?: NativeDate;
     DelawareDate?: NativeDate;
+    isCashOnDelivery?: boolean;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -58,6 +59,7 @@ declare const Model: mongoose.Model<{
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
     pickupTime: NativeDate;
+    amountOfPackage: number;
     orderStatus: string;
     isApproved: boolean;
     chargeMethod?: string;
@@ -65,13 +67,13 @@ declare const Model: mongoose.Model<{
     totalCharge?: number;
     distance?: number;
     subOrderId?: string;
-    amount?: number;
     pickupLocation?: any;
     pickupAddress?: string;
     deliveryAddress?: string;
     averageTime?: string;
     deliveryTime?: NativeDate;
     DelawareDate?: NativeDate;
+    isCashOnDelivery?: boolean;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -82,6 +84,7 @@ declare const Model: mongoose.Model<{
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
     pickupTime: NativeDate;
+    amountOfPackage: number;
     orderStatus: string;
     isApproved: boolean;
     chargeMethod?: string;
@@ -89,13 +92,13 @@ declare const Model: mongoose.Model<{
     totalCharge?: number;
     distance?: number;
     subOrderId?: string;
-    amount?: number;
     pickupLocation?: any;
     pickupAddress?: string;
     deliveryAddress?: string;
     averageTime?: string;
     deliveryTime?: NativeDate;
     DelawareDate?: NativeDate;
+    isCashOnDelivery?: boolean;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -113,6 +116,7 @@ declare const Model: mongoose.Model<{
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
     pickupTime: NativeDate;
+    amountOfPackage: number;
     orderStatus: string;
     isApproved: boolean;
     chargeMethod?: string;
@@ -120,13 +124,13 @@ declare const Model: mongoose.Model<{
     totalCharge?: number;
     distance?: number;
     subOrderId?: string;
-    amount?: number;
     pickupLocation?: any;
     pickupAddress?: string;
     deliveryAddress?: string;
     averageTime?: string;
     deliveryTime?: NativeDate;
     DelawareDate?: NativeDate;
+    isCashOnDelivery?: boolean;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -137,6 +141,7 @@ declare const Model: mongoose.Model<{
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
     pickupTime: NativeDate;
+    amountOfPackage: number;
     orderStatus: string;
     isApproved: boolean;
     chargeMethod?: string;
@@ -144,13 +149,13 @@ declare const Model: mongoose.Model<{
     totalCharge?: number;
     distance?: number;
     subOrderId?: string;
-    amount?: number;
     pickupLocation?: any;
     pickupAddress?: string;
     deliveryAddress?: string;
     averageTime?: string;
     deliveryTime?: NativeDate;
     DelawareDate?: NativeDate;
+    isCashOnDelivery?: boolean;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -161,6 +166,7 @@ declare const Model: mongoose.Model<{
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
     pickupTime: NativeDate;
+    amountOfPackage: number;
     orderStatus: string;
     isApproved: boolean;
     chargeMethod?: string;
@@ -168,13 +174,13 @@ declare const Model: mongoose.Model<{
     totalCharge?: number;
     distance?: number;
     subOrderId?: string;
-    amount?: number;
     pickupLocation?: any;
     pickupAddress?: string;
     deliveryAddress?: string;
     averageTime?: string;
     deliveryTime?: NativeDate;
     DelawareDate?: NativeDate;
+    isCashOnDelivery?: boolean;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {
