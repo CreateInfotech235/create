@@ -1948,7 +1948,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         // Check if all sub-orders are delivered
         const updatedOrder = yield orderMulti_schema_1.default.findOne({
-            orderId: value.orderId
+            orderId: value.orderId,
         });
         const allDelivered = updatedOrder.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED);
         if (allDelivered) {
@@ -2014,14 +2014,23 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 chargeofDeliveryBoy = (totalMinutes / 60) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
                 // if cash on delivery then add amount of package
                 if (iscasondelivery) {
-                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, { $inc: { balance: (_q = (_p = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _p === void 0 ? void 0 : _p.paymentCollectionRupees) !== null && _q !== void 0 ? _q : 0 } });
+                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, {
+                        $inc: {
+                            earning: (_q = (_p = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _p === void 0 ? void 0 : _p.paymentCollectionRupees) !== null && _q !== void 0 ? _q : 0,
+                        },
+                    });
                 }
             }
             else if (BileSchemaData.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
                 // For distance-based charging
-                chargeofDeliveryBoy = (BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
+                chargeofDeliveryBoy =
+                    (BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
                 if (iscasondelivery) {
-                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, { $inc: { balance: (_s = (_r = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _r === void 0 ? void 0 : _r.paymentCollectionRupees) !== null && _s !== void 0 ? _s : 0 } });
+                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, {
+                        $inc: {
+                            earning: (_s = (_r = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _r === void 0 ? void 0 : _r.paymentCollectionRupees) !== null && _s !== void 0 ? _s : 0,
+                        },
+                    });
                 }
             }
             // Round charge to 2 decimal places
@@ -2033,14 +2042,23 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 chargeofDeliveryBoy = (totalMinutes / 60) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
                 // if cash on delivery then add amount of package
                 if (iscasondelivery) {
-                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, { $inc: { balance: (_u = (_t = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _t === void 0 ? void 0 : _t.paymentCollectionRupees) !== null && _u !== void 0 ? _u : 0 } });
+                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, {
+                        $inc: {
+                            earning: (_u = (_t = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _t === void 0 ? void 0 : _t.paymentCollectionRupees) !== null && _u !== void 0 ? _u : 0,
+                        },
+                    });
                 }
             }
             else if (BileSchemaData.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
                 // For distance-based charging
-                chargeofDeliveryBoy = (BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
+                chargeofDeliveryBoy =
+                    (BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
                 if (iscasondelivery) {
-                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, { $inc: { balance: (_w = (_v = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _v === void 0 ? void 0 : _v.paymentCollectionRupees) !== null && _w !== void 0 ? _w : 0 } });
+                    yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, {
+                        $inc: {
+                            earning: (_w = (_v = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _v === void 0 ? void 0 : _v.paymentCollectionRupees) !== null && _w !== void 0 ? _w : 0,
+                        },
+                    });
                 }
             }
             // Round charge to 2 decimal places

@@ -2526,17 +2526,17 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
 
     // Check if all sub-orders are delivered
     const updatedOrder = await orderSchemaMulti.findOne({
-      orderId: value.orderId
+      orderId: value.orderId,
     });
 
     const allDelivered = updatedOrder.deliveryDetails.every(
-      (detail: any) => detail.status === ORDER_HISTORY.DELIVERED
+      (detail: any) => detail.status === ORDER_HISTORY.DELIVERED,
     );
 
     if (allDelivered) {
       await orderSchemaMulti.updateOne(
         { orderId: value.orderId },
-        { $set: { status: ORDER_HISTORY.DELIVERED } }
+        { $set: { status: ORDER_HISTORY.DELIVERED } },
       );
     }
 
@@ -2590,21 +2590,25 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       subOrderId: value.subOrderId,
     });
 
-    const dataofdeliveryboy = await DeliveryManSchema.findById(BileSchemaData?.deliveryBoyId);
+    const dataofdeliveryboy = await DeliveryManSchema.findById(
+      BileSchemaData?.deliveryBoyId,
+    );
     // console.log(dataofdeliveryboy, 'dataofdeliveryboy');
     const iscreatedByMerchant = dataofdeliveryboy?.createdByMerchant;
     console.log(dataofdeliveryboy, 'dataofdeliveryboy');
-    const iscasondelivery = isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId).cashOnDelivery;
+    const iscasondelivery = isArrived.deliveryDetails.find(
+      (data: any) => data.subOrderId === value.subOrderId,
+    ).cashOnDelivery;
 
     let chargeofDeliveryBoy = 0;
     const startTime = new Date(BileSchemaData?.pickupTime || 0);
     const endTimeDate = new Date(endTime);
-    
+
     const timeDiffMs = endTimeDate.getTime() - startTime.getTime();
     const hours = Math.floor(timeDiffMs / (1000 * 60 * 60));
     const minutes = Math.floor((timeDiffMs % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeDiffMs % (1000 * 60)) / 1000);
-    
+
     console.log(`Time difference: ${hours}h ${minutes}m ${seconds}s`);
     const totalMinutes = hours * 60 + minutes + (seconds >= 30 ? 1 : 0);
 
@@ -2614,35 +2618,75 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
         // For time-based charging, calculate based on total minutes
         chargeofDeliveryBoy = (totalMinutes / 60) * dataofdeliveryboy?.charge;
         // if cash on delivery then add amount of package
-        if(iscasondelivery){  
-          await DeliveryManSchema.updateOne({_id: dataofdeliveryboy._id}, {$inc: {balance:  isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0}});
+        if (iscasondelivery) {
+          await DeliveryManSchema.updateOne(
+            { _id: dataofdeliveryboy._id },
+            {
+              $inc: {
+                earning:
+                  isArrived.deliveryDetails.find(
+                    (data: any) => data.subOrderId === value.subOrderId,
+                  )?.paymentCollectionRupees ?? 0,
+              },
+            },
+          );
         }
       } else if (BileSchemaData.chargeMethod === CHARGE_METHOD.DISTANCE) {
         // For distance-based charging
-        chargeofDeliveryBoy = BileSchemaData?.distance * dataofdeliveryboy?.charge;
-        if(iscasondelivery){  
-          await DeliveryManSchema.updateOne({_id: dataofdeliveryboy._id}, {$inc: {balance:  isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0}});
+        chargeofDeliveryBoy =
+          BileSchemaData?.distance * dataofdeliveryboy?.charge;
+        if (iscasondelivery) {
+          await DeliveryManSchema.updateOne(
+            { _id: dataofdeliveryboy._id },
+            {
+              $inc: {
+                earning:
+                  isArrived.deliveryDetails.find(
+                    (data: any) => data.subOrderId === value.subOrderId,
+                  )?.paymentCollectionRupees ?? 0,
+              },
+            },
+          );
         }
-       
       }
 
       // Round charge to 2 decimal places
       chargeofDeliveryBoy = Math.round(chargeofDeliveryBoy * 100) / 100;
-    }else {
+    } else {
       if (BileSchemaData.chargeMethod === CHARGE_METHOD.TIME) {
         // For time-based charging, calculate based on total minutes
         chargeofDeliveryBoy = (totalMinutes / 60) * dataofdeliveryboy?.charge;
         // if cash on delivery then add amount of package
-        if(iscasondelivery){  
-          await DeliveryManSchema.updateOne({_id: dataofdeliveryboy._id}, {$inc: {balance:  isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0}});
+        if (iscasondelivery) {
+          await DeliveryManSchema.updateOne(
+            { _id: dataofdeliveryboy._id },
+            {
+              $inc: {
+                earning:
+                  isArrived.deliveryDetails.find(
+                    (data: any) => data.subOrderId === value.subOrderId,
+                  )?.paymentCollectionRupees ?? 0,
+              },
+            },
+          );
         }
       } else if (BileSchemaData.chargeMethod === CHARGE_METHOD.DISTANCE) {
         // For distance-based charging
-        chargeofDeliveryBoy = BileSchemaData?.distance * dataofdeliveryboy?.charge;
-        if(iscasondelivery){  
-          await DeliveryManSchema.updateOne({_id: dataofdeliveryboy._id}, {$inc: {balance:  isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0}});
+        chargeofDeliveryBoy =
+          BileSchemaData?.distance * dataofdeliveryboy?.charge;
+        if (iscasondelivery) {
+          await DeliveryManSchema.updateOne(
+            { _id: dataofdeliveryboy._id },
+            {
+              $inc: {
+                earning:
+                  isArrived.deliveryDetails.find(
+                    (data: any) => data.subOrderId === value.subOrderId,
+                  )?.paymentCollectionRupees ?? 0,
+              },
+            },
+          );
         }
-       
       }
 
       // Round charge to 2 decimal places
@@ -2651,16 +2695,22 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
 
     console.log(chargeofDeliveryBoy, 'chargeofDeliveryBoy');
 
-    await BileSchema.updateOne({
-      orderId: value.orderId,
-      subOrderId: value.subOrderId,
-    }, {
-      $set: {
-        totalCharge: chargeofDeliveryBoy,
-        isCashOnDelivery: iscasondelivery,
-        amountOfPackage: isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0,
+    await BileSchema.updateOne(
+      {
+        orderId: value.orderId,
+        subOrderId: value.subOrderId,
       },
-    });
+      {
+        $set: {
+          totalCharge: chargeofDeliveryBoy,
+          isCashOnDelivery: iscasondelivery,
+          amountOfPackage:
+            isArrived.deliveryDetails.find(
+              (data: any) => data.subOrderId === value.subOrderId,
+            )?.paymentCollectionRupees ?? 0,
+        },
+      },
+    );
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
