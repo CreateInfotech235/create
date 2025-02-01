@@ -21,7 +21,8 @@ const BileSchema = new mongoose.Schema(
 
 
     DelawareDate: { type: Date },
-    amount: { type: Number },
+    isCashOnDelivery: { type: Boolean },
+    amountOfPackage: { type: Number,default:0 },
 
     charge: { type: Number, required: true }, //ok
     distance: { type: Number },//ok

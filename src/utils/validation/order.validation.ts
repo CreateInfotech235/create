@@ -176,6 +176,61 @@ export const newOrderCreationMulti = Joi.object({
     .required(),
 });
 
+
+
+
+export const newOrderUpdateMulti = Joi.object({
+  dateTime: Joi.date().timestamp().required(),
+  pickupDetails: Joi.object({
+    address: Joi.string().required(),
+    dateTime: Joi.date().timestamp().required(),
+    description: Joi.string().allow(''),
+    email: Joi.string().email().required(),
+    location: Joi.object({
+      latitude: Joi.number().required(),
+      longitude: Joi.number().required(),
+    }).required(),
+    merchantId: Joi.string().required(),
+    mobileNumber: Joi.string().required(),
+    name: Joi.string().required(),
+    postCode: Joi.string()
+      .regex(/^[A-Za-z0-9\s-]+$/)
+      .required(),
+  }).required(),
+  deliveryManId: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required(),
+  merchant: Joi.string().required(),
+
+  deliveryDetails: Joi.array()
+    .items(
+      Joi.object({
+        customerId: Joi.string().required(),
+        status: Joi.string().valid(ORDER_HISTORY.CREATED, ORDER_HISTORY.ASSIGNED, ORDER_HISTORY.ACCEPTED, ORDER_HISTORY.ARRIVED, ORDER_HISTORY.PICKED_UP, ORDER_HISTORY.DELIVERED, ORDER_HISTORY.DEPARTED, ORDER_HISTORY.CANCELLED).required(),
+        subOrderId: Joi.number().required(),
+        address: Joi.string().required(),
+        email: Joi.string().allow('').allow('-'),
+        location: Joi.object({
+          latitude: Joi.number().required(),
+          longitude: Joi.number().required(),
+        }).required(),
+        mobileNumber: Joi.string().allow('').allow('-'),
+        name: Joi.string().allow('').allow('-'),
+        postCode: Joi.string()
+          .regex(/^[A-Za-z0-9\s-]+$/)
+          .required(),
+        distance: Joi.number().allow(''),
+        duration: Joi.string().allow(''),
+        description: Joi.string().allow('').allow('-'),
+        parcelsCount: Joi.number().required(),
+        paymentCollectionRupees: Joi.number().required(),
+        cashOnDelivery: Joi.boolean().valid(true, false).required(),
+        parcelType: Joi.string().allow(''),
+      }),
+    )
+    .required(),
+});
+
 export const orderAssignValidation = Joi.object({
   deliveryManId: Joi.string()
     // .valid(/^[0-9a-fA-F]{24}$/)

@@ -102,6 +102,60 @@ interface OrderCreateTypeMulti {
     parcelsCount: number;
     distance: number;
     duration: number;
+    status: ORDER_HISTORY;
+    dateTime: number;
+    cashOnDelivery: boolean;
+    orderTimestamp: number;
+    address: string;
+    // countryCode: string;
+    mobileNumber: string;
+    email?: string;
+    name: string;
+    pickupRequest: PICKUP_REQUEST;
+    description: string;
+    postCode: string;
+    cashOnDelivery?: boolean;
+    parcelType: string;
+  }>;
+  deliveryLocation?: { type: string; coordinates: number[] };
+  cashOnDelivery: boolean;
+  deliveryManId: string;
+  orderId: number;
+  cashCollection: number;
+  isCustomer?: boolean;
+}
+
+
+interface OrderUpdateTypeMulti {
+  dateTime: number;
+  pickupDetails: {
+    location: { type: string; coordinates: number[] } & {
+      latitude?: number;
+      longitude?: number;
+    };
+    merchantId: string;
+    dateTime: number;
+    orderTimestamp: number;
+    address: string;
+    // countryCode: string;
+    mobileNumber: string;
+    email?: string;
+    name: string;
+    pickupRequest: PICKUP_REQUEST;
+    description: string;
+    postCode: string;
+    cashOnDelivery?: boolean;
+  };
+  deliveryDetails: Array<{
+    location: {
+      latitude: number;
+      longitude: number;
+    };
+    paymentCollectionRupees: number;
+    parcelsCount: number;
+    distance: number;
+    duration: number;
+    status: ORDER_HISTORY;
     dateTime: number;
     cashOnDelivery: boolean;
     orderTimestamp: number;

@@ -1180,24 +1180,24 @@ export const cancelMultiSubOrder = async (
 
     const { value } = validateRequest;
     value.deliveryManId = req.id.toString();
-console.log(value,'value')
+    console.log(value, 'value');
     // Check if the order exists and is not yet completed
     const existingOrder = await orderSchemaMulti.findOne({
       orderId: value.orderId,
-      'deliveryDetails': {
+      deliveryDetails: {
         $elemMatch: {
           subOrderId: { $in: value.subOrderId },
           status: {
             $in: [
               ORDER_HISTORY.CREATED,
-              ORDER_HISTORY.ASSIGNED, 
+              ORDER_HISTORY.ASSIGNED,
               ORDER_HISTORY.ARRIVED,
               ORDER_HISTORY.PICKED_UP,
-              ORDER_HISTORY.DEPARTED
-            ]
-          }
-        }
-      }
+              ORDER_HISTORY.DEPARTED,
+            ],
+          },
+        },
+      },
     });
 
     console.log(existingOrder, 'existingOrder');
@@ -1221,7 +1221,10 @@ console.log(value,'value')
     const nowdata = existingOrder;
     // console.log(value.subOrderId, 'value');
     for (const item of nowdata.deliveryDetails) {
-      if (Array.isArray(value.subOrderId) && value.subOrderId.includes(item.subOrderId)) {
+      if (
+        Array.isArray(value.subOrderId) &&
+        value.subOrderId.includes(item.subOrderId)
+      ) {
         if (item.status !== ORDER_HISTORY.CANCELLED) {
           item.status = ORDER_HISTORY.CANCELLED;
         } else {
@@ -1235,12 +1238,12 @@ console.log(value,'value')
 
     // Check if all sub-orders are cancelled
     const allCancelled = nowdata.deliveryDetails.every(
-      item => item.status === ORDER_HISTORY.CANCELLED
+      (item) => item.status === ORDER_HISTORY.CANCELLED,
     );
-
+    console.log(allCancelled, 'allCancelled');
     const updateData = {
       deliveryDetails: nowdata.deliveryDetails,
-      ...(allCancelled && { status: ORDER_HISTORY.CANCELLED })
+      ...(allCancelled && { status: ORDER_HISTORY.CANCELLED }),
     };
 
     const newoder = await orderSchemaMulti.findOneAndUpdate(
@@ -1263,13 +1266,11 @@ console.log(value,'value')
       }
     }
 
-
     await OrderHistorySchema.deleteMany({
       order: value.orderId,
       subOrderId: { $in: value.subOrderId },
       merchantID: existingOrder.merchant,
     });
-
 
     if (Array.isArray(value.subOrderId)) {
       for (const subOrder of value.subOrderId) {
@@ -1470,6 +1471,23 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       subOrderId: value.subOrderId,
       status: ORDER_HISTORY.PICKED_UP,
     });
+
+    try {
+      await BileSchema.updateOne(
+        {
+          orderId: value.orderId,
+          subOrderId: value.subOrderId,
+        },
+        {
+          $set: {
+            orderStatus: ORDER_HISTORY.DEPARTED,
+          },
+        },
+      );
+    } catch (error) {
+      // Ignore error if document not found
+    }
+
     // io.to(`order_${value.orderId}`).emit('locationUpdate', {
     //   latitude: value.latitude,
     //   longitude: value.longitude,
@@ -2277,11 +2295,14 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
     if (DeliveryMan.chargeMethod === CHARGE_METHOD.TIME) {
       // time in hours
       const timeTaken = endTime - startTime;
-      const hour = timeTaken / 3600000;
+      console.log(endTime, 'endTime');
+      console.log(startTime, 'startTime');
+      console.log(timeTaken, 'timeTaken');
+      const minutes = timeTaken / (1000 * 60); // Convert milliseconds to minutes
       // charge per hour
-      chargeofDeliveryBoy = hour * DeliveryMan.charge;
+      chargeofDeliveryBoy = (minutes / 60) * DeliveryMan.charge; // Convert minutes to hours for hourly charge
       console.log(`Charge: ${chargeofDeliveryBoy}`);
-      console.log(`Time taken: ${timeTaken} ms`);
+      console.log(`Time taken: ${minutes} minutes`);
     } else if (DeliveryMan.chargeMethod === CHARGE_METHOD.DISTANCE) {
       //  distance in miles
       const distance = isArrived.distance;
@@ -2474,6 +2495,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       orderId: value.orderId,
       'deliveryDetails.subOrderId': value.subOrderId,
     });
+
     console.log('Order Details:', isArrived.deliveryDetails);
     const deliveryEmail = isArrived.deliveryDetails.filter(
       (data) =>
@@ -2484,225 +2506,61 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
 
-    // otp verification START
-    // const otpData = await otpSchema.findOne({
-    //   value: value.otp,
-    //   subOrderId: value.subOrderId,
-    //   customerEmail: (deliveryEmail[0] as { email?: string }).email,
-    //   expiry: { $gte: Date.now() },
-    // });
-    // console.log('OTP Data:', otpData);
+    const endTime = Date.now();
 
-    // if (!otpData) {
-    //   return res.badRequest({ message: getLanguage('en').otpExpired });
-    // }
-
-    // otp verification END
-
-    // total amount to be paid
-
-    const endTime = Date.now(); // Current time in milliseconds
-    const startTime = new Date(isArrived.time.start).getTime();
-
-    var totalAmount = isArrived.paymentCollectionRupees;
-    // delivery boy charge
-    var chargeofDeliveryBoy = 0;
-
-    // admin balance
-    var adminBalance = 0;
-    // if delivery boy is created by admin
-    // then totalamount - adminCommission
-    //
-
-    const [paymentInfo] = await Promise.all([
-      PaymentInfoSchema.findOne({ order: value.orderId }),
-      orderSchemaMulti.updateOne(
-        {
-          orderId: value.orderId,
-          'deliveryDetails.subOrderId': value.subOrderId,
+    // Just update order status to delivered
+    await orderSchemaMulti.updateOne(
+      {
+        orderId: value.orderId,
+        'deliveryDetails.subOrderId': value.subOrderId,
+      },
+      {
+        $set: {
+          'deliveryDetails.$.deliveryBoySignature': value.deliveryManSignature,
+          'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
+          'deliveryDetails.$.status': ORDER_HISTORY.DELIVERED,
+          'deliveryDetails.$.time.end': endTime,
         },
-        {
-          $set: {
-            'deliveryDetails.$.deliveryBoySignature':
-              value.deliveryManSignature,
-            'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
-            'deliveryDetails.$.status': ORDER_HISTORY.DELIVERED,
-            'deliveryDetails.$.time.end': endTime, // Use dot notation to set only the 'end' field
-          },
-        },
-        { new: true },
-      ),
-    ]);
+      },
+    );
 
-    console.log('Payment Info:', paymentInfo);
-
-    const admin = await AdminSchema.findOne();
-    console.log('Admin Details:', admin);
-
-    const assignData = await OrderAssigneeSchemaMulti.findOne({
-      order: value.orderId,
+    // Check if all sub-orders are delivered
+    const updatedOrder = await orderSchemaMulti.findOne({
+      orderId: value.orderId
     });
-    console.log('Order Assignment:', assignData);
-    console.log('Order Assignee details', assignData.deliveryBoy);
-    const deliveryBoyId = new mongoose.Types.ObjectId(assignData.deliveryBoy);
 
-    // delivery boy details
-    const DeliveryMan = await DeliveryManSchema.findById(deliveryBoyId);
-    // charge of delivery boy
-    console.log(DeliveryMan);
+    const allDelivered = updatedOrder.deliveryDetails.every(
+      (detail: any) => detail.status === ORDER_HISTORY.DELIVERED
+    );
 
-    if (DeliveryMan.chargeMethod === CHARGE_METHOD.TIME) {
-      // time in hours
-      const timeTaken = endTime - startTime;
-      const hour = timeTaken / 3600000;
-      // charge per hour
-      chargeofDeliveryBoy = hour * DeliveryMan.charge;
-      console.log(`Charge: ${chargeofDeliveryBoy}`);
-      console.log(`Time taken: ${timeTaken} ms`);
-    } else if (DeliveryMan.chargeMethod === CHARGE_METHOD.DISTANCE) {
-      //  distance in miles
-      const distance = isArrived.distance;
-      chargeofDeliveryBoy = distance * DeliveryMan.charge;
-      console.log(`Charge: ${chargeofDeliveryBoy}`);
-      console.log(`Distance: ${distance} miles`);
-    }
-
-    // if delivery boy is created by admin
-    if (DeliveryMan.createdByAdmin) {
-      console.log('Processing Cash on Delivery Payment');
-      if (paymentInfo.status !== PAYMENT_INFO.SUCCESS) {
-        await PaymentInfoSchema.updateOne(
-          { order: value.orderId },
-          { $set: { status: PAYMENT_INFO.SUCCESS } },
-        );
-      }
-      console.log('chargeofDeliveryBoy', chargeofDeliveryBoy);
-      console.log(value.orderId);
-
-      await updateWallet(
-        chargeofDeliveryBoy,
-        admin._id.toString(),
-        req.id.toString(),
-        TRANSACTION_TYPE.WITHDRAW,
-        `Order ${value.orderId} Delivery Boy Commission`,
-        false,
+    if (allDelivered) {
+      await orderSchemaMulti.updateOne(
+        { orderId: value.orderId },
+        { $set: { status: ORDER_HISTORY.DELIVERED } }
       );
     }
 
-    // Only update delivery boy balance if it's cash on delivery
-    if (isArrived.cashOnDelivery) {
-      const balance = totalAmount;
-      const deliveryBoy = await DeliveryManSchema.findByIdAndUpdate(
-        assignData.deliveryBoy,
-        { $inc: { balance: balance } },
-        { $inc: { earning: chargeofDeliveryBoy } },
-      );
-      console.log('Delivery Boy Details', deliveryBoy);
-    } else {
-      console.log('Delivery Boy Details', 'Not updated');
-      console.log('isArrived.cashOnDelivery is false');
-    }
+    // Update payment status
+    await PaymentInfoSchema.updateOne(
+      { order: value.orderId },
+      { $set: { status: PAYMENT_INFO.SUCCESS } },
+    );
 
-    const city = await CitySchema.findById(isArrived.city);
-    console.log('City Details:', city);
-
-    const chargeData = await ProductChargesSchema.findOne({
-      pickupRequest: isArrived.pickupDetails.request,
-      isCustomer: isArrived.isCustomer,
-    });
-    console.log('Charge Data:', chargeData);
-
-    const adminCommission = chargeData.adminCommission;
-    console.log('Admin Commission:', adminCommission);
-
-    const message = `Order ${value.orderId} Amount`;
-
-    console.log('isArrived.cashOnDelivery', isArrived.cashOnDelivery);
-
-    if (isArrived.cashOnDelivery) {
-      // if cash on delivery
-
-      console.log('Processing Cash on Delivery Payment');
-      if (paymentInfo.status !== PAYMENT_INFO.SUCCESS) {
-        await PaymentInfoSchema.updateOne(
-          { order: value.orderId },
-          { $set: { status: PAYMENT_INFO.SUCCESS } },
-        );
-      }
-      console.log('adminCommission', adminCommission);
-      console.log(value.orderId);
-
-      await updateWallet(
-        adminCommission,
-        admin._id.toString(),
-        req.id.toString(),
-        TRANSACTION_TYPE.WITHDRAW,
-        `Order ${value.orderId} Admin Commission`,
-        false,
-      );
-    } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.WALLET) {
-      console.log('Processing Wallet Payment');
-      await Promise.all([
-        updateWallet(
-          isArrived.totalCharge,
-          admin._id.toString(),
-          assignData.merchant.toString(),
-          TRANSACTION_TYPE.WITHDRAW,
-          message,
-        ),
-        updateWallet(
-          isArrived.totalCharge - adminCommission,
-          admin._id.toString(),
-          req.id.toString(),
-          TRANSACTION_TYPE.DEPOSIT,
-          message,
-          false,
-        ),
-      ]);
-    } else if (paymentInfo.paymentThrough === PAYMENT_TYPE.ONLINE) {
-      console.log('Processing Online Payment');
-
-      const admin = await AdminSchema.findOneAndUpdate(
-        {},
-        {
-          $inc: { balance: adminCommission },
-        },
-      );
-
-      await updateWallet(
-        isArrived.totalCharge - adminCommission,
-        admin._id.toString(),
-        req.id.toString(),
-        TRANSACTION_TYPE.DEPOSIT,
-        message,
-        false,
-      );
-    } else {
-      console.log('Processing Other Payment Type');
-      await updateWallet(
-        adminCommission,
-        admin._id.toString(),
-        req.id.toString(),
-        TRANSACTION_TYPE.WITHDRAW,
-        `Order ${value.orderId} Admin Commission`,
-        false,
-      );
-    }
-
+    // Create order history
     await OrderHistorySchema.create({
       message: `Your order ${value.orderId} has been successfully delivered`,
       order: value.orderId,
       status: ORDER_HISTORY.DELIVERED,
       merchantID: isArrived.merchant,
     });
-    console.log('Order History Created');
 
+    // Delete departed status
     await OrderHistorySchema.deleteOne({
       order: value.orderId,
       status: ORDER_HISTORY.DEPARTED,
     });
-    console.log('Old Order History Deleted');
 
+    // Create notification
     await createNotification({
       userId: isArrived.merchant,
       orderId: isArrived.orderId,
@@ -2710,28 +2568,77 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       message: `Your order ${isArrived.orderId} has been delivered`,
       type: 'MERCHANT',
     });
-    console.log('Notification Created');
 
-    console.log('Final Order Details:', {
-      orderId: value.orderId,
-      status: ORDER_HISTORY.DELIVERED,
-      paymentInfo: paymentInfo,
-      adminCommission: adminCommission,
-      totalCharge: isArrived.totalCharge,
-    });
-
+    // Update bile schema status
     await BileSchema.updateOne(
       {
-        order: value.orderId,
+        orderId: value.orderId,
         subOrderId: value.subOrderId,
+        orderStatus: ORDER_STATUS.DEPARTED,
       },
       {
         $set: {
+          orderStatus: ORDER_STATUS.DELIVERED,
+          deliveryTime: endTime,
           deliverysignature: value.deliveryManSignature,
           deliveryTimestamp: value.deliverTimestamp,
         },
       },
     );
+    const BileSchemaData = await BileSchema.findOne({
+      orderId: value.orderId,
+      subOrderId: value.subOrderId,
+    });
+
+    const dataofdeliveryboy = await DeliveryManSchema.findById(BileSchemaData?.deliveryBoyId);
+    // console.log(dataofdeliveryboy, 'dataofdeliveryboy');
+    const iscreatedByMerchant = dataofdeliveryboy?.createdByMerchant;
+    console.log(dataofdeliveryboy, 'dataofdeliveryboy');
+    const iscasondelivery = isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId).cashOnDelivery;
+
+    let chargeofDeliveryBoy = 0;
+    const startTime = new Date(BileSchemaData?.pickupTime || 0);
+    const endTimeDate = new Date(endTime);
+    
+    const timeDiffMs = endTimeDate.getTime() - startTime.getTime();
+    const hours = Math.floor(timeDiffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDiffMs % (1000 * 60)) / 1000);
+    
+    console.log(`Time difference: ${hours}h ${minutes}m ${seconds}s`);
+    const totalMinutes = hours * 60 + minutes + (seconds >= 30 ? 1 : 0);
+
+    // Calculate charge based on delivery boy type and charge method
+    if (iscreatedByMerchant) {
+      if (BileSchemaData.chargeMethod === CHARGE_METHOD.TIME) {
+        // For time-based charging, calculate based on total minutes
+        chargeofDeliveryBoy = (totalMinutes / 60) * dataofdeliveryboy?.charge;
+        // if cash on delivery then add amount of package
+        if(iscasondelivery){  
+          await DeliveryManSchema.updateOne({_id: dataofdeliveryboy._id}, {$inc: {balance:  isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0}});
+        }
+      } else if (BileSchemaData.chargeMethod === CHARGE_METHOD.DISTANCE) {
+        // For distance-based charging
+        chargeofDeliveryBoy = BileSchemaData?.distance * dataofdeliveryboy?.charge;
+       
+      }
+
+      // Round charge to 2 decimal places
+      chargeofDeliveryBoy = Math.round(chargeofDeliveryBoy * 100) / 100;
+    }
+
+    console.log(chargeofDeliveryBoy, 'chargeofDeliveryBoy');
+
+    await BileSchema.updateOne({
+      orderId: value.orderId,
+      subOrderId: value.subOrderId,
+    }, {
+      $set: {
+        totalCharge: chargeofDeliveryBoy,
+        isCashOnDelivery: iscasondelivery,
+        amountOfPackage: isArrived.deliveryDetails.find((data : any) => data.subOrderId === value.subOrderId)?.paymentCollectionRupees??0,
+      },
+    });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -2744,6 +2651,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
 export const OrderAssigneeSchemaData = async (
   req: RequestParams,
   res: Response,
@@ -2976,7 +2884,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
     } = req.query;
 
     if (status === ORDER_HISTORY.CANCELLED) {
-
     }
 
     const data = await OrderAssigneeSchemaMulti.aggregate([
@@ -2990,7 +2897,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                 $lte: new Date(endDate),
               },
             }),
-            // ...(status && { 'orderData.status': status }),
+          // ...(status && { 'orderData.status': status }),
         },
       },
       {
@@ -3017,8 +2924,8 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                   input: {
                     $sortArray: {
                       input: '$orderData.deliveryDetails',
-                      sortBy: { sortOrder: 1 }
-                    }
+                      sortBy: { sortOrder: 1 },
+                    },
                   },
                   as: 'detail',
                   in: {
@@ -3137,7 +3044,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                 {
                                   $filter: {
                                     input: '$orderData.deliveryDetails',
-                                    
+
                                     as: 'detail',
                                     cond: {
                                       $eq: [
@@ -3149,7 +3056,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                 },
                                 0,
                               ],
-                              
                             },
                             {
                               distance: {
@@ -3200,10 +3106,9 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           },
         },
       },
-      
-    
+
       {
-        $sort: { createdAt: -1  },
+        $sort: { createdAt: -1 },
       },
       {
         $skip: (Number(pageCount) - 1) * Number(pageLimit),
@@ -3225,9 +3130,10 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       },
     ]);
 
-
     for (const item of data) {
-      item.orderData.deliveryDetails.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+      item.orderData.deliveryDetails.sort(
+        (a: any, b: any) => a.sortOrder - b.sortOrder,
+      );
     }
     for (const item of data) {
       item.orderData.deliveryDetails.forEach((detail: any, index: number) => {
@@ -3446,8 +3352,9 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
     if (oder.deliveryBoy.toString() != req.id.toString()) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
-    multiOrder.deliveryDetails.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
-
+    multiOrder.deliveryDetails.sort(
+      (a: any, b: any) => a.sortOrder - b.sortOrder,
+    );
 
     multiOrder.deliveryDetails.forEach((detail: any, index: number) => {
       detail.index = index + 1;

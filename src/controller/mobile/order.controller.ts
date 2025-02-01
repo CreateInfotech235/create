@@ -38,6 +38,7 @@ import {
   orderCreateValidation,
   newOrderCreation,
   newOrderCreationMulti,
+  newOrderUpdateMulti,
 } from '../../utils/validation/order.validation';
 import { OrderCancelType } from '../deliveryBoy/types/order';
 import {
@@ -47,6 +48,7 @@ import {
   IProductCharge,
   OrderCreateType,
   OrderCreateTypeMulti,
+  OrderUpdateTypeMulti,
   PaymentInfoType,
   ProductChargeQueryType,
 } from './types/order';
@@ -440,9 +442,9 @@ export const orderUpdateMulti = async (req: RequestParams, res: Response) => {
     console.log(req.body, 'updateData');
 
     // Validate the incoming data using Joi (if needed)
-    const validateRequest = validateParamsWithJoi<OrderCreateTypeMulti>(
+    const validateRequest = validateParamsWithJoi<OrderUpdateTypeMulti>(
       updateData,
-      newOrderCreationMulti,
+      newOrderUpdateMulti,
     );
 
     if (!validateRequest.isValid) {
@@ -536,7 +538,9 @@ export const orderUpdateMulti = async (req: RequestParams, res: Response) => {
 
     // If deliveryManId is updated, update the assignee table too
     if (value.deliveryManId) {
+      console.log(existingOrder.status, 'existingOrder.status');
       if (existingOrder.status === 'UNASSIGNED') {
+        console.log('enter in if');
         const updatedOrder = await orderSchemaMulti.findOneAndUpdate(
           { _id: orderId },
           { status: 'ASSIGNED' },
