@@ -1,0 +1,38 @@
+[
+  {
+    "title": "delivery charge",
+    "charge": 20,
+    "chargeType": "FIXED",
+    "commissionType": "FIXED",
+    "adminCommission": 10,
+    "cashOnDelivery": false,
+    "status": "ENABLE"
+  },
+  {
+    "title": "cod",
+    "charge": 10,
+    "cashOnDelivery": true,
+    "chargeType": "FIXED",
+    "commissionType": "FIXED",
+    "adminCommission": 10,
+    "status": "ENABLE"
+  },
+  {
+    "title": "charges",
+    "charge": 35,
+    "chargeType": "PERCENTAGE",
+    "commissionType": "PERCENTAGE",
+    "adminCommission": 10,
+    "cashOnDelivery": false,
+    "status": "ENABLE"
+  },
+  {
+    "title": "tax",
+    "charge": 15,
+    "cashOnDelivery": false,
+    "chargeType": "PERCENTAGE",
+    "commissionType": "PERCENTAGE",
+    "adminCommission": 10,
+    "status": "ENABLE"
+  }
+]

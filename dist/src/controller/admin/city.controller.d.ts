@@ -1,0 +1,10 @@
+import { Response } from 'express';
+import { RequestParams } from '../../utils/types/expressTypes';
+export declare const createDayWiseCharges: (req: RequestParams, res: Response) => Promise<void>;
+export declare const updateDayWiseCharges: (req: RequestParams, res: Response) => Promise<void>;
+export declare const createCity: (req: RequestParams, res: Response) => Promise<void>;
+export declare const updateCity: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getCities: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getDayWiseChargesByCity: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getCountryNames: (req: RequestParams, res: Response) => Promise<void>;
+export declare const deleteCity: (req: RequestParams, res: Response) => Promise<void>;

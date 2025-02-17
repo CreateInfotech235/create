@@ -1,0 +1,722 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
+const jsonwebtoken_1 = require("jsonwebtoken");
+const enum_1 = require("../../enum");
+const languageHelper_1 = require("../../language/languageHelper");
+const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
+const authToken_schema_1 = __importDefault(require("../../models/authToken.schema"));
+const otp_schema_1 = __importDefault(require("../../models/otp.schema"));
+const SupportTicket_1 = __importDefault(require("../../models/SupportTicket"));
+const index_1 = require("../../../index");
+const common_1 = require("../../utils/common");
+const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
+const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
+const auth_validation_1 = require("../../utils/validation/auth.validation");
+const orderHistory_schema_1 = __importDefault(require("../../models/orderHistory.schema"));
+const order_schema_1 = __importDefault(require("../../models/order.schema"));
+const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssignee.schema"));
+const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.schema"));
+const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
+const user_schema_1 = __importDefault(require("../../models/user.schema"));
+const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, adminSide_validation_1.adminSignInValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const userExist = yield admin_schema_1.default.findOne({ email: value.email });
+        if (!userExist) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').invalidLoginCredentials,
+            });
+        }
+        const isVerifyPassword = yield (0, common_1.passwordValidation)(value.password, userExist.password);
+        if (!isVerifyPassword) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').invalidLoginCredentials,
+            });
+        }
+        yield authToken_schema_1.default.deleteMany({ adminId: userExist._id });
+        const { accessToken, refreshToken } = (0, common_1.createAuthTokens)(userExist._id);
+        yield authToken_schema_1.default.create({
+            adminId: userExist._id,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+        });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').loginSuccessfully,
+            data: { data: userExist, adminAuthData: { accessToken, refreshToken } },
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.signIn = signIn;
+const profileCredentialUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.adminCredentialValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const otpData = yield otp_schema_1.default.findOne({
+            value: value.otp,
+            customerEmail: value.email,
+            expiry: { $gte: Date.now() },
+        });
+        if (!otpData) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
+        }
+        yield admin_schema_1.default.updateOne({ _id: value.adminId }, { $set: value });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').dataUpdatedSuccessfully,
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.profileCredentialUpdate = profileCredentialUpdate;
+const sendEmailOrMobileOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.otpVerifyValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const otp = (0, common_1.generateIntRandomNo)(111111, 999999);
+        // await emailOrMobileOtp(
+        //   value.email,
+        //   `This is your otp for registration ${otp}`,
+        // );
+        yield otp_schema_1.default.updateOne({
+            value: otp,
+            customerEmail: value.email,
+            customerMobile: value.contactNumber,
+        }, {
+            value: otp,
+            customerEmail: value.email,
+            customerMobile: value.contactNumber,
+            action: value.personType,
+            expiry: Date.now() + 600000,
+        }, { upsert: true });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').otpSentSuccess,
+            data: { otp },
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendEmailOrMobileOtp = sendEmailOrMobileOtp;
+const profileUpdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const adminData = yield admin_schema_1.default.findOne({ _id: req.id });
+        if (adminData) {
+            const id = adminData._id;
+            req.body.email = req.body.email.trim();
+            req.body.name = req.body.name.trim();
+            req.body.countryCode = req.body.countryCode.trim();
+            yield admin_schema_1.default.updateOne({ _id: id }, { $set: req.body });
+        }
+        else {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').invalidToken,
+            });
+        }
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').dataUpdatedSuccessfully,
+        });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.profileUpdate = profileUpdate;
+const renewToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.renewTokenValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const data = (0, jsonwebtoken_1.verify)(value.refreshToken, process.env.REFRESH_SECRET_KEY);
+        if (!(data === null || data === void 0 ? void 0 : data.accessToken)) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+        }
+        const adminVerify = yield admin_schema_1.default.findById(data.id);
+        if (!adminVerify) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+        }
+        yield authToken_schema_1.default.deleteMany({ adminId: adminVerify._id });
+        const { accessToken, refreshToken } = (0, common_1.createAuthTokens)(adminVerify._id);
+        yield authToken_schema_1.default.create({
+            adminId: adminVerify._id,
+            accessToken: data.accessToken,
+            refreshToken: value.refreshToken,
+        });
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').renewTokenSuccessfully,
+            data: { accessToken, refreshToken },
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.renewToken = renewToken;
+const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.renewTokenValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        const data = (0, jsonwebtoken_1.verify)(value.refreshToken, process.env.REFRESH_SECRET_KEY);
+        if (!(data === null || data === void 0 ? void 0 : data.accessToken)) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+        }
+        const adminVerify = yield admin_schema_1.default.findById(data.id);
+        if (!adminVerify) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+        }
+        const checkTokenExist = yield authToken_schema_1.default.findOne({
+            accessToken: data.accessToken,
+            refreshToken: value.refreshToken,
+            isActive: false,
+        });
+        if (checkTokenExist) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidToken });
+        }
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').logoutSuccessfully,
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.logout = logout;
+const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const totalOrders = yield order_schema_1.default.countDocuments();
+        const createdOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'CREATED',
+        });
+        const assignedOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'ASSIGNED',
+        });
+        const acceptedOrders = yield orderAssignee_schema_1.default.countDocuments({
+            status: 'ACCEPTED',
+        });
+        const arrivedOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'ARRIVED',
+        });
+        const pickedOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'PICKED_UP',
+        });
+        const departedOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'DEPARTED',
+        });
+        const deliveredOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'DELIVERED',
+        });
+        const cancelledOrders = yield orderHistory_schema_1.default.countDocuments({
+            status: 'CANCELLED',
+        });
+        const deliveryMan = yield deliveryMan_schema_1.default.countDocuments();
+        const merchantCount = yield user_schema_1.default.aggregate([
+            {
+                $lookup: {
+                    from: 'subcriptionPurchase',
+                    localField: '_id',
+                    foreignField: 'merchant',
+                    as: 'subcriptionPurchase',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$subcriptionPurchase',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'subcriptions',
+                    localField: 'subcriptionPurchase.subcriptionId',
+                    foreignField: '_id',
+                    as: 'subcription',
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    subcription: 1,
+                    expiry: '$subcriptionPurchase.expiry',
+                },
+            },
+            {
+                $addFields: {
+                    isActive: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ne: ['$subcription', []] }, // Not empty subcription
+                                    { $gte: ['$expiry', new Date()] }, // Expiry is valid
+                                ],
+                            },
+                            then: true,
+                            else: false,
+                        },
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    subscribedMerchants: {
+                        $sum: { $cond: [{ $eq: ['$isActive', true] }, 1, 0] },
+                    },
+                    unsubscribedMerchants: {
+                        $sum: { $cond: [{ $eq: ['$isActive', false] }, 1, 0] },
+                    },
+                },
+            },
+        ]);
+        let totalCounts = {
+            totalOrders,
+            createdOrders,
+            assignedOrders,
+            acceptedOrders,
+            arrivedOrders,
+            pickedOrders,
+            departedOrders,
+            deliveredOrders,
+            cancelledOrders,
+            deliveryMan,
+            subscribedMerchants: merchantCount[0].subscribedMerchants,
+            unsubscribedMerchants: merchantCount[0].unsubscribedMerchants,
+        };
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').countedData,
+            data: totalCounts,
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getOrderCounts = getOrderCounts;
+const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.id;
+        console.log(req.id);
+        // Get all notifications for the user
+        const notifications = yield notificatio_schema_1.default.find({ userId })
+            .sort({ createdAt: -1 })
+            .populate('orderId')
+            .populate('senderId');
+        return res.status(200).json({
+            message: 'Notifications retrieved successfully',
+            data: notifications,
+        });
+    }
+    catch (error) {
+        console.error('Error getting notifications:', error);
+        return res.status(500).json({
+            message: 'There was an error retrieving notifications',
+        });
+    }
+});
+exports.getAllNotifications = getAllNotifications;
+const markNotificationAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { notificationId } = req.params;
+        const userId = req.id;
+        const notification = yield notificatio_schema_1.default.findOneAndUpdate({ _id: notificationId, userId }, { isRead: true }, { new: true });
+        if (!notification) {
+            return res.status(404).json({
+                message: 'Notification not found',
+            });
+        }
+        return res.status(200).json({
+            message: 'Notification marked as read',
+            data: notification,
+        });
+    }
+    catch (error) {
+        console.error('Error marking notification as read:', error);
+        return res.status(500).json({
+            message: 'There was an error updating the notification',
+        });
+    }
+});
+exports.markNotificationAsRead = markNotificationAsRead;
+const markAllNotificationsAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.id;
+        yield notificatio_schema_1.default.updateMany({ userId, isRead: false }, { isRead: true });
+        return res.status(200).json({
+            message: 'All notifications marked as read',
+        });
+    }
+    catch (error) {
+        console.error('Error marking all notifications as read:', error);
+        return res.status(500).json({
+            message: 'There was an error updating notifications',
+        });
+    }
+});
+exports.markAllNotificationsAsRead = markAllNotificationsAsRead;
+const deleteNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { notificationId } = req.params;
+        const userId = req.id;
+        console.log(req.id);
+        const deletedNotification = yield notificatio_schema_1.default.findOneAndDelete({
+            _id: notificationId,
+            userId,
+        });
+        console.log(deletedNotification);
+        if (!deletedNotification) {
+            return res.status(404).json({
+                message: 'Notification not found',
+            });
+        }
+        return res.status(200).json({
+            message: 'Notification deleted successfully',
+            data: deletedNotification,
+        });
+    }
+    catch (error) {
+        console.error('Error deleting notification:', error);
+        return res.status(500).json({
+            message: 'There was an error deleting the notification',
+        });
+    }
+});
+exports.deleteNotification = deleteNotification;
+const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.id;
+        const count = yield notificatio_schema_1.default.countDocuments({
+            userId,
+            isRead: false,
+        });
+        return res.status(200).json({
+            message: 'Unread notification count retrieved successfully',
+            data: { count },
+        });
+    }
+    catch (error) {
+        console.error('Error getting unread notification count:', error);
+        return res.status(500).json({
+            message: 'There was an error retrieving unread notification count',
+        });
+    }
+});
+exports.getUnreadNotificationCount = getUnreadNotificationCount;
+const getAdminProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('req', req.id);
+    try {
+        const adminData = yield admin_schema_1.default.findOne({ _id: req.id });
+        return res.ok({
+            data: adminData,
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getAdminProfile = getAdminProfile;
+const getSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Request body:', req.body);
+        const id = req.id;
+        const data = yield SupportTicket_1.default.find({ adminId: id }).populate('userid', 'firstName lastName email -_id');
+        console.log('data', data);
+        return res.status(200).json({
+            message: 'Support ticket get successfully',
+            data: data,
+        });
+    }
+    catch (error) {
+        console.error('Error get support ticket:', error);
+        return res.status(500).json({
+            message: 'There was an error get the support ticket',
+        });
+    }
+});
+exports.getSupportTicket = getSupportTicket;
+const sendEmailFor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('FDksdjgdfgsdjsgb');
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.otpVerifyValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        let userExist;
+        const isCustomer = value.personType === enum_1.PERSON_TYPE.CUSTOMER;
+        if (isCustomer) {
+            userExist = yield user_schema_1.default.findOne({
+                email: value.email,
+                contactNumber: value.contactNumber,
+                countryCode: value.countryCode,
+            });
+        }
+        else {
+            userExist = yield deliveryMan_schema_1.default.findOne({
+                email: value.email,
+                contactNumber: value.contactNumber,
+                countryCode: value.countryCode,
+            });
+        }
+        if (userExist) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').emailRegisteredAlready,
+            });
+        }
+        // const otp = generateIntRandomNo(111111, 999999);
+        yield (0, common_1.emailSend)(value.email, value.subject, `${value.messageSend}`);
+        // const data = await otpSchema.updateOne(
+        //   {
+        //     // value: otp,
+        //     customerEmail: value.email,
+        //     customerMobile: value.contactNumber,
+        //     action: value.personType,
+        //   },
+        //   {
+        //     value: otp,
+        //     customerEmail: value.email,
+        //     customerMobile: value.contactNumber,
+        //     expiry: Date.now() + 600000,
+        //     action: value.personType,
+        //   },
+        //   { upsert: true },
+        // );
+        // if (!data.upsertedCount && !data.modifiedCount) {
+        //   return res.badRequest({ message: getLanguage('en').invalidData });
+        // }
+        return res.ok({
+            message: (0, languageHelper_1.getLanguage)('en').EmailSentSuccess,
+            // data: { otp },
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.failureResponse({
+            error: error,
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendEmailFor = sendEmailFor;
+const getAllTickets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tickets = yield SupportTicket_1.default.find({}, 'userid'); // Return only merchantName and _id
+        res.json(tickets);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to fetch tickets' });
+    }
+});
+exports.getAllTickets = getAllTickets;
+// Fetch messages for a specific ticket
+const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log(req.params.id, 'fddfdf');
+        const ticket = yield SupportTicket_1.default.findById(req.params.id);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        res.json(ticket.messages);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to fetch messages' });
+    }
+});
+exports.getMessagesByTicketId = getMessagesByTicketId;
+// Add a new message to a specific ticket
+const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log(req.params.id, 'fddfdf');
+        const { text, sender } = req.body;
+        if (!text || !['merchant', 'admin'].includes(sender)) {
+            return res.status(400).json({ message: 'Invalid message data' });
+        }
+        console.log(text, sender);
+        const ticket = yield SupportTicket_1.default.findById(req.params.id);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        // Add the new message
+        ticket.messages.push({ text, sender });
+        yield ticket.save();
+        // Emit the new message to the ticket room
+        index_1.io.to(req.params.id).emit('newMessage', { text, sender });
+        yield (0, common_1.createNotification)({
+            userId: ticket.userid,
+            // orderId: ticket.orderId,
+            title: 'New Message From Admin',
+            message: `New message from ${sender} for support ticket`,
+            type: 'ADMIN',
+        });
+        res.json(ticket.messages);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to add message' });
+    }
+});
+exports.addMessageToTicket = addMessageToTicket;
+const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('Gfgeguefg');
+        const { ticketId, messageId } = req.params;
+        // Find the ticket by ID
+        const ticket = yield SupportTicket_1.default.findById(ticketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        // Find the index of the message to delete
+        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId);
+        if (messageIndex === -1) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        // Remove the message from the messages array
+        ticket.messages.splice(messageIndex, 1);
+        // Save the updated ticket
+        yield ticket.save();
+        // Emit the message deletion event via socket
+        index_1.io.to(ticketId).emit('messageDeleted', { messageId });
+        res.status(200).json({ message: 'Message deleted successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to delete message' });
+    }
+});
+exports.deleteMessageFromTicket = deleteMessageFromTicket;
+const sendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.sendOtpValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Check if the user exists
+        const user = yield admin_schema_1.default.findOne({ email: value.email });
+        if (!user) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
+        }
+        // Generate OTP
+        const otp = Math.floor(1000 + Math.random() * 9000);
+        const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+        yield (0, common_1.emailOrMobileOtp)(value.email, `This is your otp for Reset Password ${otp}`);
+        yield otp_schema_1.default.create({
+            value: otp,
+            customerEmail: value.email,
+            expiry: otpExpiry,
+        });
+        // Send OTP (mock or use an actual email/SMS service)
+        console.log(`OTP for ${value.email}: ${otp}`);
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').otpSent });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.sendOtp = sendOtp;
+const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.verifyOtpValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Validate OTP
+        const otpData = yield otp_schema_1.default.findOne({
+            value: value.otp,
+            expiry: { $gte: Date.now() },
+        });
+        if (!otpData) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').otpExpired });
+        }
+        // Optionally, mark OTP as used or delete it
+        yield otp_schema_1.default.deleteOne({ _id: otpData._id });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').otpVerified });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.verifyOtp = verifyOtp;
+const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.resetPasswordValidation);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const { value } = validateRequest;
+        // Check if the user exists
+        const user = yield admin_schema_1.default.findOne({ email: value.email });
+        if (!user) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').emailNotRegistered });
+        }
+        // Encrypt the new password
+        const encryptedPassword = yield (0, common_1.encryptPassword)({
+            password: value.newPassword,
+        });
+        // Update the user's password
+        yield admin_schema_1.default.updateOne({ email: value.email }, { $set: { password: encryptedPassword } });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').passwordResetSuccess });
+    }
+    catch (error) {
+        console.error('Error:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.resetPassword = resetPassword;
