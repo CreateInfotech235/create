@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import admin from 'firebase-admin';
 
 // Ensure the environment variable is set
-const serviceAccount = require('../../../create-courier-Not.json');
+const serviceAccount = require('/etc/secrets/create-courier-Not.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
