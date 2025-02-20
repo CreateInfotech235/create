@@ -2628,7 +2628,10 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             },
         ]);
-        const Nowdata = data.map((item) => (Object.assign(Object.assign({}, item), { orderData: Object.assign(Object.assign({}, item.orderData), { deliveryDetails: item.orderData.deliveryDetails.map((detail) => (Object.assign(Object.assign({}, detail), { parcelType: detail.parcelType2.map((type) => allParcelType.find((e) => e._id.toString() == type.toString())), parcelType2: null }))) }) })));
+        const Nowdata = data.map((item) => (Object.assign(Object.assign({}, item), { orderData: Object.assign(Object.assign({}, item.orderData), { deliveryDetails: item.orderData.deliveryDetails.map((detail) => (Object.assign(Object.assign({}, detail), { parcelType: detail.parcelType2.map((type) => {
+                        const foundType = allParcelType.find((e) => e._id.toString() == type.toString());
+                        return foundType ? { label: foundType.label } : null;
+                    }).filter(Boolean), parcelType2: null }))) }) })));
         console.log(Nowdata, "Nowdata");
         for (const item of Nowdata) {
             item.orderData.deliveryDetails.sort((a, b) => a.sortOrder - b.sortOrder);
@@ -2864,7 +2867,10 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             },
         ])
             .exec();
-        const Nowdata = Object.assign(Object.assign({}, multiOrder), { deliveryDetails: multiOrder.deliveryDetails.map((item) => (Object.assign(Object.assign({}, item), { parcelType: item.parcelType2.map((type) => allParcelType.find((e) => e._id.toString() == type.toString())), parcelType2: null }))) });
+        const Nowdata = Object.assign(Object.assign({}, multiOrder), { deliveryDetails: multiOrder.deliveryDetails.map((item) => (Object.assign(Object.assign({}, item), { parcelType: item.parcelType2.map((type) => {
+                    const foundType = allParcelType.find((e) => e._id.toString() == type.toString());
+                    return foundType ? { label: foundType.label } : null;
+                }).filter(Boolean), parcelType2: null }))) });
         const oder = yield orderAssigneeMulti_schema_1.default.findOne({
             order: Nowdata.orderId,
         });

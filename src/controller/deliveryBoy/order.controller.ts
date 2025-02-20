@@ -3342,7 +3342,10 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         ...item.orderData,
         deliveryDetails: item.orderData.deliveryDetails.map((detail: any) => ({
           ...detail,
-          parcelType: detail.parcelType2.map((type: any) => allParcelType.find((e) => e._id.toString() == type.toString())),
+          parcelType: detail.parcelType2.map((type: any) => {
+            const foundType = allParcelType.find((e) => e._id.toString() == type.toString());
+            return foundType ? { label: foundType.label } : null;
+          }).filter(Boolean),
           parcelType2: null
         }))
       }
@@ -3590,7 +3593,10 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
 
     const Nowdata = { ...multiOrder, deliveryDetails: multiOrder.deliveryDetails.map((item: any) => ({
       ...item,
-      parcelType: item.parcelType2.map((type: any) => allParcelType.find((e: any) => e._id.toString() == type.toString())),
+      parcelType: item.parcelType2.map((type: any) => {
+        const foundType = allParcelType.find((e: any) => e._id.toString() == type.toString());
+        return foundType ? { label: foundType.label } : null;
+      }).filter(Boolean),
       parcelType2: null
     }))}
 
