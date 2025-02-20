@@ -3048,6 +3048,8 @@ export const getPaymentDataForDeliveryBoy = async (
 };
 
 export const getMultiOrder = async (req: RequestParams, res: Response) => {
+  console.log(req.id, 'req.id');
+
   try {
     const {
       startDate,
@@ -3058,7 +3060,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
     } = req.query;
 
 
-    const allParcelType = await ParcelSchema.find();
+    const allParcelType = await ParcelSchema.find() || [];
 
     if (status === ORDER_HISTORY.CANCELLED) {
     }
@@ -3339,15 +3341,18 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
     const Nowdata = data.map((item: any) => ({
       ...item,
       orderData: {
-        ...item.orderData,
-        deliveryDetails: item.orderData.deliveryDetails.map((detail: any) => ({
-          ...detail,
-          parcelType: detail.parcelType2.map((type: any) => {
-            const foundType = allParcelType.find((e) => e._id.toString() == type.toString());
+        ...item?.orderData,
+        deliveryDetails: item?.orderData?.deliveryDetails?.map((detail: any) => {
+          const parcelType = detail?.parcelType2?.map((type: any) => {
+            const foundType = allParcelType.find((e) => e._id?.toString() == type?.toString());
             return foundType ? { label: foundType.label } : null;
-          }).filter(Boolean),
-          parcelType2: null
-        }))
+          }).filter(Boolean);
+          delete detail?.parcelType2; // Correctly delete parcelType2 from detail
+          return {
+            ...detail,
+            parcelType,
+          };
+        })
       }
     }));
     console.log(Nowdata, "Nowdata");
@@ -3355,12 +3360,12 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
 
 
     for (const item of Nowdata) {
-      item.orderData.deliveryDetails.sort(
+      item?.orderData?.deliveryDetails?.sort(
         (a: any, b: any) => a.sortOrder - b.sortOrder,
       );
     }
     for (const item of Nowdata) {
-      item.orderData.deliveryDetails.forEach((detail: any, index: number) => {
+      item?.orderData?.deliveryDetails?.forEach((detail: any, index: number) => {
         detail.index = index + 1;
       });
     }
@@ -3379,7 +3384,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
   try {
     const id = req.params.id;
     console.log('id', id);
-    const allParcelType = await ParcelSchema.find();
+    const allParcelType = await ParcelSchema.find() || [];
     const [multiOrder] = await orderSchemaMulti
       .aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(id) } },
@@ -3590,15 +3595,17 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
       ])
       .exec();
 
-
-    const Nowdata = { ...multiOrder, deliveryDetails: multiOrder.deliveryDetails.map((item: any) => ({
-      ...item,
-      parcelType: item.parcelType2.map((type: any) => {
+    const Nowdata = { ...multiOrder, deliveryDetails: multiOrder.deliveryDetails.map((item: any) => {
+      const parcelType = item.parcelType2.map((type: any) => {
         const foundType = allParcelType.find((e: any) => e._id.toString() == type.toString());
         return foundType ? { label: foundType.label } : null;
-      }).filter(Boolean),
-      parcelType2: null
-    }))}
+      }).filter(Boolean);
+      delete item.parcelType2; // Delete parcelType2 after use
+      return {
+        ...item,
+        parcelType,
+      };
+    })};
 
     const oder = await OrderAssigneeSchemaMulti.findOne({
       order: Nowdata.orderId,

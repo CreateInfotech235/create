@@ -2357,9 +2357,11 @@ const getPaymentDataForDeliveryBoy = (req, res) => __awaiter(void 0, void 0, voi
 });
 exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
 const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _7, _8, _9, _10;
+    console.log(req.id, 'req.id');
     try {
         const { startDate, endDate, status, pageLimit = 10, pageCount = 1, } = req.query;
-        const allParcelType = yield parcel_schema_1.default.find();
+        const allParcelType = (yield parcel_schema_1.default.find()) || [];
         if (status === enum_1.ORDER_HISTORY.CANCELLED) {
         }
         const data = yield orderAssigneeMulti_schema_1.default.aggregate([
@@ -2628,16 +2630,24 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             },
         ]);
-        const Nowdata = data.map((item) => (Object.assign(Object.assign({}, item), { orderData: Object.assign(Object.assign({}, item.orderData), { deliveryDetails: item.orderData.deliveryDetails.map((detail) => (Object.assign(Object.assign({}, detail), { parcelType: detail.parcelType2.map((type) => {
-                        const foundType = allParcelType.find((e) => e._id.toString() == type.toString());
-                        return foundType ? { label: foundType.label } : null;
-                    }).filter(Boolean), parcelType2: null }))) }) })));
+        const Nowdata = data.map((item) => {
+            var _a, _b;
+            return (Object.assign(Object.assign({}, item), { orderData: Object.assign(Object.assign({}, item === null || item === void 0 ? void 0 : item.orderData), { deliveryDetails: (_b = (_a = item === null || item === void 0 ? void 0 : item.orderData) === null || _a === void 0 ? void 0 : _a.deliveryDetails) === null || _b === void 0 ? void 0 : _b.map((detail) => {
+                        var _a;
+                        const parcelType = (_a = detail === null || detail === void 0 ? void 0 : detail.parcelType2) === null || _a === void 0 ? void 0 : _a.map((type) => {
+                            const foundType = allParcelType.find((e) => { var _a; return ((_a = e._id) === null || _a === void 0 ? void 0 : _a.toString()) == (type === null || type === void 0 ? void 0 : type.toString()); });
+                            return foundType ? { label: foundType.label } : null;
+                        }).filter(Boolean);
+                        detail === null || detail === void 0 ? true : delete detail.parcelType2; // Correctly delete parcelType2 from detail
+                        return Object.assign(Object.assign({}, detail), { parcelType });
+                    }) }) }));
+        });
         console.log(Nowdata, "Nowdata");
         for (const item of Nowdata) {
-            item.orderData.deliveryDetails.sort((a, b) => a.sortOrder - b.sortOrder);
+            (_8 = (_7 = item === null || item === void 0 ? void 0 : item.orderData) === null || _7 === void 0 ? void 0 : _7.deliveryDetails) === null || _8 === void 0 ? void 0 : _8.sort((a, b) => a.sortOrder - b.sortOrder);
         }
         for (const item of Nowdata) {
-            item.orderData.deliveryDetails.forEach((detail, index) => {
+            (_10 = (_9 = item === null || item === void 0 ? void 0 : item.orderData) === null || _9 === void 0 ? void 0 : _9.deliveryDetails) === null || _10 === void 0 ? void 0 : _10.forEach((detail, index) => {
                 detail.index = index + 1;
             });
         }
@@ -2657,7 +2667,7 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
     try {
         const id = req.params.id;
         console.log('id', id);
-        const allParcelType = yield parcel_schema_1.default.find();
+        const allParcelType = (yield parcel_schema_1.default.find()) || [];
         const [multiOrder] = yield orderMulti_schema_1.default
             .aggregate([
             { $match: { _id: new mongoose_1.default.Types.ObjectId(id) } },
@@ -2867,10 +2877,14 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             },
         ])
             .exec();
-        const Nowdata = Object.assign(Object.assign({}, multiOrder), { deliveryDetails: multiOrder.deliveryDetails.map((item) => (Object.assign(Object.assign({}, item), { parcelType: item.parcelType2.map((type) => {
+        const Nowdata = Object.assign(Object.assign({}, multiOrder), { deliveryDetails: multiOrder.deliveryDetails.map((item) => {
+                const parcelType = item.parcelType2.map((type) => {
                     const foundType = allParcelType.find((e) => e._id.toString() == type.toString());
                     return foundType ? { label: foundType.label } : null;
-                }).filter(Boolean), parcelType2: null }))) });
+                }).filter(Boolean);
+                delete item.parcelType2; // Delete parcelType2 after use
+                return Object.assign(Object.assign({}, item), { parcelType });
+            }) });
         const oder = yield orderAssigneeMulti_schema_1.default.findOne({
             order: Nowdata.orderId,
         });
