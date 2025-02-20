@@ -24,6 +24,8 @@ import PaymentInfoSchema from '../../models/paymentInfo.schema';
 import ProductChargesSchema from '../../models/productCharges.schema';
 import cancelOderbyDeliveryMan from '../../models/cancelOderbyDeliveryManSchema';
 
+import ParcelSchema from '../../models/parcel.schema';
+
 import {
   createNotification,
   emailOrMobileOtp,
@@ -63,6 +65,7 @@ import BillingSchema from '../../models/billing.Schema';
 import paymentGetSchema from '../../models/paymentGet.schema';
 import axios from 'axios';
 import { log } from 'node:console';
+import { convertToObject } from 'typescript';
 
 export const getAssignedOrders = async (req: RequestParams, res: Response) => {
   try {
@@ -1487,11 +1490,11 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       await BillingSchema.updateOne(
         {
           orderId: value.orderId,
-          "subOrderdata.subOrderId": value.subOrderId,
+          'subOrderdata.subOrderId': value.subOrderId,
         },
         {
           $set: {
-            "subOrderdata.$.orderStatus": ORDER_HISTORY.DEPARTED,
+            'subOrderdata.$.orderStatus': ORDER_HISTORY.DEPARTED,
           },
         },
       );
@@ -2633,24 +2636,25 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     await BillingSchema.updateOne(
       {
         orderId: value.orderId,
-        "subOrderdata.subOrderId": value.subOrderId,
-        "subOrderdata.orderStatus": ORDER_STATUS.DEPARTED,
+        'subOrderdata.subOrderId': value.subOrderId,
+        'subOrderdata.orderStatus': ORDER_STATUS.DEPARTED,
       },
       {
         $set: {
-          "subOrderdata.$.orderStatus": ORDER_STATUS.DELIVERED,
-          "subOrderdata.$.deliveryTime": value.deliverTimestamp,
-          "subOrderdata.$.deliverysignature": value.deliveryManSignature,
-          "subOrderdata.$.deliveryTimestamp": value.deliverTimestamp,
-          totalamountOfPackage: isArrived.deliveryDetails.find(
-            (data: any) => data.subOrderId === value.subOrderId,
-          )?.paymentCollectionRupees ?? 0,
+          'subOrderdata.$.orderStatus': ORDER_STATUS.DELIVERED,
+          'subOrderdata.$.deliveryTime': value.deliverTimestamp,
+          'subOrderdata.$.deliverysignature': value.deliveryManSignature,
+          'subOrderdata.$.deliveryTimestamp': value.deliverTimestamp,
+          totalamountOfPackage:
+            isArrived.deliveryDetails.find(
+              (data: any) => data.subOrderId === value.subOrderId,
+            )?.paymentCollectionRupees ?? 0,
         },
       },
     );
     const BileSchemaData = await BillingSchema.findOne({
       orderId: value.orderId,
-      "subOrderdata.subOrderId": value.subOrderId,
+      'subOrderdata.subOrderId': value.subOrderId,
     });
 
     const dataofdeliveryboy = await DeliveryManSchema.findById(
@@ -2664,15 +2668,16 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     ).cashOnDelivery;
 
     let chargeofDeliveryBoy = 0;
-    const ta= BileSchemaData?.subOrderdata.find(
-      (data: any) => data.subOrderId == value.subOrderId,
-    )?.pickupTime || 0;
-    console.log(ta,"ta");
-    
+    const ta =
+      BileSchemaData?.subOrderdata.find(
+        (data: any) => data.subOrderId == value.subOrderId,
+      )?.pickupTime || 0;
+    console.log(ta, 'ta');
+
     const startTime = new Date(ta);
     const endTimeDate = new Date(value.deliverTimestamp);
-console.log(startTime,"start time");
-console.log(endTimeDate,"end time");
+    console.log(startTime, 'start time');
+    console.log(endTimeDate, 'end time');
 
     const timeDiffMs = endTimeDate.getTime() - startTime.getTime();
     const hours = Math.floor(timeDiffMs / (1000 * 60 * 60));
@@ -2786,13 +2791,13 @@ console.log(endTimeDate,"end time");
     await BillingSchema.updateOne(
       {
         orderId: value.orderId,
-        "subOrderdata.subOrderId": value.subOrderId,
+        'subOrderdata.subOrderId': value.subOrderId,
       },
       {
         $set: {
-          "subOrderdata.$.chargePer": chargeofDeliveryBoy,
-          "subOrderdata.$.isCashOnDelivery": iscasondelivery,
-          "subOrderdata.$.amountOfPackage":
+          'subOrderdata.$.chargePer': chargeofDeliveryBoy,
+          'subOrderdata.$.isCashOnDelivery': iscasondelivery,
+          'subOrderdata.$.amountOfPackage':
             isArrived.deliveryDetails.find(
               (data: any) => data.subOrderId == value.subOrderId,
             )?.paymentCollectionRupees ?? 0,
@@ -2800,7 +2805,6 @@ console.log(endTimeDate,"end time");
             isArrived.deliveryDetails.find(
               (data: any) => data.subOrderId == value.subOrderId,
             )?.paymentCollectionRupees ?? 0,
-
         },
         $inc: {
           totalCharge: chargeofDeliveryBoy,
@@ -3053,6 +3057,9 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       pageCount = 1,
     } = req.query;
 
+
+    const allParcelType = await ParcelSchema.find();
+
     if (status === ORDER_HISTORY.CANCELLED) {
     }
     const data = await OrderAssigneeSchemaMulti.aggregate([
@@ -3061,11 +3068,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           deliveryBoy: new mongoose.Types.ObjectId(req.id),
           ...(startDate &&
             endDate && {
-              createdAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
-              },
-            }),
+            createdAt: {
+              $gte: new Date(startDate),
+              $lte: new Date(endDate),
+            },
+          }),
           // ...(status && { 'orderData.status': status }),
         },
       },
@@ -3329,18 +3336,33 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       },
     ]);
 
-    for (const item of data) {
+    const Nowdata = data.map((item: any) => ({
+      ...item,
+      orderData: {
+        ...item.orderData,
+        deliveryDetails: item.orderData.deliveryDetails.map((detail: any) => ({
+          ...detail,
+          parcelType: detail.parcelType2.map((type: any) => allParcelType.find((e) => e._id.toString() == type.toString())),
+          parcelType2: null
+        }))
+      }
+    }));
+    console.log(Nowdata, "Nowdata");
+
+
+
+    for (const item of Nowdata) {
       item.orderData.deliveryDetails.sort(
         (a: any, b: any) => a.sortOrder - b.sortOrder,
       );
     }
-    for (const item of data) {
+    for (const item of Nowdata) {
       item.orderData.deliveryDetails.forEach((detail: any, index: number) => {
         detail.index = index + 1;
       });
     }
     return res.ok({
-      data: data || [],
+      data: Nowdata || [],
     });
   } catch (error) {
     console.error('getMultiOrder error:', error);
@@ -3354,7 +3376,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
   try {
     const id = req.params.id;
     console.log('id', id);
-
+    const allParcelType = await ParcelSchema.find();
     const [multiOrder] = await orderSchemaMulti
       .aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(id) } },
@@ -3486,7 +3508,9 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                                   $round: [
                                     {
                                       $divide: [
-                                        { $ifNull: ['$$routeItem.distance', 0] },
+                                        {
+                                          $ifNull: ['$$routeItem.distance', 0],
+                                        },
                                         1609.34,
                                       ],
                                     },
@@ -3563,22 +3587,29 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
       ])
       .exec();
 
+
+    const Nowdata = { ...multiOrder, deliveryDetails: multiOrder.deliveryDetails.map((item: any) => ({
+      ...item,
+      parcelType: item.parcelType2.map((type: any) => allParcelType.find((e: any) => e._id.toString() == type.toString())),
+      parcelType2: null
+    }))}
+
     const oder = await OrderAssigneeSchemaMulti.findOne({
-      order: multiOrder.orderId,
+      order: Nowdata.orderId,
     });
 
     if (oder.deliveryBoy.toString() != req.id.toString()) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
-    multiOrder.deliveryDetails.sort(
+    Nowdata.deliveryDetails.sort(
       (a: any, b: any) => a.sortOrder - b.sortOrder,
     );
 
-    multiOrder.deliveryDetails.forEach((detail: any, index: number) => {
+    Nowdata.deliveryDetails.forEach((detail: any, index: number) => {
       detail.index = index + 1;
     });
 
-    return res.ok({ data: multiOrder });
+    return res.ok({ data: Nowdata });
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,

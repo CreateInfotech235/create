@@ -28,6 +28,7 @@ const otp_schema_1 = __importDefault(require("../../models/otp.schema"));
 const paymentInfo_schema_1 = __importDefault(require("../../models/paymentInfo.schema"));
 const productCharges_schema_1 = __importDefault(require("../../models/productCharges.schema"));
 const cancelOderbyDeliveryManSchema_1 = __importDefault(require("../../models/cancelOderbyDeliveryManSchema"));
+const parcel_schema_1 = __importDefault(require("../../models/parcel.schema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const order_validation_1 = require("../../utils/validation/order.validation");
@@ -1203,10 +1204,10 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         try {
             yield billing_Schema_1.default.updateOne({
                 orderId: value.orderId,
-                "subOrderdata.subOrderId": value.subOrderId,
+                'subOrderdata.subOrderId': value.subOrderId,
             }, {
                 $set: {
-                    "subOrderdata.$.orderStatus": enum_1.ORDER_HISTORY.DEPARTED,
+                    'subOrderdata.$.orderStatus': enum_1.ORDER_HISTORY.DEPARTED,
                 },
             });
         }
@@ -2018,20 +2019,20 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         // Update bile schema status
         yield billing_Schema_1.default.updateOne({
             orderId: value.orderId,
-            "subOrderdata.subOrderId": value.subOrderId,
-            "subOrderdata.orderStatus": enum_1.ORDER_STATUS.DEPARTED,
+            'subOrderdata.subOrderId': value.subOrderId,
+            'subOrderdata.orderStatus': enum_1.ORDER_STATUS.DEPARTED,
         }, {
             $set: {
-                "subOrderdata.$.orderStatus": enum_1.ORDER_STATUS.DELIVERED,
-                "subOrderdata.$.deliveryTime": value.deliverTimestamp,
-                "subOrderdata.$.deliverysignature": value.deliveryManSignature,
-                "subOrderdata.$.deliveryTimestamp": value.deliverTimestamp,
+                'subOrderdata.$.orderStatus': enum_1.ORDER_STATUS.DELIVERED,
+                'subOrderdata.$.deliveryTime': value.deliverTimestamp,
+                'subOrderdata.$.deliverysignature': value.deliveryManSignature,
+                'subOrderdata.$.deliveryTimestamp': value.deliverTimestamp,
                 totalamountOfPackage: (_r = (_q = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _q === void 0 ? void 0 : _q.paymentCollectionRupees) !== null && _r !== void 0 ? _r : 0,
             },
         });
         const BileSchemaData = yield billing_Schema_1.default.findOne({
             orderId: value.orderId,
-            "subOrderdata.subOrderId": value.subOrderId,
+            'subOrderdata.subOrderId': value.subOrderId,
         });
         const dataofdeliveryboy = yield deliveryMan_schema_1.default.findById(BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.deliveryBoyId);
         // console.log(dataofdeliveryboy, 'dataofdeliveryboy');
@@ -2040,11 +2041,11 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const iscasondelivery = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId).cashOnDelivery;
         let chargeofDeliveryBoy = 0;
         const ta = ((_s = BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.subOrderdata.find((data) => data.subOrderId == value.subOrderId)) === null || _s === void 0 ? void 0 : _s.pickupTime) || 0;
-        console.log(ta, "ta");
+        console.log(ta, 'ta');
         const startTime = new Date(ta);
         const endTimeDate = new Date(value.deliverTimestamp);
-        console.log(startTime, "start time");
-        console.log(endTimeDate, "end time");
+        console.log(startTime, 'start time');
+        console.log(endTimeDate, 'end time');
         const timeDiffMs = endTimeDate.getTime() - startTime.getTime();
         const hours = Math.floor(timeDiffMs / (1000 * 60 * 60));
         const minutes = Math.floor((timeDiffMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -2124,12 +2125,12 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         console.log(chargeofDeliveryBoy, 'chargeofDeliveryBoy');
         yield billing_Schema_1.default.updateOne({
             orderId: value.orderId,
-            "subOrderdata.subOrderId": value.subOrderId,
+            'subOrderdata.subOrderId': value.subOrderId,
         }, {
             $set: {
-                "subOrderdata.$.chargePer": chargeofDeliveryBoy,
-                "subOrderdata.$.isCashOnDelivery": iscasondelivery,
-                "subOrderdata.$.amountOfPackage": (_4 = (_3 = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId)) === null || _3 === void 0 ? void 0 : _3.paymentCollectionRupees) !== null && _4 !== void 0 ? _4 : 0,
+                'subOrderdata.$.chargePer': chargeofDeliveryBoy,
+                'subOrderdata.$.isCashOnDelivery': iscasondelivery,
+                'subOrderdata.$.amountOfPackage': (_4 = (_3 = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId)) === null || _3 === void 0 ? void 0 : _3.paymentCollectionRupees) !== null && _4 !== void 0 ? _4 : 0,
                 totalamountOfPackage: (_6 = (_5 = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId)) === null || _5 === void 0 ? void 0 : _5.paymentCollectionRupees) !== null && _6 !== void 0 ? _6 : 0,
             },
             $inc: {
@@ -2358,6 +2359,7 @@ exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
 const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { startDate, endDate, status, pageLimit = 10, pageCount = 1, } = req.query;
+        const allParcelType = yield parcel_schema_1.default.find();
         if (status === enum_1.ORDER_HISTORY.CANCELLED) {
         }
         const data = yield orderAssigneeMulti_schema_1.default.aggregate([
@@ -2626,16 +2628,18 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             },
         ]);
-        for (const item of data) {
+        const Nowdata = data.map((item) => (Object.assign(Object.assign({}, item), { orderData: Object.assign(Object.assign({}, item.orderData), { deliveryDetails: item.orderData.deliveryDetails.map((detail) => (Object.assign(Object.assign({}, detail), { parcelType: detail.parcelType2.map((type) => allParcelType.find((e) => e._id.toString() == type.toString())), parcelType2: null }))) }) })));
+        console.log(Nowdata, "Nowdata");
+        for (const item of Nowdata) {
             item.orderData.deliveryDetails.sort((a, b) => a.sortOrder - b.sortOrder);
         }
-        for (const item of data) {
+        for (const item of Nowdata) {
             item.orderData.deliveryDetails.forEach((detail, index) => {
                 detail.index = index + 1;
             });
         }
         return res.ok({
-            data: data || [],
+            data: Nowdata || [],
         });
     }
     catch (error) {
@@ -2650,6 +2654,7 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
     try {
         const id = req.params.id;
         console.log('id', id);
+        const allParcelType = yield parcel_schema_1.default.find();
         const [multiOrder] = yield orderMulti_schema_1.default
             .aggregate([
             { $match: { _id: new mongoose_1.default.Types.ObjectId(id) } },
@@ -2781,7 +2786,9 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                                 $round: [
                                                                     {
                                                                         $divide: [
-                                                                            { $ifNull: ['$$routeItem.distance', 0] },
+                                                                            {
+                                                                                $ifNull: ['$$routeItem.distance', 0],
+                                                                            },
                                                                             1609.34,
                                                                         ],
                                                                     },
@@ -2857,17 +2864,18 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             },
         ])
             .exec();
+        const Nowdata = Object.assign(Object.assign({}, multiOrder), { deliveryDetails: multiOrder.deliveryDetails.map((item) => (Object.assign(Object.assign({}, item), { parcelType: item.parcelType2.map((type) => allParcelType.find((e) => e._id.toString() == type.toString())), parcelType2: null }))) });
         const oder = yield orderAssigneeMulti_schema_1.default.findOne({
-            order: multiOrder.orderId,
+            order: Nowdata.orderId,
         });
         if (oder.deliveryBoy.toString() != req.id.toString()) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
-        multiOrder.deliveryDetails.sort((a, b) => a.sortOrder - b.sortOrder);
-        multiOrder.deliveryDetails.forEach((detail, index) => {
+        Nowdata.deliveryDetails.sort((a, b) => a.sortOrder - b.sortOrder);
+        Nowdata.deliveryDetails.forEach((detail, index) => {
             detail.index = index + 1;
         });
-        return res.ok({ data: multiOrder });
+        return res.ok({ data: Nowdata });
     }
     catch (error) {
         return res.failureResponse({
