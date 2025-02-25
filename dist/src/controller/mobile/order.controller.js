@@ -168,6 +168,10 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // Validate the cleaned body
         console.log('before', req.body);
         const validateRequest = (0, validateRequest_1.default)(cleanedBody, order_validation_1.newOrderCreationMulti);
+        // Add subOrderId index + 1
+        if (validateRequest.isValid) {
+            validateRequest.value.deliveryDetails = validateRequest.value.deliveryDetails.map((detail, index) => (Object.assign(Object.assign({}, detail), { subOrderId: index + 1 })));
+        }
         console.log('data2', validateRequest);
         console.log('v:', validateRequest);
         if (!validateRequest.isValid) {
@@ -207,6 +211,7 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const deliveryMan = yield deliveryMan_schema_1.default.findById({
             _id: req.body.deliveryManId,
         });
+        console.log(deliveryMan, 'deliveryMan');
         // console.log(deliveryMan, 'deliveryMan');
         // Ensure charge is a valid number and not NaN
         const charge = (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.charge) || 0;
@@ -304,7 +309,9 @@ const orderCreationMulti = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // };
         // await PaymentInfoSchema.create(paymentData);
         yield paymentGet_schema_1.default.insertMany(newData);
-        (0, Notificationinapp_1.sendNotificationinapp)('Order Assigned', `New Order has been Assigned to you order id is ${newOrder.orderId}`, deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.deviceToken);
+        if ((deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.deviceToken) && newOrder.orderId) {
+            (0, Notificationinapp_1.sendNotificationinapp)('Order Assigned', `New Order has been Assigned to you order id is ${newOrder.orderId}`, deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.deviceToken);
+        }
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCreatedSuccessfully,
             data: { orderId: newOrder.orderId },

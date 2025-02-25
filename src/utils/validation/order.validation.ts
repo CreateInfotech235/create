@@ -152,7 +152,7 @@ export const newOrderCreationMulti = Joi.object({
     .items(
       Joi.object({
         customerId: Joi.string().required(),
-        subOrderId: Joi.number().required(),
+        // subOrderId: Joi.number().required(),
         address: Joi.string().required(),
         email: Joi.string().allow('').allow('-'),
         location: Joi.object({

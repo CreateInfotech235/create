@@ -225,8 +225,17 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
       cleanedBody,
       newOrderCreationMulti,
     );
+
+    // Add subOrderId index + 1
+    if (validateRequest.isValid) {
+      validateRequest.value.deliveryDetails = validateRequest.value.deliveryDetails.map((detail, index) => ({
+        ...detail,
+        subOrderId: index + 1,
+      }));
+    }
     console.log('data2', validateRequest);
     console.log('v:', validateRequest);
+
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -286,6 +295,7 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
     const deliveryMan = await deliveryManSchema.findById({
       _id: req.body.deliveryManId,
     });
+    console.log(deliveryMan, 'deliveryMan');
     // console.log(deliveryMan, 'deliveryMan');
     // Ensure charge is a valid number and not NaN
     const charge = deliveryMan?.charge || 0;
@@ -418,7 +428,9 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
 
     // await PaymentInfoSchema.create(paymentData);
     await paymentGetSchema.insertMany(newData);
-    sendNotificationinapp('Order Assigned', `New Order has been Assigned to you order id is ${newOrder.orderId}`, deliveryMan?.deviceToken);
+    if (deliveryMan?.deviceToken && newOrder.orderId) {
+      sendNotificationinapp('Order Assigned', `New Order has been Assigned to you order id is ${newOrder.orderId}`, deliveryMan?.deviceToken);
+    }
 
     return res.ok({
       message: getLanguage('en').orderCreatedSuccessfully,

@@ -1305,6 +1305,16 @@ export const cancelMultiSubOrder = async (
       }
     }
 
+
+    // await createNotification({
+    //   userId: existingOrder.merchant,
+    //   orderId: existingOrder.orderId,
+    //   subOrderId: value.subOrderId.map((item: any) => nu item),
+    //   title: 'Order Cancelled',
+    //   message: `Order ${existingOrder.orderId} has been cancelled by deliveryman`,
+    //   type: 'MERCHANT',
+    // });
+
     // const oderdata = await orderSchemaMulti.findOne({
     const oderdata = await orderSchemaMulti.findOne({
       orderId: value.orderId,
@@ -1920,13 +1930,14 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       });
     });
 
-    // await createNotification({
-    //   userId: isArrived.merchant,
-    //   orderId: isArrived.orderId,
-    //   title: 'Order Picked Up',
-    //   message: `Your order ${isArrived.orderId} has been picked up`,
-    //   type: 'MERCHANT',
-    // });
+    await createNotification({
+      userId: isArrived.merchant,
+      orderId: isArrived.orderId,
+      subOrderId: allid,
+      title: 'Order Picked Up',
+      message: `Your order ${isArrived.orderId} has been picked up`,
+      type: 'MERCHANT',
+    });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,

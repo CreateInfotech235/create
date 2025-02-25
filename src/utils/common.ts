@@ -85,6 +85,7 @@ export const uploadFile = (
 
 export const createNotification = async ({
   userId,
+  subOrderId,
   title,
   message,
   type,
@@ -93,6 +94,7 @@ export const createNotification = async ({
   adminId,
 }: {
   userId: mongoose.Types.ObjectId;
+  subOrderId?: number[];
   title: string;
   message: string;
   type: 'ADMIN' | 'MERCHANT' | 'DELIVERYMAN';
@@ -103,6 +105,7 @@ export const createNotification = async ({
   try {
     const notification = await Notifications.create({
       userId,
+      subOrderId,
       title,
       message,
       type,

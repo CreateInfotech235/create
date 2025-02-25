@@ -1055,6 +1055,14 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                 });
             }
         }
+        // await createNotification({
+        //   userId: existingOrder.merchant,
+        //   orderId: existingOrder.orderId,
+        //   subOrderId: value.subOrderId.map((item: any) => nu item),
+        //   title: 'Order Cancelled',
+        //   message: `Order ${existingOrder.orderId} has been cancelled by deliveryman`,
+        //   type: 'MERCHANT',
+        // });
         // const oderdata = await orderSchemaMulti.findOne({
         const oderdata = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
@@ -1514,13 +1522,14 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 merchantID: isArrived.merchant,
             });
         }));
-        // await createNotification({
-        //   userId: isArrived.merchant,
-        //   orderId: isArrived.orderId,
-        //   title: 'Order Picked Up',
-        //   message: `Your order ${isArrived.orderId} has been picked up`,
-        //   type: 'MERCHANT',
-        // });
+        yield (0, common_1.createNotification)({
+            userId: isArrived.merchant,
+            orderId: isArrived.orderId,
+            subOrderId: allid,
+            title: 'Order Picked Up',
+            message: `Your order ${isArrived.orderId} has been picked up`,
+            type: 'MERCHANT',
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });

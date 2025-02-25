@@ -7,6 +7,10 @@ const NotificationSchema = new mongoose.Schema(
       required: true,
       refPath: 'type',
     },
+    subOrderId: {
+      type: [Number],
+      required: false,
+    },
     title: {
       type: String,
       required: true,
