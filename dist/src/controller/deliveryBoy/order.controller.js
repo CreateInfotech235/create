@@ -1042,7 +1042,9 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                 const alldataoforder = yield orderMulti_schema_1.default.findOne({
                     orderId: value.orderId,
                 });
-                const allsuborderidofcancelled = yield alldataoforder.deliveryDetails.filter((item) => item.status == enum_1.ORDER_HISTORY.CANCELLED).map((item) => item.subOrderId);
+                const allsuborderidofcancelled = yield alldataoforder.deliveryDetails
+                    .filter((item) => item.status == enum_1.ORDER_HISTORY.CANCELLED)
+                    .map((item) => item.subOrderId);
                 const isallodercancelled = yield alldataoforder.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.CANCELLED);
                 yield (0, common_1.createNotification)({
                     userId: existingOrder.merchant,
@@ -2676,7 +2678,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                         return Object.assign(Object.assign({}, detail), { parcelType });
                     }) }) }));
         });
-        console.log(Nowdata, "Nowdata");
+        console.log(Nowdata, 'Nowdata');
         for (const item of Nowdata) {
             (_8 = (_7 = item === null || item === void 0 ? void 0 : item.orderData) === null || _7 === void 0 ? void 0 : _7.deliveryDetails) === null || _8 === void 0 ? void 0 : _8.sort((a, b) => a.sortOrder - b.sortOrder);
         }
@@ -2912,10 +2914,12 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
         ])
             .exec();
         const Nowdata = Object.assign(Object.assign({}, multiOrder), { deliveryDetails: multiOrder.deliveryDetails.map((item) => {
-                const parcelType = item.parcelType2.map((type) => {
+                const parcelType = item.parcelType2
+                    .map((type) => {
                     const foundType = allParcelType.find((e) => e._id.toString() == type.toString());
                     return foundType ? { label: foundType.label } : null;
-                }).filter(Boolean);
+                })
+                    .filter(Boolean);
                 delete item.parcelType2; // Delete parcelType2 after use
                 return Object.assign(Object.assign({}, item), { parcelType });
             }) });
@@ -2941,8 +2945,11 @@ exports.getMultiOrderById = getMultiOrderById;
 const logoutdeliveryboy = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = req.id;
-        console.log(id, "id");
-        yield deliveryMan_schema_1.default.findByIdAndUpdate(id, { isOnline: false, deviceToken: "" });
+        console.log(id, 'id');
+        yield deliveryMan_schema_1.default.findByIdAndUpdate(id, {
+            isOnline: false,
+            deviceToken: '',
+        });
         return res.ok({ message: (0, languageHelper_1.getLanguage)('en').deliveryManLoggedOut });
     }
     catch (error) {

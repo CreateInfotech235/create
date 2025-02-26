@@ -1287,22 +1287,23 @@ export const cancelMultiSubOrder = async (
             reason: value.reason,
           });
         }
-        
+
         const alldataoforder = await orderSchemaMulti.findOne({
           orderId: value.orderId,
         });
-        const allsuborderidofcancelled = await alldataoforder.deliveryDetails.filter((item: any) => item.status == ORDER_HISTORY.CANCELLED).map((item: any) => item.subOrderId);
+        const allsuborderidofcancelled = await alldataoforder.deliveryDetails
+          .filter((item: any) => item.status == ORDER_HISTORY.CANCELLED)
+          .map((item: any) => item.subOrderId);
         const isallodercancelled = await alldataoforder.deliveryDetails.every(
-          (item: any) =>
-            item.status == ORDER_HISTORY.CANCELLED,
+          (item: any) => item.status == ORDER_HISTORY.CANCELLED,
         );
-
 
         await createNotification({
           userId: existingOrder.merchant,
           orderId: value.orderId,
           subOrderId: allsuborderidofcancelled,
-          deliveryBoyname: dataofdeliveryboy.firstName + ' ' + dataofdeliveryboy.lastName,
+          deliveryBoyname:
+            dataofdeliveryboy.firstName + ' ' + dataofdeliveryboy.lastName,
           ismerchantdeliveryboy: dataofdeliveryboy.createdByMerchant,
           title: ` ${isallodercancelled ? 'All' : 'Some'}   Order Cancelled`,
           message: `Order ${value.orderId} has been cancelled by deliveryman`,
@@ -1329,7 +1330,6 @@ export const cancelMultiSubOrder = async (
         });
       }
     }
-
 
     // await createNotification({
     //   userId: existingOrder.merchant,
@@ -2659,7 +2659,6 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       merchantID: isArrived.merchant,
     });
 
- 
     // Update bile schema status
     await BillingSchema.updateOne(
       {
@@ -2690,7 +2689,6 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       BileSchemaData?.deliveryBoyId,
     );
 
-
     const oderdata = await orderSchemaMulti.findOne({
       orderId: value.orderId,
     });
@@ -2704,12 +2702,11 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       subOrderId: [value.subOrderId],
       title: isalloderdelever ? 'All Order Delivered' : 'Some Order Delivered',
       message: `Your order ${isArrived.showOrderNumber} has been delivered`,
-      deliveryBoyname: dataofdeliveryboy?.firstName + ' ' + dataofdeliveryboy?.lastName,
+      deliveryBoyname:
+        dataofdeliveryboy?.firstName + ' ' + dataofdeliveryboy?.lastName,
       ismerchantdeliveryboy: dataofdeliveryboy?.createdByMerchant,
       type: 'MERCHANT',
     });
-
-
 
     // console.log(dataofdeliveryboy, 'dataofdeliveryboy');
     const iscreatedByMerchant = dataofdeliveryboy?.createdByMerchant;
@@ -3110,8 +3107,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       pageCount = 1,
     } = req.query;
 
-
-    const allParcelType = await ParcelSchema.find() || [];
+    const allParcelType = (await ParcelSchema.find()) || [];
 
     if (status === ORDER_HISTORY.CANCELLED) {
     }
@@ -3121,11 +3117,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           deliveryBoy: new mongoose.Types.ObjectId(req.id),
           ...(startDate &&
             endDate && {
-            createdAt: {
-              $gte: new Date(startDate),
-              $lte: new Date(endDate),
-            },
-          }),
+              createdAt: {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+              },
+            }),
           // ...(status && { 'orderData.status': status }),
         },
       },
@@ -3393,22 +3389,26 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       ...item,
       orderData: {
         ...item?.orderData,
-        deliveryDetails: item?.orderData?.deliveryDetails?.map((detail: any) => {
-          const parcelType = detail?.parcelType2?.map((type: any) => {
-            const foundType = allParcelType.find((e) => e._id?.toString() == type?.toString());
-            return foundType ? { label: foundType.label } : null;
-          }).filter(Boolean);
-          delete detail?.parcelType2; // Correctly delete parcelType2 from detail
-          return {
-            ...detail,
-            parcelType,
-          };
-        })
-      }
+        deliveryDetails: item?.orderData?.deliveryDetails?.map(
+          (detail: any) => {
+            const parcelType = detail?.parcelType2
+              ?.map((type: any) => {
+                const foundType = allParcelType.find(
+                  (e) => e._id?.toString() == type?.toString(),
+                );
+                return foundType ? { label: foundType.label } : null;
+              })
+              .filter(Boolean);
+            delete detail?.parcelType2; // Correctly delete parcelType2 from detail
+            return {
+              ...detail,
+              parcelType,
+            };
+          },
+        ),
+      },
     }));
-    console.log(Nowdata, "Nowdata");
-
-
+    console.log(Nowdata, 'Nowdata');
 
     for (const item of Nowdata) {
       item?.orderData?.deliveryDetails?.sort(
@@ -3416,9 +3416,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       );
     }
     for (const item of Nowdata) {
-      item?.orderData?.deliveryDetails?.forEach((detail: any, index: number) => {
-        detail.index = index + 1;
-      });
+      item?.orderData?.deliveryDetails?.forEach(
+        (detail: any, index: number) => {
+          detail.index = index + 1;
+        },
+      );
     }
     return res.ok({
       data: Nowdata || [],
@@ -3435,7 +3437,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
   try {
     const id = req.params.id;
     console.log('id', id);
-    const allParcelType = await ParcelSchema.find() || [];
+    const allParcelType = (await ParcelSchema.find()) || [];
     const [multiOrder] = await orderSchemaMulti
       .aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(id) } },
@@ -3646,17 +3648,24 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
       ])
       .exec();
 
-    const Nowdata = { ...multiOrder, deliveryDetails: multiOrder.deliveryDetails.map((item: any) => {
-      const parcelType = item.parcelType2.map((type: any) => {
-        const foundType = allParcelType.find((e: any) => e._id.toString() == type.toString());
-        return foundType ? { label: foundType.label } : null;
-      }).filter(Boolean);
-      delete item.parcelType2; // Delete parcelType2 after use
-      return {
-        ...item,
-        parcelType,
-      };
-    })};
+    const Nowdata = {
+      ...multiOrder,
+      deliveryDetails: multiOrder.deliveryDetails.map((item: any) => {
+        const parcelType = item.parcelType2
+          .map((type: any) => {
+            const foundType = allParcelType.find(
+              (e: any) => e._id.toString() == type.toString(),
+            );
+            return foundType ? { label: foundType.label } : null;
+          })
+          .filter(Boolean);
+        delete item.parcelType2; // Delete parcelType2 after use
+        return {
+          ...item,
+          parcelType,
+        };
+      }),
+    };
 
     const oder = await OrderAssigneeSchemaMulti.findOne({
       order: Nowdata.orderId,
@@ -3665,9 +3674,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
     if (oder.deliveryBoy.toString() != req.id.toString()) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
-    Nowdata.deliveryDetails.sort(
-      (a: any, b: any) => a.sortOrder - b.sortOrder,
-    );
+    Nowdata.deliveryDetails.sort((a: any, b: any) => a.sortOrder - b.sortOrder);
 
     Nowdata.deliveryDetails.forEach((detail: any, index: number) => {
       detail.index = index + 1;
@@ -3681,13 +3688,15 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
   }
 };
 
-
 export const logoutdeliveryboy = async (req: RequestParams, res: Response) => {
   try {
-    const id  = req.id;
-    console.log(id, "id");
-    
-    await DeliveryManSchema.findByIdAndUpdate(id, { isOnline: false,deviceToken:"" });
+    const id = req.id;
+    console.log(id, 'id');
+
+    await DeliveryManSchema.findByIdAndUpdate(id, {
+      isOnline: false,
+      deviceToken: '',
+    });
     return res.ok({ message: getLanguage('en').deliveryManLoggedOut });
   } catch (error) {
     console.log('🚀 ~ logout ~ error:', error);
