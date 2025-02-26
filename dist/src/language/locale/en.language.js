@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const messages = {
+    deliveryManLoggedOut: 'Delivery Man logged out successfully',
     somethingWentWrong: 'Something went wrong',
     passwordResetSuccess: 'Password reset successfully',
     emailNotRegistered: 'Email not registered',

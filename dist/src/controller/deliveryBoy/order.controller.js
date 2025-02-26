@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMultiOrderById = exports.getMultiOrder = exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrdersMulti = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelMultiSubOrder = exports.cancelMultiOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
+exports.logoutdeliveryboy = exports.getMultiOrderById = exports.getMultiOrder = exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrdersMulti = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelMultiSubOrder = exports.cancelMultiOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -969,6 +969,9 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         const { value } = validateRequest;
         value.deliveryManId = req.id.toString();
         console.log(value, 'value');
+        const dataofdeliveryboy = yield deliveryMan_schema_1.default.findOne({
+            _id: value.deliveryManId,
+        });
         // Check if the order exists and is not yet completed
         const existingOrder = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
@@ -1036,6 +1039,21 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                         reason: value.reason,
                     });
                 }
+                const alldataoforder = yield orderMulti_schema_1.default.findOne({
+                    orderId: value.orderId,
+                });
+                const allsuborderidofcancelled = yield alldataoforder.deliveryDetails.filter((item) => item.status == enum_1.ORDER_HISTORY.CANCELLED).map((item) => item.subOrderId);
+                const isallodercancelled = yield alldataoforder.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.CANCELLED);
+                yield (0, common_1.createNotification)({
+                    userId: existingOrder.merchant,
+                    orderId: value.orderId,
+                    subOrderId: allsuborderidofcancelled,
+                    deliveryBoyname: dataofdeliveryboy.firstName + ' ' + dataofdeliveryboy.lastName,
+                    ismerchantdeliveryboy: dataofdeliveryboy.createdByMerchant,
+                    title: ` ${isallodercancelled ? 'All' : 'Some'}   Order Cancelled`,
+                    message: `Order ${value.orderId} has been cancelled by deliveryman`,
+                    type: 'MERCHANT',
+                });
             }
         }
         yield orderHistory_schema_1.default.deleteMany({
@@ -2017,14 +2035,6 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             status: enum_1.ORDER_HISTORY.DELIVERED,
             merchantID: isArrived.merchant,
         });
-        // Create notification
-        yield (0, common_1.createNotification)({
-            userId: isArrived.merchant,
-            orderId: isArrived.orderId,
-            title: 'Order Delivered',
-            message: `Your order ${isArrived.showOrderNumber} has been delivered`,
-            type: 'MERCHANT',
-        });
         // Update bile schema status
         yield billing_Schema_1.default.updateOne({
             orderId: value.orderId,
@@ -2044,6 +2054,21 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             'subOrderdata.subOrderId': value.subOrderId,
         });
         const dataofdeliveryboy = yield deliveryMan_schema_1.default.findById(BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.deliveryBoyId);
+        const oderdata = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+        });
+        const isalloderdelever = oderdata.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED);
+        // Create notification
+        yield (0, common_1.createNotification)({
+            userId: isArrived.merchant,
+            orderId: isArrived.orderId,
+            subOrderId: [value.subOrderId],
+            title: isalloderdelever ? 'All Order Delivered' : 'Some Order Delivered',
+            message: `Your order ${isArrived.showOrderNumber} has been delivered`,
+            deliveryBoyname: (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.firstName) + ' ' + (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.lastName),
+            ismerchantdeliveryboy: dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.createdByMerchant,
+            type: 'MERCHANT',
+        });
         // console.log(dataofdeliveryboy, 'dataofdeliveryboy');
         const iscreatedByMerchant = dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.createdByMerchant;
         console.log(dataofdeliveryboy, 'dataofdeliveryboy');
@@ -2913,3 +2938,15 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getMultiOrderById = getMultiOrderById;
+const logoutdeliveryboy = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = req.id;
+        console.log(id, "id");
+        yield deliveryMan_schema_1.default.findByIdAndUpdate(id, { isOnline: false, deviceToken: "" });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').deliveryManLoggedOut });
+    }
+    catch (error) {
+        console.log('🚀 ~ logout ~ error:', error);
+    }
+});
+exports.logoutdeliveryboy = logoutdeliveryboy;

@@ -1,4 +1,5 @@
 const messages = {
+  deliveryManLoggedOut: 'Delivery Man logged out successfully',
   somethingWentWrong: 'Something went wrong',
   passwordResetSuccess : 'Password reset successfully',
   emailNotRegistered : 'Email not registered',

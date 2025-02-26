@@ -32,11 +32,13 @@ export declare const passwordValidation: (password: string, hashPassword: string
 export declare const encryptPassword: ({ password }: encryptPasswordParams) => Promise<string>;
 export declare const generateIntRandomNo: (start?: number, end?: number) => number;
 export declare const uploadFile: (fileName: string, base64FormatImage: string, fileType: string) => Promise<string>;
-export declare const createNotification: ({ userId, subOrderId, title, message, type, orderId, senderId, adminId, }: {
+export declare const createNotification: ({ userId, subOrderId, title, message, deliveryBoyname, ismerchantdeliveryboy, type, orderId, senderId, adminId, }: {
     userId: mongoose.Types.ObjectId;
     subOrderId?: number[];
     title: string;
     message: string;
+    deliveryBoyname?: string;
+    ismerchantdeliveryboy?: boolean;
     type: 'ADMIN' | 'MERCHANT' | 'DELIVERYMAN';
     orderId?: number;
     senderId?: mongoose.Types.ObjectId;
@@ -53,6 +55,8 @@ export declare const createNotification: ({ userId, subOrderId, title, message, 
     isRead: boolean;
     orderId?: number;
     subOrderId?: number[];
+    deliveryBoyname?: string;
+    ismerchantdeliveryboy?: boolean;
     senderId?: Types.ObjectId;
 }> & {
     createdAt: NativeDate;
@@ -66,6 +70,8 @@ export declare const createNotification: ({ userId, subOrderId, title, message, 
     isRead: boolean;
     orderId?: number;
     subOrderId?: number[];
+    deliveryBoyname?: string;
+    ismerchantdeliveryboy?: boolean;
     senderId?: Types.ObjectId;
 } & {
     _id: Types.ObjectId;

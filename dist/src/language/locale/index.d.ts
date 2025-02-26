@@ -1,5 +1,6 @@
 declare const _default: {
     en: {
+        deliveryManLoggedOut: string;
         somethingWentWrong: string;
         passwordResetSuccess: string;
         emailNotRegistered: string;

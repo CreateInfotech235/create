@@ -1200,6 +1200,10 @@ export const cancelMultiSubOrder = async (
     const { value } = validateRequest;
     value.deliveryManId = req.id.toString();
     console.log(value, 'value');
+
+    const dataofdeliveryboy = await DeliveryManSchema.findOne({
+      _id: value.deliveryManId,
+    });
     // Check if the order exists and is not yet completed
     const existingOrder = await orderSchemaMulti.findOne({
       orderId: value.orderId,
@@ -1283,6 +1287,27 @@ export const cancelMultiSubOrder = async (
             reason: value.reason,
           });
         }
+        
+        const alldataoforder = await orderSchemaMulti.findOne({
+          orderId: value.orderId,
+        });
+        const allsuborderidofcancelled = await alldataoforder.deliveryDetails.filter((item: any) => item.status == ORDER_HISTORY.CANCELLED).map((item: any) => item.subOrderId);
+        const isallodercancelled = await alldataoforder.deliveryDetails.every(
+          (item: any) =>
+            item.status == ORDER_HISTORY.CANCELLED,
+        );
+
+
+        await createNotification({
+          userId: existingOrder.merchant,
+          orderId: value.orderId,
+          subOrderId: allsuborderidofcancelled,
+          deliveryBoyname: dataofdeliveryboy.firstName + ' ' + dataofdeliveryboy.lastName,
+          ismerchantdeliveryboy: dataofdeliveryboy.createdByMerchant,
+          title: ` ${isallodercancelled ? 'All' : 'Some'}   Order Cancelled`,
+          message: `Order ${value.orderId} has been cancelled by deliveryman`,
+          type: 'MERCHANT',
+        });
       }
     }
 
@@ -2634,15 +2659,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       merchantID: isArrived.merchant,
     });
 
-    // Create notification
-    await createNotification({
-      userId: isArrived.merchant,
-      orderId: isArrived.orderId,
-      title: 'Order Delivered',
-      message: `Your order ${isArrived.showOrderNumber} has been delivered`,
-      type: 'MERCHANT',
-    });
-
+ 
     // Update bile schema status
     await BillingSchema.updateOne(
       {
@@ -2663,6 +2680,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
         },
       },
     );
+
     const BileSchemaData = await BillingSchema.findOne({
       orderId: value.orderId,
       'subOrderdata.subOrderId': value.subOrderId,
@@ -2671,6 +2689,28 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     const dataofdeliveryboy = await DeliveryManSchema.findById(
       BileSchemaData?.deliveryBoyId,
     );
+
+
+    const oderdata = await orderSchemaMulti.findOne({
+      orderId: value.orderId,
+    });
+    const isalloderdelever = oderdata.deliveryDetails.every(
+      (detail: any) => detail.status === ORDER_HISTORY.DELIVERED,
+    );
+    // Create notification
+    await createNotification({
+      userId: isArrived.merchant,
+      orderId: isArrived.orderId,
+      subOrderId: [value.subOrderId],
+      title: isalloderdelever ? 'All Order Delivered' : 'Some Order Delivered',
+      message: `Your order ${isArrived.showOrderNumber} has been delivered`,
+      deliveryBoyname: dataofdeliveryboy?.firstName + ' ' + dataofdeliveryboy?.lastName,
+      ismerchantdeliveryboy: dataofdeliveryboy?.createdByMerchant,
+      type: 'MERCHANT',
+    });
+
+
+
     // console.log(dataofdeliveryboy, 'dataofdeliveryboy');
     const iscreatedByMerchant = dataofdeliveryboy?.createdByMerchant;
     console.log(dataofdeliveryboy, 'dataofdeliveryboy');
@@ -3638,5 +3678,18 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
+  }
+};
+
+
+export const logoutdeliveryboy = async (req: RequestParams, res: Response) => {
+  try {
+    const id  = req.id;
+    console.log(id, "id");
+    
+    await DeliveryManSchema.findByIdAndUpdate(id, { isOnline: false,deviceToken:"" });
+    return res.ok({ message: getLanguage('en').deliveryManLoggedOut });
+  } catch (error) {
+    console.log('🚀 ~ logout ~ error:', error);
   }
 };

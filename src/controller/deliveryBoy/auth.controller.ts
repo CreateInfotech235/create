@@ -192,6 +192,7 @@ export const signUp = async (req: RequestParams, res: Response) => {
   }
 };
 
+
 export const updateDeliveryManProfileAndPassword = async (
   req: RequestParams,
   res: Response,

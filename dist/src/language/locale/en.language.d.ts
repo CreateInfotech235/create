@@ -1,4 +1,5 @@
 declare const messages: {
+    deliveryManLoggedOut: string;
     somethingWentWrong: string;
     passwordResetSuccess: string;
     emailNotRegistered: string;

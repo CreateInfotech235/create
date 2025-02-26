@@ -88,6 +88,8 @@ export const createNotification = async ({
   subOrderId,
   title,
   message,
+  deliveryBoyname,
+  ismerchantdeliveryboy,
   type,
   orderId,
   senderId,
@@ -97,6 +99,8 @@ export const createNotification = async ({
   subOrderId?: number[];
   title: string;
   message: string;
+  deliveryBoyname?: string;
+  ismerchantdeliveryboy?: boolean;
   type: 'ADMIN' | 'MERCHANT' | 'DELIVERYMAN';
   orderId?: number;
   senderId?: mongoose.Types.ObjectId;
@@ -108,6 +112,8 @@ export const createNotification = async ({
       subOrderId,
       title,
       message,
+      deliveryBoyname,
+      ismerchantdeliveryboy,
       type,
       orderId,
       senderId,

@@ -524,4 +524,5 @@ router.get('/getMultiOrder', order_controller_1.getMultiOrder);
  *         description: Something went wrong
  */
 router.get('/getMultiOrderById/:id', order_controller_1.getMultiOrderById);
+router.patch('/logoutdeliveryboy', order_controller_1.logoutdeliveryboy);
 exports.default = router;

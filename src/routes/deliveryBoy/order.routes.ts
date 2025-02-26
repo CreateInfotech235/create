@@ -24,9 +24,12 @@ import {
   cancelMultiOrder,
   getAllCancelledOrdersMulti,
   cancelMultiSubOrder,
+  logoutdeliveryboy,
 } from '../../controller/deliveryBoy/order.controller';
 
 const router = express.Router();
+
+
 
 /**
  * @swagger
@@ -580,6 +583,9 @@ router.get('/getMultiOrder', getMultiOrder);
  *         description: Something went wrong
  */
 router.get('/getMultiOrderById/:id', getMultiOrderById);
+
+router.patch('/logoutdeliveryboy', logoutdeliveryboy);
+
 export default router;
 
 

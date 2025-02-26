@@ -14,6 +14,14 @@ const NotificationSchema = new mongoose_1.default.Schema({
         type: [Number],
         required: false,
     },
+    deliveryBoyname: {
+        type: String,
+        required: false,
+    },
+    ismerchantdeliveryboy: {
+        type: Boolean,
+        required: false,
+    },
     title: {
         type: String,
         required: true,
