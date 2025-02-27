@@ -1494,6 +1494,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const currentTime = Date.now();
         const base64Image = value.userSignature; // Assuming userSignature is a base64 image
         const prefixFilename = `${currentTime}`;
+        console.log(base64Image, 'base64Image');
         fetch(process.env.IMAGE_STORAGE_UPLOAD_URL, {
             method: 'POST',
             headers: {
@@ -1504,13 +1505,28 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 prefixfilename: prefixFilename,
             }),
         });
+        // data:image/jpeg;base64,
+        const arrayoftype = [
+            "png",
+            "webp",
+            "jpg",
+            "jpeg",
+            "gif",
+            "bmp",
+            "tiff",
+            "svg",
+            "heif",
+            "ico",
+            "avif",
+        ];
+        const imageType = arrayoftype.find((type) => base64Image.includes(type));
         yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
                 status: allPickedUp ? enum_1.ORDER_HISTORY.PICKED_UP : isArrived.status,
-                'pickupDetails.userSignature': `${process.env.IMAGE_STORAGE_GET_IMAGE_URL}/${prefixFilename}.png`,
+                'pickupDetails.userSignature': `${process.env.IMAGE_STORAGE_GET_IMAGE_URL}/${prefixFilename}.${imageType}`,
                 'pickupDetails.orderTimestamp': value.pickupTimestamp,
                 'deliveryDetails.$[elem].status': enum_1.ORDER_HISTORY.PICKED_UP,
-                'deliveryDetails.$[elem].pickupsignature': `${process.env.IMAGE_STORAGE_GET_IMAGE_URL}/${prefixFilename}.png`,
+                'deliveryDetails.$[elem].pickupsignature': `${process.env.IMAGE_STORAGE_GET_IMAGE_URL}/${prefixFilename}.${imageType}`,
                 route: optimizedRoute,
             },
         }, {
