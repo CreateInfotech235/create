@@ -1503,21 +1503,22 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             body: JSON.stringify({
                 base64Image: base64Image,
                 prefixfilename: prefixFilename,
+                projectName: process.env.PROJECT_NAME,
             }),
         });
         // data:image/jpeg;base64,
         const arrayoftype = [
-            "png",
-            "webp",
-            "jpg",
-            "jpeg",
-            "gif",
-            "bmp",
-            "tiff",
-            "svg",
-            "heif",
-            "ico",
-            "avif",
+            'png',
+            'webp',
+            'jpg',
+            'jpeg',
+            'gif',
+            'bmp',
+            'tiff',
+            'svg',
+            'heif',
+            'ico',
+            'avif',
         ];
         const imageType = arrayoftype.find((type) => base64Image.includes(type));
         yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
