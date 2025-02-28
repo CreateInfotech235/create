@@ -1521,6 +1521,11 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       deliveryBoy: value.deliveryManId,
     });
 
+
+    const isalloderdeparted = isCreated.deliveryDetails.every(
+      (item: any) => item.status == ORDER_HISTORY.DEPARTED || item.status == ORDER_HISTORY.DELIVERED,
+    );
+
     try {
       await BillingSchema.updateOne(
         {
@@ -1530,6 +1535,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
         {
           $set: {
             'subOrderdata.$.orderStatus': ORDER_HISTORY.DEPARTED,
+            orderStatus: isalloderdeparted ? ORDER_HISTORY.DEPARTED : isCreated.status
           },
         },
       );
@@ -2654,7 +2660,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     });
 
     const allDelivered = updatedOrder.deliveryDetails.every(
-      (detail: any) => detail.status === ORDER_HISTORY.DELIVERED,
+      (detail: any) => detail.status === ORDER_HISTORY.DELIVERED || detail.status === ORDER_HISTORY.CANCELLED || detail.status === ORDER_HISTORY.UNASSIGNED,
     );
 
     if (allDelivered) {
@@ -2680,6 +2686,8 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       merchantID: isArrived.merchant,
     });
 
+
+
     // Update bile schema status
     await BillingSchema.updateOne(
       {
@@ -2693,6 +2701,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
           'subOrderdata.$.deliveryTime': value.deliverTimestamp,
           'subOrderdata.$.deliverysignature': value.deliveryManSignature,
           'subOrderdata.$.deliveryTimestamp': value.deliverTimestamp,
+          orderStatus: allDelivered ? ORDER_STATUS.DELIVERED : updatedOrder.status,
           totalamountOfPackage:
             isArrived.deliveryDetails.find(
               (data: any) => data.subOrderId === value.subOrderId,

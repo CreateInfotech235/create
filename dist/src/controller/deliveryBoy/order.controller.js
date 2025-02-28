@@ -1229,6 +1229,7 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             merchantID: isCreated.merchant,
             deliveryBoy: value.deliveryManId,
         });
+        const isalloderdeparted = isCreated.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED || item.status == enum_1.ORDER_HISTORY.DELIVERED);
         try {
             yield billing_Schema_1.default.updateOne({
                 orderId: value.orderId,
@@ -1236,6 +1237,7 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             }, {
                 $set: {
                     'subOrderdata.$.orderStatus': enum_1.ORDER_HISTORY.DEPARTED,
+                    orderStatus: isalloderdeparted ? enum_1.ORDER_HISTORY.DEPARTED : isCreated.status
                 },
             });
         }
@@ -2040,7 +2042,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const updatedOrder = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
         });
-        const allDelivered = updatedOrder.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED);
+        const allDelivered = updatedOrder.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED || detail.status === enum_1.ORDER_HISTORY.CANCELLED || detail.status === enum_1.ORDER_HISTORY.UNASSIGNED);
         if (allDelivered) {
             yield orderMulti_schema_1.default.updateOne({ orderId: value.orderId }, { $set: { status: enum_1.ORDER_HISTORY.DELIVERED } });
         }
@@ -2066,6 +2068,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 'subOrderdata.$.deliveryTime': value.deliverTimestamp,
                 'subOrderdata.$.deliverysignature': value.deliveryManSignature,
                 'subOrderdata.$.deliveryTimestamp': value.deliverTimestamp,
+                orderStatus: allDelivered ? enum_1.ORDER_STATUS.DELIVERED : updatedOrder.status,
                 totalamountOfPackage: (_r = (_q = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _q === void 0 ? void 0 : _q.paymentCollectionRupees) !== null && _r !== void 0 ? _r : 0,
             },
         });
