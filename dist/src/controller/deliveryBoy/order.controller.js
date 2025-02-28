@@ -1483,6 +1483,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                         'subOrderdata.$.deliveryLocation': elem.location,
                         'subOrderdata.$.orderStatus': enum_1.ORDER_HISTORY.PICKED_UP,
                         'subOrderdata.$.distance': (elem.distance / 1609.34).toFixed(2),
+                        orderStatus: allPickedUp ? enum_1.ORDER_HISTORY.PICKED_UP : isArrived.status
                     },
                 }, { new: true });
                 console.log(bile, 'bile');

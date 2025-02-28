@@ -1870,6 +1870,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
               'subOrderdata.$.deliveryLocation': elem.location,
               'subOrderdata.$.orderStatus': ORDER_HISTORY.PICKED_UP,
               'subOrderdata.$.distance': (elem.distance / 1609.34).toFixed(2),
+              orderStatus: allPickedUp ? ORDER_HISTORY.PICKED_UP : isArrived.status
             },
           },
           { new: true },
