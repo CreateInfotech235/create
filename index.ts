@@ -16,6 +16,7 @@ import OrderAssigneeSchema from './src/models/orderAssignee.schema';
 import routes from './src/routes';
 import loadSeeders from './src/seeders';
 import responseHandler from './src/utils/responseHandler';
+import WebNavbar from './src/models/webNavbar.schema';
 const path = require('path');
 
 const app = express();
@@ -73,6 +74,19 @@ if (ENV === 'DEV') {
 
 // API routes
 app.use(routes);
+
+app.get("/favicon.ico", async function (req, res) {
+  const menu = await WebNavbar.findOne({});
+
+  const base64Image = menu?.favicon?.img; // Add full base64 string here
+  const imgBuffer = Buffer.from(base64Image.split(",")[1], "base64"); // Split and decode
+
+  res.writeHead(200, {
+    "Content-Type": "image/png",
+    "Content-Length": imgBuffer.length,
+  });
+  res.end(imgBuffer);
+});
 
 // Socket.IO Setup
 const io = new Server(server, {

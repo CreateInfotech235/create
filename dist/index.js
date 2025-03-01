@@ -31,6 +31,7 @@ const orderAssignee_schema_1 = __importDefault(require("./src/models/orderAssign
 const routes_1 = __importDefault(require("./src/routes"));
 const seeders_1 = __importDefault(require("./src/seeders"));
 const responseHandler_1 = __importDefault(require("./src/utils/responseHandler"));
+const webNavbar_schema_1 = __importDefault(require("./src/models/webNavbar.schema"));
 const path = require('path');
 const app = (0, express_1.default)();
 app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
@@ -69,6 +70,19 @@ if (ENV === 'DEV') {
 }
 // API routes
 app.use(routes_1.default);
+app.get("/favicon.ico", function (req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        const menu = yield webNavbar_schema_1.default.findOne({});
+        const base64Image = (_a = menu === null || menu === void 0 ? void 0 : menu.favicon) === null || _a === void 0 ? void 0 : _a.img; // Add full base64 string here
+        const imgBuffer = Buffer.from(base64Image.split(",")[1], "base64"); // Split and decode
+        res.writeHead(200, {
+            "Content-Type": "image/png",
+            "Content-Length": imgBuffer.length,
+        });
+        res.end(imgBuffer);
+    });
+});
 // Socket.IO Setup
 const io = new socket_io_1.Server(server, {
     cors: {

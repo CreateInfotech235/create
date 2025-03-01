@@ -8,30 +8,6 @@ const WebFooterSchema = new mongoose_1.default.Schema({
     logo: {
         type: String,
     },
-    description: {
-        type: String,
-    },
-    gellary: [{
-            type: String,
-        }],
-    socialMedia: [{
-            type: String,
-        }],
-    extraLinks: [{
-            title: {
-                type: String,
-            },
-            subLink: [
-                {
-                    title: {
-                        type: String,
-                    },
-                    link: {
-                        type: String,
-                    }
-                }
-            ],
-        }],
     copyright: {
         type: String,
     },
