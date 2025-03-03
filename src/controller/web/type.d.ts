@@ -13,6 +13,11 @@ interface NavbarType {
     img: string;
     path: string;
   };
+  button: {
+    name: string;
+    path: string;
+  };
+  defaultProfileImage: string;
 }
 
 export default NavbarType;

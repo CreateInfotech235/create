@@ -25,153 +25,105 @@
 /// <reference types="mongoose/types/inferrawdoctype" />
 import mongoose from 'mongoose';
 declare const _default: mongoose.Model<{
-    menuList: mongoose.Types.DocumentArray<{
+    email: string;
+    socialMediaPlatform: mongoose.Types.DocumentArray<{
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }> & {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }>;
-    logo?: {
-        path?: string;
-        img?: string;
-    };
-    favicon?: {
-        path?: string;
-        img?: string;
-    };
-    button?: {
-        name?: string;
-        path?: string;
-    };
-    defaultProfileImage?: string;
+    phoneNumber?: string;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
-    menuList: mongoose.Types.DocumentArray<{
+    email: string;
+    socialMediaPlatform: mongoose.Types.DocumentArray<{
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }> & {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }>;
-    logo?: {
-        path?: string;
-        img?: string;
-    };
-    favicon?: {
-        path?: string;
-        img?: string;
-    };
-    button?: {
-        name?: string;
-        path?: string;
-    };
-    defaultProfileImage?: string;
+    phoneNumber?: string;
 }> & {
-    menuList: mongoose.Types.DocumentArray<{
+    email: string;
+    socialMediaPlatform: mongoose.Types.DocumentArray<{
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }> & {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }>;
-    logo?: {
-        path?: string;
-        img?: string;
-    };
-    favicon?: {
-        path?: string;
-        img?: string;
-    };
-    button?: {
-        name?: string;
-        path?: string;
-    };
-    defaultProfileImage?: string;
+    phoneNumber?: string;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
     __v: number;
 }, mongoose.Schema<any, mongoose.Model<any, any, any, any, any, any>, {}, {}, {}, {}, mongoose.DefaultSchemaOptions, {
-    menuList: mongoose.Types.DocumentArray<{
+    email: string;
+    socialMediaPlatform: mongoose.Types.DocumentArray<{
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }> & {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }>;
-    logo?: {
-        path?: string;
-        img?: string;
-    };
-    favicon?: {
-        path?: string;
-        img?: string;
-    };
-    button?: {
-        name?: string;
-        path?: string;
-    };
-    defaultProfileImage?: string;
+    phoneNumber?: string;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
-    menuList: mongoose.Types.DocumentArray<{
+    email: string;
+    socialMediaPlatform: mongoose.Types.DocumentArray<{
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }> & {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }>;
-    logo?: {
-        path?: string;
-        img?: string;
-    };
-    favicon?: {
-        path?: string;
-        img?: string;
-    };
-    button?: {
-        name?: string;
-        path?: string;
-    };
-    defaultProfileImage?: string;
+    phoneNumber?: string;
 }>> & mongoose.FlatRecord<{
-    menuList: mongoose.Types.DocumentArray<{
+    email: string;
+    socialMediaPlatform: mongoose.Types.DocumentArray<{
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }> & {
+        url: string;
+        defaultImage: string;
         name?: string;
-        path?: string;
     }>;
-    logo?: {
-        path?: string;
-        img?: string;
-    };
-    favicon?: {
-        path?: string;
-        img?: string;
-    };
-    button?: {
-        name?: string;
-        path?: string;
-    };
-    defaultProfileImage?: string;
+    phoneNumber?: string;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

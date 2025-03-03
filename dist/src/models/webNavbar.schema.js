@@ -31,5 +31,16 @@ const WebNavbarSchema = new mongoose_1.default.Schema({
             type: String,
         },
     },
+    button: {
+        name: {
+            type: String,
+        },
+        path: {
+            type: String,
+        },
+    },
+    defaultProfileImage: {
+        type: String,
+    },
 });
 exports.default = mongoose_1.default.model('WebNavbar', WebNavbarSchema);

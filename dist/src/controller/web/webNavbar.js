@@ -16,36 +16,45 @@ exports.getWebNavbar = exports.createWebNavbar = void 0;
 const webNavbar_schema_1 = __importDefault(require("../../models/webNavbar.schema"));
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const web_validation_1 = require("../../utils/validation/web.validation");
+const getimgurl_1 = require("../getimgurl/getimgurl");
 const createWebNavbar = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("req.body", req.body);
+    console.log('req.body', req.body);
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, web_validation_1.webNavbarValidation);
-        console.log("validateRequest", validateRequest);
+        const logo = validateRequest.value.logo.img;
+        const defaultProfileImage = validateRequest.value.defaultProfileImage;
+        if (logo.includes('base64')) {
+            validateRequest.value.logo.img = yield (0, getimgurl_1.getimgurl)(logo);
+        }
+        if (defaultProfileImage.includes('base64')) {
+            validateRequest.value.defaultProfileImage = yield (0, getimgurl_1.getimgurl)(defaultProfileImage);
+        }
+        console.log('validateRequest', validateRequest);
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
         const isfasttimecreate = yield webNavbar_schema_1.default.findOne();
-        console.log("isfasttimecreate", isfasttimecreate);
+        console.log('isfasttimecreate', isfasttimecreate);
         if (isfasttimecreate) {
             yield webNavbar_schema_1.default.updateOne({}, { $set: validateRequest.value });
             return res.status(200).json({
                 status: 200,
-                message: "Web Navbar Updated Successfully",
+                message: 'Web Navbar Updated Successfully',
             });
         }
-        console.log("validateRequest.value", validateRequest.value);
+        console.log('validateRequest.value', validateRequest.value);
         const webNavbar = yield webNavbar_schema_1.default.create(validateRequest.value);
         res.status(201).json({
             status: 201,
-            message: "Web Navbar Created Successfully",
+            message: 'Web Navbar Created Successfully',
             webNavbar,
         });
     }
     catch (error) {
-        console.error("Error in createWebNavbar:", error);
+        console.error('Error in createWebNavbar:', error);
         res.status(500).json({
             status: 500,
-            message: "Internal Server Error",
+            message: 'Internal Server Error',
         });
     }
 });
@@ -56,20 +65,20 @@ const getWebNavbar = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!webNavbar) {
             return res.status(404).json({
                 status: 404,
-                message: "Web Navbar Not Found",
+                message: 'Web Navbar Not Found',
             });
         }
         res.status(200).json({
             status: 200,
-            message: "Web Navbar Fetched Successfully",
+            message: 'Web Navbar Fetched Successfully',
             webNavbar,
         });
     }
     catch (error) {
-        console.error("Error in getWebNavbar:", error);
+        console.error('Error in getWebNavbar:', error);
         res.status(500).json({
             status: 500,
-            message: "Internal Server Error",
+            message: 'Internal Server Error',
         });
     }
 });

@@ -15,6 +15,11 @@ export const webNavbarValidation = Joi.object({
         img: Joi.string().required(),
         path: Joi.string().required(),
     }).required(),
+    button: Joi.object({
+        name: Joi.string().required(),
+        path: Joi.string().required(),
+    }).optional(),
+    defaultProfileImage: Joi.string().optional(),
     __v: Joi.number().optional(),
   });
   

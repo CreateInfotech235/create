@@ -28,6 +28,7 @@ const otp_schema_1 = __importDefault(require("../../models/otp.schema"));
 const paymentInfo_schema_1 = __importDefault(require("../../models/paymentInfo.schema"));
 const productCharges_schema_1 = __importDefault(require("../../models/productCharges.schema"));
 const cancelOderbyDeliveryManSchema_1 = __importDefault(require("../../models/cancelOderbyDeliveryManSchema"));
+const getimgurl_1 = require("../getimgurl/getimgurl");
 const parcel_schema_1 = __importDefault(require("../../models/parcel.schema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
@@ -65,7 +66,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const pageLimit = value.pageLimit || 10; // default to 10 if not provided
         const pageCount = value.pageCount || 1; // default to 1 if not provided
         const skip = (pageCount - 1) * pageLimit; // Calculate the number of documents to skip
-        // console.log(req.id, 'req.id', typeof req.id);
+        // console.log(req.id, 'req.id');
         // const demo = await OrderHistorySchema.find({
         //   status: ORDER_HISTORY.ARRIVED,
         //   deliveryBoy: req.id.toString() // Convert to string to match schema type
@@ -1229,7 +1230,8 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             merchantID: isCreated.merchant,
             deliveryBoy: value.deliveryManId,
         });
-        const isalloderdeparted = isCreated.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED || item.status == enum_1.ORDER_HISTORY.DELIVERED);
+        const isalloderdeparted = isCreated.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED ||
+            item.status == enum_1.ORDER_HISTORY.DELIVERED);
         try {
             yield billing_Schema_1.default.updateOne({
                 orderId: value.orderId,
@@ -1237,7 +1239,9 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             }, {
                 $set: {
                     'subOrderdata.$.orderStatus': enum_1.ORDER_HISTORY.DEPARTED,
-                    orderStatus: isalloderdeparted ? enum_1.ORDER_HISTORY.DEPARTED : isCreated.status
+                    orderStatus: isalloderdeparted
+                        ? enum_1.ORDER_HISTORY.DEPARTED
+                        : isCreated.status,
                 },
             });
         }
@@ -1485,7 +1489,9 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                         'subOrderdata.$.deliveryLocation': elem.location,
                         'subOrderdata.$.orderStatus': enum_1.ORDER_HISTORY.PICKED_UP,
                         'subOrderdata.$.distance': (elem.distance / 1609.34).toFixed(2),
-                        orderStatus: allPickedUp ? enum_1.ORDER_HISTORY.PICKED_UP : isArrived.status
+                        orderStatus: allPickedUp
+                            ? enum_1.ORDER_HISTORY.PICKED_UP
+                            : isArrived.status,
                     },
                 }, { new: true });
                 console.log(bile, 'bile');
@@ -1494,43 +1500,15 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 console.log(error, 'error');
             }
         }
-        const currentTime = Date.now();
         const base64Image = value.userSignature; // Assuming userSignature is a base64 image
-        const prefixFilename = `${currentTime}`;
-        console.log(base64Image, 'base64Image');
-        fetch(process.env.IMAGE_STORAGE_UPLOAD_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                base64Image: base64Image,
-                prefixfilename: prefixFilename,
-                projectName: process.env.PROJECT_NAME,
-            }),
-        });
-        // data:image/jpeg;base64,
-        const arrayoftype = [
-            'png',
-            'webp',
-            'jpg',
-            'jpeg',
-            'gif',
-            'bmp',
-            'tiff',
-            'svg',
-            'heif',
-            'ico',
-            'avif',
-        ];
-        const imageType = arrayoftype.find((type) => base64Image.includes(type));
+        const imgurl = yield (0, getimgurl_1.getimgurl)(base64Image);
         yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, {
             $set: {
                 status: allPickedUp ? enum_1.ORDER_HISTORY.PICKED_UP : isArrived.status,
-                'pickupDetails.userSignature': `${process.env.IMAGE_STORAGE_GET_IMAGE_URL}/${prefixFilename}.${imageType}`,
+                'pickupDetails.userSignature': imgurl,
                 'pickupDetails.orderTimestamp': value.pickupTimestamp,
                 'deliveryDetails.$[elem].status': enum_1.ORDER_HISTORY.PICKED_UP,
-                'deliveryDetails.$[elem].pickupsignature': `${process.env.IMAGE_STORAGE_GET_IMAGE_URL}/${prefixFilename}.${imageType}`,
+                'deliveryDetails.$[elem].pickupsignature': imgurl,
                 route: optimizedRoute,
             },
         }, {
@@ -2032,7 +2010,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             'deliveryDetails.subOrderId': value.subOrderId,
         }, {
             $set: {
-                'deliveryDetails.$.deliverysignature': value.deliveryManSignature,
+                'deliveryDetails.$.deliverysignature': yield (0, getimgurl_1.getimgurl)(value.deliveryManSignature),
                 'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
                 'deliveryDetails.$.status': enum_1.ORDER_HISTORY.DELIVERED,
                 'deliveryDetails.$.time.end': value.deliverTimestamp,
@@ -2042,7 +2020,9 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const updatedOrder = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
         });
-        const allDelivered = updatedOrder.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED || detail.status === enum_1.ORDER_HISTORY.CANCELLED || detail.status === enum_1.ORDER_HISTORY.UNASSIGNED);
+        const allDelivered = updatedOrder.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED ||
+            detail.status === enum_1.ORDER_HISTORY.CANCELLED ||
+            detail.status === enum_1.ORDER_HISTORY.UNASSIGNED);
         if (allDelivered) {
             yield orderMulti_schema_1.default.updateOne({ orderId: value.orderId }, { $set: { status: enum_1.ORDER_HISTORY.DELIVERED } });
         }
@@ -2068,7 +2048,9 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 'subOrderdata.$.deliveryTime': value.deliverTimestamp,
                 'subOrderdata.$.deliverysignature': value.deliveryManSignature,
                 'subOrderdata.$.deliveryTimestamp': value.deliverTimestamp,
-                orderStatus: allDelivered ? enum_1.ORDER_STATUS.DELIVERED : updatedOrder.status,
+                orderStatus: allDelivered
+                    ? enum_1.ORDER_STATUS.DELIVERED
+                    : updatedOrder.status,
                 totalamountOfPackage: (_r = (_q = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _q === void 0 ? void 0 : _q.paymentCollectionRupees) !== null && _r !== void 0 ? _r : 0,
             },
         });
@@ -2414,7 +2396,7 @@ const getPaymentDataForDeliveryBoy = (req, res) => __awaiter(void 0, void 0, voi
 });
 exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
 const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _7, _8, _9, _10;
+    var _7, _8, _9, _10, _11, _12;
     console.log(req.id, 'req.id');
     try {
         const { startDate, endDate, status, pageLimit = 10, pageCount = 1, } = req.query;
@@ -2472,7 +2454,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                                         case: {
                                                                             $eq: [
                                                                                 '$$detail.status',
-                                                                                enum_1.ORDER_HISTORY.PICKED_UP,
+                                                                                enum_1.ORDER_HISTORY.DEPARTED,
                                                                             ],
                                                                         },
                                                                         then: 1,
@@ -2481,7 +2463,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                                         case: {
                                                                             $eq: [
                                                                                 '$$detail.status',
-                                                                                enum_1.ORDER_HISTORY.ARRIVED,
+                                                                                enum_1.ORDER_HISTORY.PICKED_UP,
                                                                             ],
                                                                         },
                                                                         then: 2,
@@ -2490,7 +2472,7 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                                         case: {
                                                                             $eq: [
                                                                                 '$$detail.status',
-                                                                                enum_1.ORDER_HISTORY.DEPARTED,
+                                                                                enum_1.ORDER_HISTORY.ARRIVED,
                                                                             ],
                                                                         },
                                                                         then: 3,
@@ -2682,8 +2664,6 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             {
                 $project: {
                     'orderData.route': 0,
-                    // status: { $ne: ORDER_HISTORY.CANCELLED },
-                    // 'orderData.status':{$ne:ORDER_HISTORY.CANCELLED}
                 },
             },
         ]);
@@ -2706,6 +2686,17 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         for (const item of Nowdata) {
             (_10 = (_9 = item === null || item === void 0 ? void 0 : item.orderData) === null || _9 === void 0 ? void 0 : _9.deliveryDetails) === null || _10 === void 0 ? void 0 : _10.forEach((detail, index) => {
                 detail.index = index + 1;
+            });
+        }
+        for (const item of Nowdata) {
+            (_12 = (_11 = item === null || item === void 0 ? void 0 : item.orderData) === null || _11 === void 0 ? void 0 : _11.deliveryDetails) === null || _12 === void 0 ? void 0 : _12.forEach((detail, index) => {
+                var _a, _b, _c, _d;
+                if (detail.status == enum_1.ORDER_HISTORY.PICKED_UP) {
+                    const nextOrder = (_b = (_a = item === null || item === void 0 ? void 0 : item.orderData) === null || _a === void 0 ? void 0 : _a.deliveryDetails[index + 1]) === null || _b === void 0 ? void 0 : _b.subOrderId;
+                    if (((_d = (_c = item === null || item === void 0 ? void 0 : item.orderData) === null || _c === void 0 ? void 0 : _c.deliveryDetails[index + 1]) === null || _d === void 0 ? void 0 : _d.status) == enum_1.ORDER_HISTORY.PICKED_UP) {
+                        detail.nextOrder = nextOrder;
+                    }
+                }
             });
         }
         return res.ok({
@@ -2748,7 +2739,7 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                                 case: {
                                                                     $eq: [
                                                                         '$$detail.status',
-                                                                        enum_1.ORDER_HISTORY.PICKED_UP,
+                                                                        enum_1.ORDER_HISTORY.DEPARTED,
                                                                     ],
                                                                 },
                                                                 then: 1,
@@ -2757,7 +2748,7 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                                 case: {
                                                                     $eq: [
                                                                         '$$detail.status',
-                                                                        enum_1.ORDER_HISTORY.ARRIVED,
+                                                                        enum_1.ORDER_HISTORY.PICKED_UP,
                                                                     ],
                                                                 },
                                                                 then: 2,
@@ -2766,7 +2757,7 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                                 case: {
                                                                     $eq: [
                                                                         '$$detail.status',
-                                                                        enum_1.ORDER_HISTORY.DEPARTED,
+                                                                        enum_1.ORDER_HISTORY.ARRIVED,
                                                                     ],
                                                                 },
                                                                 then: 3,

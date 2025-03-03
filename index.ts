@@ -79,10 +79,26 @@ app.get("/favicon.ico", async function (req, res) {
   const menu = await WebNavbar.findOne({});
 
   const base64Image = menu?.favicon?.img; // Add full base64 string here
+  console.log('base64Image', base64Image);
+  
   const imgBuffer = Buffer.from(base64Image.split(",")[1], "base64"); // Split and decode
+  const arrayoftype = [
+    'png',
+    'webp',
+    'jpg',
+    'jpeg',
+    'gif',
+    'bmp',
+    'tiff',
+    'svg',
+    'heif',
+    'ico',
+    'avif',
+  ];
 
+  const imageType = arrayoftype.find((type) => base64Image.includes(type));
   res.writeHead(200, {
-    "Content-Type": "image/png",
+    "Content-Type": `image/${imageType}`,
     "Content-Length": imgBuffer.length,
   });
   res.end(imgBuffer);

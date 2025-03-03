@@ -23,6 +23,7 @@ import otpSchema from '../../models/otp.schema';
 import PaymentInfoSchema from '../../models/paymentInfo.schema';
 import ProductChargesSchema from '../../models/productCharges.schema';
 import cancelOderbyDeliveryMan from '../../models/cancelOderbyDeliveryManSchema';
+import { getimgurl } from '../getimgurl/getimgurl';
 
 import ParcelSchema from '../../models/parcel.schema';
 
@@ -110,7 +111,7 @@ export const getAssignedOrders = async (req: RequestParams, res: Response) => {
     const pageLimit = value.pageLimit || 10; // default to 10 if not provided
     const pageCount = value.pageCount || 1; // default to 1 if not provided
     const skip = (pageCount - 1) * pageLimit; // Calculate the number of documents to skip
-    // console.log(req.id, 'req.id', typeof req.id);
+    // console.log(req.id, 'req.id');
 
     // const demo = await OrderHistorySchema.find({
     //   status: ORDER_HISTORY.ARRIVED,
@@ -1521,9 +1522,10 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       deliveryBoy: value.deliveryManId,
     });
 
-
     const isalloderdeparted = isCreated.deliveryDetails.every(
-      (item: any) => item.status == ORDER_HISTORY.DEPARTED || item.status == ORDER_HISTORY.DELIVERED,
+      (item: any) =>
+        item.status == ORDER_HISTORY.DEPARTED ||
+        item.status == ORDER_HISTORY.DELIVERED,
     );
 
     try {
@@ -1535,7 +1537,9 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
         {
           $set: {
             'subOrderdata.$.orderStatus': ORDER_HISTORY.DEPARTED,
-            orderStatus: isalloderdeparted ? ORDER_HISTORY.DEPARTED : isCreated.status
+            orderStatus: isalloderdeparted
+              ? ORDER_HISTORY.DEPARTED
+              : isCreated.status,
           },
         },
       );
@@ -1876,7 +1880,9 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
               'subOrderdata.$.deliveryLocation': elem.location,
               'subOrderdata.$.orderStatus': ORDER_HISTORY.PICKED_UP,
               'subOrderdata.$.distance': (elem.distance / 1609.34).toFixed(2),
-              orderStatus: allPickedUp ? ORDER_HISTORY.PICKED_UP : isArrived.status
+              orderStatus: allPickedUp
+                ? ORDER_HISTORY.PICKED_UP
+                : isArrived.status,
             },
           },
           { new: true },
@@ -1887,50 +1893,19 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       }
     }
 
-    const currentTime = Date.now();
     const base64Image = value.userSignature; // Assuming userSignature is a base64 image
-    const prefixFilename = `${currentTime}`;
 
-    console.log(base64Image, 'base64Image');
-
-    fetch(process.env.IMAGE_STORAGE_UPLOAD_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        base64Image: base64Image,
-        prefixfilename: prefixFilename,
-        projectName: process.env.PROJECT_NAME,
-      }),
-    });
-    // data:image/jpeg;base64,
-    const arrayoftype = [
-      'png',
-      'webp',
-      'jpg',
-      'jpeg',
-      'gif',
-      'bmp',
-      'tiff',
-      'svg',
-      'heif',
-      'ico',
-      'avif',
-    ];
-
-    const imageType = arrayoftype.find((type) => base64Image.includes(type));
+    const imgurl = await getimgurl(base64Image);
 
     await orderSchemaMulti.findOneAndUpdate(
       { orderId: value.orderId },
       {
         $set: {
           status: allPickedUp ? ORDER_HISTORY.PICKED_UP : isArrived.status,
-          'pickupDetails.userSignature': `${process.env.IMAGE_STORAGE_GET_IMAGE_URL}/${prefixFilename}.${imageType}`,
+          'pickupDetails.userSignature': imgurl ,
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
           'deliveryDetails.$[elem].status': ORDER_HISTORY.PICKED_UP,
-
-          'deliveryDetails.$[elem].pickupsignature': `${process.env.IMAGE_STORAGE_GET_IMAGE_URL}/${prefixFilename}.${imageType}`,
+          'deliveryDetails.$[elem].pickupsignature': imgurl,
           route: optimizedRoute,
         },
       },
@@ -2645,7 +2620,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       },
       {
         $set: {
-          'deliveryDetails.$.deliverysignature': value.deliveryManSignature,
+          'deliveryDetails.$.deliverysignature': await getimgurl(value.deliveryManSignature),
           'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
           'deliveryDetails.$.status': ORDER_HISTORY.DELIVERED,
           'deliveryDetails.$.time.end': value.deliverTimestamp,
@@ -2660,7 +2635,10 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
     });
 
     const allDelivered = updatedOrder.deliveryDetails.every(
-      (detail: any) => detail.status === ORDER_HISTORY.DELIVERED || detail.status === ORDER_HISTORY.CANCELLED || detail.status === ORDER_HISTORY.UNASSIGNED,
+      (detail: any) =>
+        detail.status === ORDER_HISTORY.DELIVERED ||
+        detail.status === ORDER_HISTORY.CANCELLED ||
+        detail.status === ORDER_HISTORY.UNASSIGNED,
     );
 
     if (allDelivered) {
@@ -2686,8 +2664,6 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       merchantID: isArrived.merchant,
     });
 
-
-
     // Update bile schema status
     await BillingSchema.updateOne(
       {
@@ -2701,7 +2677,9 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
           'subOrderdata.$.deliveryTime': value.deliverTimestamp,
           'subOrderdata.$.deliverysignature': value.deliveryManSignature,
           'subOrderdata.$.deliveryTimestamp': value.deliverTimestamp,
-          orderStatus: allDelivered ? ORDER_STATUS.DELIVERED : updatedOrder.status,
+          orderStatus: allDelivered
+            ? ORDER_STATUS.DELIVERED
+            : updatedOrder.status,
           totalamountOfPackage:
             isArrived.deliveryDetails.find(
               (data: any) => data.subOrderId === value.subOrderId,
@@ -3196,7 +3174,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                     case: {
                                       $eq: [
                                         '$$detail.status',
-                                        ORDER_HISTORY.PICKED_UP,
+                                        ORDER_HISTORY.DEPARTED,
                                       ],
                                     },
                                     then: 1,
@@ -3205,7 +3183,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                     case: {
                                       $eq: [
                                         '$$detail.status',
-                                        ORDER_HISTORY.ARRIVED,
+                                        ORDER_HISTORY.PICKED_UP,
                                       ],
                                     },
                                     then: 2,
@@ -3214,11 +3192,12 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                     case: {
                                       $eq: [
                                         '$$detail.status',
-                                        ORDER_HISTORY.DEPARTED,
+                                        ORDER_HISTORY.ARRIVED,
                                       ],
                                     },
                                     then: 3,
                                   },
+                                  
                                   {
                                     case: {
                                       $eq: [
@@ -3325,7 +3304,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                 {
                                   $filter: {
                                     input: '$orderData.deliveryDetails',
-
                                     as: 'detail',
                                     cond: {
                                       $eq: [
@@ -3409,8 +3387,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       {
         $project: {
           'orderData.route': 0,
-          // status: { $ne: ORDER_HISTORY.CANCELLED },
-          // 'orderData.status':{$ne:ORDER_HISTORY.CANCELLED}
         },
       },
     ]);
@@ -3452,6 +3428,20 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         },
       );
     }
+
+    for (const item of Nowdata) {
+      item?.orderData?.deliveryDetails?.forEach(
+        (detail: any, index: number) => {
+          if (detail.status == ORDER_HISTORY.PICKED_UP) {
+            const nextOrder = item?.orderData?.deliveryDetails[index + 1]?.subOrderId;
+            if (item?.orderData?.deliveryDetails[index + 1]?.status == ORDER_HISTORY.PICKED_UP) {
+              detail.nextOrder = nextOrder;
+            }
+          }
+        },
+      );
+    }
+
     return res.ok({
       data: Nowdata || [],
     });
@@ -3491,7 +3481,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                                   case: {
                                     $eq: [
                                       '$$detail.status',
-                                      ORDER_HISTORY.PICKED_UP,
+                                      ORDER_HISTORY.DEPARTED,
                                     ],
                                   },
                                   then: 1,
@@ -3500,7 +3490,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                                   case: {
                                     $eq: [
                                       '$$detail.status',
-                                      ORDER_HISTORY.ARRIVED,
+                                      ORDER_HISTORY.PICKED_UP,
                                     ],
                                   },
                                   then: 2,
@@ -3509,11 +3499,12 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                                   case: {
                                     $eq: [
                                       '$$detail.status',
-                                      ORDER_HISTORY.DEPARTED,
+                                      ORDER_HISTORY.ARRIVED,
                                     ],
                                   },
                                   then: 3,
                                 },
+                               
                                 {
                                   case: {
                                     $eq: [

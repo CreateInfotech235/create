@@ -20,5 +20,10 @@ exports.webNavbarValidation = joi_1.default.object({
         img: joi_1.default.string().required(),
         path: joi_1.default.string().required(),
     }).required(),
+    button: joi_1.default.object({
+        name: joi_1.default.string().required(),
+        path: joi_1.default.string().required(),
+    }).optional(),
+    defaultProfileImage: joi_1.default.string().optional(),
     __v: joi_1.default.number().optional(),
 });
