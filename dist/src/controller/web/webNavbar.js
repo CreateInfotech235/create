@@ -21,6 +21,10 @@ const createWebNavbar = (req, res) => __awaiter(void 0, void 0, void 0, function
     console.log('req.body', req.body);
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, web_validation_1.webNavbarValidation);
+        console.log('validateRequest', validateRequest);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
         const logo = validateRequest.value.logo.img;
         const defaultProfileImage = validateRequest.value.defaultProfileImage;
         if (logo.includes('base64')) {
@@ -28,10 +32,6 @@ const createWebNavbar = (req, res) => __awaiter(void 0, void 0, void 0, function
         }
         if (defaultProfileImage.includes('base64')) {
             validateRequest.value.defaultProfileImage = yield (0, getimgurl_1.getimgurl)(defaultProfileImage);
-        }
-        console.log('validateRequest', validateRequest);
-        if (!validateRequest.isValid) {
-            return res.badRequest({ message: validateRequest.message });
         }
         const isfasttimecreate = yield webNavbar_schema_1.default.findOne();
         console.log('isfasttimecreate', isfasttimecreate);

@@ -2,7 +2,7 @@ import { valid } from 'joi';
 import WebNavbar from '../../models/webNavbar.schema';
 import { Request, Response } from 'express';
 import Joi from 'joi';
-import NavbarType from './type';
+import { NavbarType } from './type';
 import validateParamsWithJoi from '../../utils/validateRequest';
 import { webNavbarValidation } from '../../utils/validation/web.validation';
 import { getimgurl } from '../getimgurl/getimgurl';
@@ -14,6 +14,11 @@ export const createWebNavbar = async (req: Request, res: Response) => {
       req.body,
       webNavbarValidation,
     );
+    console.log('validateRequest', validateRequest);
+
+    if (!validateRequest.isValid) {
+      return res.badRequest({ message: validateRequest.message });
+    }
 
     const logo = validateRequest.value.logo.img;
     const defaultProfileImage = validateRequest.value.defaultProfileImage;
@@ -28,12 +33,8 @@ export const createWebNavbar = async (req: Request, res: Response) => {
       );
     }
 
-    console.log('validateRequest', validateRequest);
 
-    if (!validateRequest.isValid) {
-      return res.badRequest({ message: validateRequest.message });
-    }
-
+   
     const isfasttimecreate = await WebNavbar.findOne();
     console.log('isfasttimecreate', isfasttimecreate);
 

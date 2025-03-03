@@ -2945,6 +2945,15 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
         Nowdata.deliveryDetails.forEach((detail, index) => {
             detail.index = index + 1;
         });
+        Nowdata.deliveryDetails.forEach((detail, index) => {
+            var _a, _b;
+            if (detail.status == enum_1.ORDER_HISTORY.PICKED_UP) {
+                const nextOrder = (_a = Nowdata.deliveryDetails[index + 1]) === null || _a === void 0 ? void 0 : _a.subOrderId;
+                if (((_b = Nowdata.deliveryDetails[index + 1]) === null || _b === void 0 ? void 0 : _b.status) == enum_1.ORDER_HISTORY.PICKED_UP) {
+                    detail.nextOrder = nextOrder;
+                }
+            }
+        });
         return res.ok({ data: Nowdata });
     }
     catch (error) {

@@ -3701,6 +3701,16 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
       detail.index = index + 1;
     });
 
+    Nowdata.deliveryDetails.forEach((detail: any, index: number) => {
+      if (detail.status == ORDER_HISTORY.PICKED_UP) { 
+        const nextOrder = Nowdata.deliveryDetails[index + 1]?.subOrderId;
+        if (Nowdata.deliveryDetails[index + 1]?.status == ORDER_HISTORY.PICKED_UP) {
+          detail.nextOrder = nextOrder;
+        }
+      }
+    });
+
+
     return res.ok({ data: Nowdata });
   } catch (error) {
     return res.failureResponse({

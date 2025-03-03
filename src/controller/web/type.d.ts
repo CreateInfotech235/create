@@ -1,4 +1,4 @@
-interface NavbarType {
+export interface NavbarType {
   logo: {
     img: string;
     path: string;
@@ -20,4 +20,23 @@ interface NavbarType {
   defaultProfileImage: string;
 }
 
-export default NavbarType;
+export interface SocialMediaType {
+  email: string;
+  phoneNumber: string;
+  socialMedia: [
+    {
+      name: string;
+      link: string;
+      icon: string;
+    }
+  ]
+}
+
+
+export interface HomeLandingpageType {
+  AutoTyperlist: string[];
+  subTitle: string;
+  description: string;
+  bgImage: string;
+}
+

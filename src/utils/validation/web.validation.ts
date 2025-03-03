@@ -22,4 +22,22 @@ export const webNavbarValidation = Joi.object({
     defaultProfileImage: Joi.string().optional(),
     __v: Joi.number().optional(),
   });
+
+export const webSocialMediaValidation = Joi.object({
+    email: Joi.string().required(),
+    phoneNumber: Joi.string().required(),
+    socialMedia: Joi.array().items(Joi.object({
+        name: Joi.string().required(),
+        link: Joi.string().required(),
+        icon: Joi.string().required(),
+    })).required(),
+});
+
   
+export const webhomelandingpageValidation = Joi.object({
+    AutoTyperlist: Joi.array().items(Joi.string()).required(),
+    subTitle: Joi.string().required(),
+    description: Joi.string().required(),
+    bgImage: Joi.string().required(),
+});
+
