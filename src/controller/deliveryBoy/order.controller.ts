@@ -3772,7 +3772,7 @@ export const getSubOrderData = async (req: RequestParams, res: Response) => {
       postCode: subOrderData.postCode,
       cashOnDelivery: subOrderData.cashOnDelivery,
       customerId: subOrderData.customerId,
-      distance: subOrderData.distance.toFixed(2),
+      distance: Number(subOrderData.distance.toFixed(2)),
       duration: subOrderData.duration,
       parcelsCount: subOrderData.parcelsCount,
       paymentCollectionRupees: subOrderData.paymentCollectionRupees,

@@ -2993,7 +2993,7 @@ const getSubOrderData = (req, res) => __awaiter(void 0, void 0, void 0, function
         const nowdata = Object.assign({ index: subOrderData.index, location: {
                 latitude: subOrderData.location.latitude,
                 longitude: subOrderData.location.longitude
-            }, subOrderId: subOrderData.subOrderId, address: subOrderData.address, mobileNumber: subOrderData.mobileNumber, name: subOrderData.name, email: subOrderData.email, description: subOrderData.description, postCode: subOrderData.postCode, cashOnDelivery: subOrderData.cashOnDelivery, customerId: subOrderData.customerId, distance: subOrderData.distance.toFixed(2), duration: subOrderData.duration, parcelsCount: subOrderData.parcelsCount, paymentCollectionRupees: subOrderData.paymentCollectionRupees, status: subOrderData.status, trashed: subOrderData.trashed, parcelType: parcelType }, (nextOrderData && { nextOrder: nextOrderData.subOrderId }));
+            }, subOrderId: subOrderData.subOrderId, address: subOrderData.address, mobileNumber: subOrderData.mobileNumber, name: subOrderData.name, email: subOrderData.email, description: subOrderData.description, postCode: subOrderData.postCode, cashOnDelivery: subOrderData.cashOnDelivery, customerId: subOrderData.customerId, distance: Number(subOrderData.distance.toFixed(2)), duration: subOrderData.duration, parcelsCount: subOrderData.parcelsCount, paymentCollectionRupees: subOrderData.paymentCollectionRupees, status: subOrderData.status, trashed: subOrderData.trashed, parcelType: parcelType }, (nextOrderData && { nextOrder: nextOrderData.subOrderId }));
         // subOrderData.parcelType2 = now.parcelType; // Update parcelType2 with the new object
         return res.ok({ data: nowdata });
     }
