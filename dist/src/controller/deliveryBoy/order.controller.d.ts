@@ -26,4 +26,5 @@ export declare const getAllCancelledOrdersMulti: (req: RequestParams, res: Respo
 export declare const getPaymentDataForDeliveryBoy: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getMultiOrder: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getMultiOrderById: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getSubOrderData: (req: RequestParams, res: Response) => Promise<void>;
 export declare const logoutdeliveryboy: (req: RequestParams, res: Response) => Promise<void>;

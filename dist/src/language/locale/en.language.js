@@ -50,6 +50,7 @@ const messages = {
     loginSuccessfully: 'Login is successfully',
     orderCreatedSuccessfully: 'Order created successfully',
     invalidOrder: 'Order invalid',
+    invalidSubOrder: 'Sub Order invalid',
     orderAlreadyArrived: 'Order arrived already',
     orderAlreadyAssigned: 'Order assigned already',
     invalidDeliveryMan: 'Invalid delivery man',

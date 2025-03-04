@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutdeliveryboy = exports.getMultiOrderById = exports.getMultiOrder = exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrdersMulti = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelMultiSubOrder = exports.cancelMultiOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
+exports.logoutdeliveryboy = exports.getSubOrderData = exports.getMultiOrderById = exports.getMultiOrder = exports.getPaymentDataForDeliveryBoy = exports.getAllCancelledOrdersMulti = exports.getAllCancelledOrders = exports.getOrderById = exports.allPaymentInfo = exports.OrderAssigneeSchemaData = exports.deliverOrderMulti = exports.deliverOrder = exports.sendEmailOrMobileOtpMultiForDelivery = exports.sendEmailOrMobileOtpMulti = exports.sendEmailOrMobileOtp = exports.pickUpOrderMulti = exports.pickUpOrder = exports.departOrderMulti = exports.departOrder = exports.cancelMultiSubOrder = exports.cancelMultiOrder = exports.cancelOrder = exports.arriveOrderMulti = exports.arriveOrder = exports.acceptOrder = exports.getOederForDeliveryMan = exports.getAssignedOrdersMulti = exports.getAssignedOrders = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -2963,6 +2963,47 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getMultiOrderById = getMultiOrderById;
+const getSubOrderData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = req.params.id;
+        const subOrderId = req.body.subOrderId;
+        console.log(id, subOrderId, 'id, subOrderId');
+        const data = yield orderMulti_schema_1.default.findById(id);
+        if (!data) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
+        var subOrderData = data.deliveryDetails.find((item) => item.subOrderId == subOrderId);
+        if (!subOrderData) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidSubOrderId });
+        }
+        const dataofroot = data.route;
+        const allParcelType = (yield parcel_schema_1.default.find()) || [];
+        const parcelType = subOrderData.parcelType2
+            .map((type) => {
+            const foundType = allParcelType.find((e) => e._id.toString() == type.toString());
+            return foundType ? { label: foundType.label } : null;
+        })
+            .filter(Boolean);
+        const nextOrder = dataofroot.findIndex((item) => item.subOrderId.toString() == subOrderId.toString());
+        // delete subOrderData.parcelType2;
+        var nextOrderData = null;
+        if (nextOrder != -1) {
+            nextOrderData = dataofroot[nextOrder + 1];
+        }
+        const nowdata = Object.assign({ index: subOrderData.index, location: {
+                latitude: subOrderData.location.latitude,
+                longitude: subOrderData.location.longitude
+            }, subOrderId: subOrderData.subOrderId, address: subOrderData.address, mobileNumber: subOrderData.mobileNumber, name: subOrderData.name, email: subOrderData.email, description: subOrderData.description, postCode: subOrderData.postCode, cashOnDelivery: subOrderData.cashOnDelivery, customerId: subOrderData.customerId, distance: subOrderData.distance, duration: subOrderData.duration, parcelsCount: subOrderData.parcelsCount, paymentCollectionRupees: subOrderData.paymentCollectionRupees, status: subOrderData.status, trashed: subOrderData.trashed, parcelType: parcelType }, (nextOrderData && { nextOrder: nextOrderData.subOrderId }));
+        // subOrderData.parcelType2 = now.parcelType; // Update parcelType2 with the new object
+        return res.ok({ data: nowdata });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getSubOrderData = getSubOrderData;
 const logoutdeliveryboy = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const id = req.id;

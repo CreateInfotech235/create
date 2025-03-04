@@ -1902,7 +1902,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       {
         $set: {
           status: allPickedUp ? ORDER_HISTORY.PICKED_UP : isArrived.status,
-          'pickupDetails.userSignature': imgurl ,
+          'pickupDetails.userSignature': imgurl,
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
           'deliveryDetails.$[elem].status': ORDER_HISTORY.PICKED_UP,
           'deliveryDetails.$[elem].pickupsignature': imgurl,
@@ -3125,11 +3125,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           deliveryBoy: new mongoose.Types.ObjectId(req.id),
           ...(startDate &&
             endDate && {
-              createdAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
-              },
-            }),
+            createdAt: {
+              $gte: new Date(startDate),
+              $lte: new Date(endDate),
+            },
+          }),
           // ...(status && { 'orderData.status': status }),
         },
       },
@@ -3197,7 +3197,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                     },
                                     then: 3,
                                   },
-                                  
+
                                   {
                                     case: {
                                       $eq: [
@@ -3504,7 +3504,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                                   },
                                   then: 3,
                                 },
-                               
+
                                 {
                                   case: {
                                     $eq: [
@@ -3702,7 +3702,7 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
     });
 
     Nowdata.deliveryDetails.forEach((detail: any, index: number) => {
-      if (detail.status == ORDER_HISTORY.PICKED_UP) { 
+      if (detail.status == ORDER_HISTORY.PICKED_UP) {
         const nextOrder = Nowdata.deliveryDetails[index + 1]?.subOrderId;
         if (Nowdata.deliveryDetails[index + 1]?.status == ORDER_HISTORY.PICKED_UP) {
           detail.nextOrder = nextOrder;
@@ -3718,6 +3718,80 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
+export const getSubOrderData = async (req: RequestParams, res: Response) => {
+
+  try {
+    const id = req.params.id;
+    const subOrderId = req.body.subOrderId;
+    console.log(id, subOrderId, 'id, subOrderId');
+    const data = await orderSchemaMulti.findById(id);
+
+    if (!data) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+
+    var subOrderData = data.deliveryDetails.find((item: any) => item.subOrderId == subOrderId);
+
+    if (!subOrderData) {
+      return res.badRequest({ message: getLanguage('en').invalidSubOrderId });
+    }
+
+    const dataofroot= data.route
+
+
+    const allParcelType = (await ParcelSchema.find()) || [];
+
+    const parcelType = subOrderData.parcelType2
+      .map((type: any) => {
+        const foundType = allParcelType.find((e: any) => e._id.toString() == type.toString());
+        return foundType ? { label: foundType.label } : null;
+      })
+      .filter(Boolean);
+
+    const nextOrder = dataofroot.findIndex((item: any) => item.subOrderId.toString() == subOrderId.toString());
+    // delete subOrderData.parcelType2;
+    var nextOrderData = null;
+    if (nextOrder != -1) {
+      nextOrderData = dataofroot[nextOrder + 1];
+    }
+
+    const nowdata = {
+      index: subOrderData.index,
+      location: {
+        latitude: subOrderData.location.latitude,
+        longitude: subOrderData.location.longitude
+      },
+      subOrderId: subOrderData.subOrderId,
+      address: subOrderData.address,
+      mobileNumber: subOrderData.mobileNumber,
+      name: subOrderData.name,
+      email: subOrderData.email,
+      description: subOrderData.description,
+      postCode: subOrderData.postCode,
+      cashOnDelivery: subOrderData.cashOnDelivery,
+      customerId: subOrderData.customerId,
+      distance: subOrderData.distance,
+      duration: subOrderData.duration,
+      parcelsCount: subOrderData.parcelsCount,
+      paymentCollectionRupees: subOrderData.paymentCollectionRupees,
+      status: subOrderData.status,
+      trashed: subOrderData.trashed,
+      parcelType: parcelType,
+      ...(nextOrderData && { nextOrder: nextOrderData.subOrderId })
+    };
+
+    // subOrderData.parcelType2 = now.parcelType; // Update parcelType2 with the new object
+
+    return res.ok({ data: nowdata });
+
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+}
 
 export const logoutdeliveryboy = async (req: RequestParams, res: Response) => {
   try {

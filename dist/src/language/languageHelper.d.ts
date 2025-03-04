@@ -49,6 +49,7 @@ export declare const getLanguage: (lang: language) => {
     loginSuccessfully: string;
     orderCreatedSuccessfully: string;
     invalidOrder: string;
+    invalidSubOrder: string;
     orderAlreadyArrived: string;
     orderAlreadyAssigned: string;
     invalidDeliveryMan: string;

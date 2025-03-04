@@ -48,6 +48,7 @@ declare const messages: {
     loginSuccessfully: string;
     orderCreatedSuccessfully: string;
     invalidOrder: string;
+    invalidSubOrder: string;
     orderAlreadyArrived: string;
     orderAlreadyAssigned: string;
     invalidDeliveryMan: string;
