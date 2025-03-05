@@ -25,27 +25,177 @@
 /// <reference types="mongoose/types/inferrawdoctype" />
 import mongoose from 'mongoose';
 declare const _default: mongoose.Model<{
-    logo?: string;
-    copyright?: string;
+    Resources: mongoose.Types.DocumentArray<{
+        name?: string;
+        link?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        name?: string;
+        link?: string;
+    }> & {
+        name?: string;
+        link?: string;
+    }>;
+    ContactUs: mongoose.Types.DocumentArray<{
+        type?: string;
+        link?: string;
+        data?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        type?: string;
+        link?: string;
+        data?: string;
+    }> & {
+        type?: string;
+        link?: string;
+        data?: string;
+    }>;
+    copyright?: {
+        text?: string;
+        link?: string;
+    };
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
-    logo?: string;
-    copyright?: string;
+    Resources: mongoose.Types.DocumentArray<{
+        name?: string;
+        link?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        name?: string;
+        link?: string;
+    }> & {
+        name?: string;
+        link?: string;
+    }>;
+    ContactUs: mongoose.Types.DocumentArray<{
+        type?: string;
+        link?: string;
+        data?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        type?: string;
+        link?: string;
+        data?: string;
+    }> & {
+        type?: string;
+        link?: string;
+        data?: string;
+    }>;
+    copyright?: {
+        text?: string;
+        link?: string;
+    };
 }> & {
-    logo?: string;
-    copyright?: string;
+    Resources: mongoose.Types.DocumentArray<{
+        name?: string;
+        link?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        name?: string;
+        link?: string;
+    }> & {
+        name?: string;
+        link?: string;
+    }>;
+    ContactUs: mongoose.Types.DocumentArray<{
+        type?: string;
+        link?: string;
+        data?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        type?: string;
+        link?: string;
+        data?: string;
+    }> & {
+        type?: string;
+        link?: string;
+        data?: string;
+    }>;
+    copyright?: {
+        text?: string;
+        link?: string;
+    };
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
     __v: number;
 }, mongoose.Schema<any, mongoose.Model<any, any, any, any, any, any>, {}, {}, {}, {}, mongoose.DefaultSchemaOptions, {
-    logo?: string;
-    copyright?: string;
+    Resources: mongoose.Types.DocumentArray<{
+        name?: string;
+        link?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        name?: string;
+        link?: string;
+    }> & {
+        name?: string;
+        link?: string;
+    }>;
+    ContactUs: mongoose.Types.DocumentArray<{
+        type?: string;
+        link?: string;
+        data?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        type?: string;
+        link?: string;
+        data?: string;
+    }> & {
+        type?: string;
+        link?: string;
+        data?: string;
+    }>;
+    copyright?: {
+        text?: string;
+        link?: string;
+    };
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
-    logo?: string;
-    copyright?: string;
+    Resources: mongoose.Types.DocumentArray<{
+        name?: string;
+        link?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        name?: string;
+        link?: string;
+    }> & {
+        name?: string;
+        link?: string;
+    }>;
+    ContactUs: mongoose.Types.DocumentArray<{
+        type?: string;
+        link?: string;
+        data?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        type?: string;
+        link?: string;
+        data?: string;
+    }> & {
+        type?: string;
+        link?: string;
+        data?: string;
+    }>;
+    copyright?: {
+        text?: string;
+        link?: string;
+    };
 }>> & mongoose.FlatRecord<{
-    logo?: string;
-    copyright?: string;
+    Resources: mongoose.Types.DocumentArray<{
+        name?: string;
+        link?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        name?: string;
+        link?: string;
+    }> & {
+        name?: string;
+        link?: string;
+    }>;
+    ContactUs: mongoose.Types.DocumentArray<{
+        type?: string;
+        link?: string;
+        data?: string;
+    }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
+        type?: string;
+        link?: string;
+        data?: string;
+    }> & {
+        type?: string;
+        link?: string;
+        data?: string;
+    }>;
+    copyright?: {
+        text?: string;
+        link?: string;
+    };
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

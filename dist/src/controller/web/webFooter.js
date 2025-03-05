@@ -12,29 +12,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateWebFooter = exports.getWebFooter = exports.createWebFooter = void 0;
+exports.getWebFooter = exports.createWebFooter = void 0;
 const webFooter_1 = __importDefault(require("../../models/webFooter"));
+const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
+const web_validation_1 = require("../../utils/validation/web.validation");
 const createWebFooter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (!req.body || Object.keys(req.body).length === 0) {
-            return res.status(400).json({
-                status: 400,
-                message: "Bad Request: Missing or invalid data",
+        const validateRequest = (0, validateRequest_1.default)(req.body, web_validation_1.FooterpageValidation);
+        console.log('validateRequest', validateRequest);
+        if (!validateRequest.isValid) {
+            return res.badRequest({ message: validateRequest.message });
+        }
+        const isalreadycreated = yield webFooter_1.default.findOne();
+        console.log(isalreadycreated);
+        if (isalreadycreated) {
+            const webFooter = yield webFooter_1.default.findOneAndUpdate({}, validateRequest.value, { new: true });
+            console.log(webFooter);
+            return res.status(200).json({
+                status: 200,
+                message: 'Web Footer Update Successfully',
+                webFooter,
             });
         }
-        console.log("Create Web Footer", req.body);
-        const webFooter = yield webFooter_1.default.create(req.body);
+        const webFooter = yield webFooter_1.default.create(validateRequest.value);
         res.status(201).json({
             status: 201,
-            message: "Web Footer Created Successfully",
+            message: 'Web Footer Created Successfully',
             webFooter,
         });
     }
     catch (error) {
-        console.error("Error in createWebFooter:", error);
+        console.error('Error in createWebFooter:', error);
         res.status(500).json({
             status: 500,
-            message: "Internal Server Error",
+            message: error === null || error === void 0 ? void 0 : error.message,
         });
     }
 });
@@ -45,51 +56,21 @@ const getWebFooter = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!webFooter) {
             return res.status(404).json({
                 status: 404,
-                message: "Web Footer Not Found",
+                message: 'Web Footer Not Found',
             });
         }
         res.status(200).json({
             status: 200,
-            message: "Web Footer Fetched Successfully",
+            message: 'Web Footer Fetched Successfully',
             webFooter,
         });
     }
     catch (error) {
-        console.error("Error in getWebFooter:", error);
+        console.error('Error in getWebFooter:', error);
         res.status(500).json({
             status: 500,
-            message: "Internal Server Error",
+            message: 'Internal Server Error',
         });
     }
 });
 exports.getWebFooter = getWebFooter;
-const updateWebFooter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        if (!req.body || Object.keys(req.body).length === 0) {
-            return res.status(400).json({
-                status: 400,
-                message: "Bad Request: Missing or invalid data",
-            });
-        }
-        const webFooter = yield webFooter_1.default.findOneAndUpdate({}, req.body, { new: true });
-        if (!webFooter) {
-            return res.status(404).json({
-                status: 404,
-                message: "Web Footer Not Found",
-            });
-        }
-        res.status(200).json({
-            status: 200,
-            message: "Web Footer Updated Successfully",
-            webFooter,
-        });
-    }
-    catch (error) {
-        console.error("Error in updateWebFooter:", error);
-        res.status(500).json({
-            status: 500,
-            message: "Internal Server Error",
-        });
-    }
-});
-exports.updateWebFooter = updateWebFooter;

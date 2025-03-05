@@ -675,19 +675,20 @@ export const deleteMerchant = async (req: RequestParams, res: Response) => {
   }
 };
 
-
-
-
 export const updateStatus = async (req: RequestParams, res: Response) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    console.log(updateData,id)
+    console.log(updateData, id);
 
-    const updatedUser = await merchantSchema.findByIdAndUpdate(id, {isApproved:updateData.status,reason:updateData.reason}, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedUser = await merchantSchema.findByIdAndUpdate(
+      id,
+      { isApproved: updateData.status, reason: updateData.reason },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
 
     return res.ok({
       message: getLanguage('en').dataUpdatedSuccessfully,

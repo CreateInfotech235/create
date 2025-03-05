@@ -118,3 +118,10 @@ export enum DAY_WISE_CHARGE_TYPE {
   NEXT_DAY = 'NEXT_DAY',
   THREE_FIVE_DAYS = '3-5_DAYS',
 }
+
+export enum CONTACT_US_TYPE {
+  LOCATION = 'LOCATION',
+  EMAIL = 'EMAIL',
+  PHONE = 'PHONE',
+}
+

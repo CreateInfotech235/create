@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DAY_WISE_CHARGE_TYPE = exports.PERSON_TYPE = exports.WEIGHT_TYPE = exports.DISTANCE_TYPE = exports.CHARGE_TYPE = exports.PICKUP_REQUEST = exports.VEHICLE_CITY_TYPE = exports.TRANSACTION_TYPE = exports.PAYMENT_TYPE = exports.SUBCRIPTION_REQUEST = exports.PAYMENT_INFO = exports.ORDER_LOCATION = exports.ORDER_REQUEST = exports.CHARGE_METHOD = exports.ORDER_LIST = exports.ADMIN_ORDER_LOCATIONS = exports.ORDER_STATUS = exports.ORDER_HISTORY = exports.PROVIDER = exports.SWITCHSTATUS = exports.isApprovedStatus = exports.SWITCH = void 0;
+exports.CONTACT_US_TYPE = exports.DAY_WISE_CHARGE_TYPE = exports.PERSON_TYPE = exports.WEIGHT_TYPE = exports.DISTANCE_TYPE = exports.CHARGE_TYPE = exports.PICKUP_REQUEST = exports.VEHICLE_CITY_TYPE = exports.TRANSACTION_TYPE = exports.PAYMENT_TYPE = exports.SUBCRIPTION_REQUEST = exports.PAYMENT_INFO = exports.ORDER_LOCATION = exports.ORDER_REQUEST = exports.CHARGE_METHOD = exports.ORDER_LIST = exports.ADMIN_ORDER_LOCATIONS = exports.ORDER_STATUS = exports.ORDER_HISTORY = exports.PROVIDER = exports.SWITCHSTATUS = exports.isApprovedStatus = exports.SWITCH = void 0;
 var SWITCH;
 (function (SWITCH) {
     SWITCH["ENABLE"] = "ENABLE";
@@ -141,3 +141,9 @@ var DAY_WISE_CHARGE_TYPE;
     DAY_WISE_CHARGE_TYPE["NEXT_DAY"] = "NEXT_DAY";
     DAY_WISE_CHARGE_TYPE["THREE_FIVE_DAYS"] = "3-5_DAYS";
 })(DAY_WISE_CHARGE_TYPE || (exports.DAY_WISE_CHARGE_TYPE = DAY_WISE_CHARGE_TYPE = {}));
+var CONTACT_US_TYPE;
+(function (CONTACT_US_TYPE) {
+    CONTACT_US_TYPE["LOCATION"] = "LOCATION";
+    CONTACT_US_TYPE["EMAIL"] = "EMAIL";
+    CONTACT_US_TYPE["PHONE"] = "PHONE";
+})(CONTACT_US_TYPE || (exports.CONTACT_US_TYPE = CONTACT_US_TYPE = {}));

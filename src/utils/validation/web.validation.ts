@@ -21,7 +21,7 @@ export const webNavbarValidation = Joi.object({
     }).optional(),
     defaultProfileImage: Joi.string().optional(),
     __v: Joi.number().optional(),
-  });
+});
 
 export const webSocialMediaValidation = Joi.object({
     email: Joi.string().required(),
@@ -33,7 +33,7 @@ export const webSocialMediaValidation = Joi.object({
     })).required(),
 });
 
-  
+
 export const webhomelandingpageValidation = Joi.object({
     AutoTyperlist: Joi.array().items(Joi.string()).required(),
     subTitle: Joi.string().required(),
@@ -41,3 +41,19 @@ export const webhomelandingpageValidation = Joi.object({
     bgImage: Joi.string().required(),
 });
 
+
+export const FooterpageValidation = Joi.object({
+    Resources: Joi.array().items(Joi.object({
+        name: Joi.string().required(),
+        link: Joi.string().required(),
+    })).required(),
+    ContactUs: Joi.array().items(Joi.object({
+        data: Joi.string().required(),
+        type: Joi.string().required(),
+        link: Joi.string().required(),
+    })).required(),
+    copyright: Joi.object({
+        text: Joi.string().required(),
+        link: Joi.string().required(),
+    }).required(),
+});

@@ -1,3 +1,5 @@
+import { CONTACT_US_TYPE } from "../../enum";
+
 export interface NavbarType {
   logo: {
     img: string;
@@ -39,4 +41,19 @@ export interface HomeLandingpageType {
   description: string;
   bgImage: string;
 }
-
+export interface FooterType {
+  Resources: {
+    name: string;
+    link: string;
+    _id: string; // Added _id field
+  }[];
+  ContactUs: {
+    data: string;
+    type: string;
+    link: string;
+  }[]; // Changed to an array of objects
+  copyright: {
+    text: string;
+    link: string;
+  };
+}

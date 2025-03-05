@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.webhomelandingpageValidation = exports.webSocialMediaValidation = exports.webNavbarValidation = void 0;
+exports.FooterpageValidation = exports.webhomelandingpageValidation = exports.webSocialMediaValidation = exports.webNavbarValidation = void 0;
 const joi_1 = __importDefault(require("joi"));
 exports.webNavbarValidation = joi_1.default.object({
     _id: joi_1.default.string().optional(),
@@ -41,4 +41,19 @@ exports.webhomelandingpageValidation = joi_1.default.object({
     subTitle: joi_1.default.string().required(),
     description: joi_1.default.string().required(),
     bgImage: joi_1.default.string().required(),
+});
+exports.FooterpageValidation = joi_1.default.object({
+    Resources: joi_1.default.array().items(joi_1.default.object({
+        name: joi_1.default.string().required(),
+        link: joi_1.default.string().required(),
+    })).required(),
+    ContactUs: joi_1.default.array().items(joi_1.default.object({
+        data: joi_1.default.string().required(),
+        type: joi_1.default.string().required(),
+        link: joi_1.default.string().required(),
+    })).required(),
+    copyright: joi_1.default.object({
+        text: joi_1.default.string().required(),
+        link: joi_1.default.string().required(),
+    }).required(),
 });
