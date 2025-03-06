@@ -1329,6 +1329,18 @@ export const cancelMultiSubOrder = async (
           merchantID: existingOrder.merchant,
           deliveryBoy: value.deliveryManId,
         });
+
+        await BillingSchema.findOneAndUpdate(
+          {
+            orderId: value.orderId,
+            deliveryBoyId: value.deliveryManId,
+          },
+          {
+            $set: {
+              orderStatus: ORDER_HISTORY.CANCELLED,
+            },
+          },
+        );
       }
     }
 
@@ -1355,16 +1367,23 @@ export const cancelMultiSubOrder = async (
     );
 
     console.log(isalloderdelevever, 'isalloderdelevever');
-    try {
-      await BileSchema.deleteMany({
-        orderId: value.orderId,
-        deliveryBoyId: value.deliveryManId,
-        subOrderId: { $in: value.subOrderId },
-      });
-    } catch (error) {
-      // Silently handle error if BileSchema not found
-      console.log('Error deleting from BileSchema:', error);
-    }
+
+    // try {
+    //   await BileSchema.findOneAndUpdate(
+    //     {
+    //       orderId: value.orderId,
+    //       deliveryBoyId: value.deliveryManId
+    //     },
+    //     {
+    //       $set: {
+    //         orderStatus: ORDER_HISTORY.CANCELLED
+    //       }
+    //     }
+    //   );
+    // } catch (error) {
+    //   // Silently handle error if BileSchema not found
+    //   console.log('Error updating BileSchema:', error);
+    // }
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -2620,7 +2639,9 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       },
       {
         $set: {
-          'deliveryDetails.$.deliverysignature': await getimgurl(value.deliveryManSignature),
+          'deliveryDetails.$.deliverysignature': await getimgurl(
+            value.deliveryManSignature,
+          ),
           'deliveryDetails.$.orderTimestamp': value.deliverTimestamp,
           'deliveryDetails.$.status': ORDER_HISTORY.DELIVERED,
           'deliveryDetails.$.time.end': value.deliverTimestamp,
@@ -3125,11 +3146,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           deliveryBoy: new mongoose.Types.ObjectId(req.id),
           ...(startDate &&
             endDate && {
-            createdAt: {
-              $gte: new Date(startDate),
-              $lte: new Date(endDate),
-            },
-          }),
+              createdAt: {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+              },
+            }),
           // ...(status && { 'orderData.status': status }),
         },
       },
@@ -3433,8 +3454,12 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
       item?.orderData?.deliveryDetails?.forEach(
         (detail: any, index: number) => {
           if (detail.status == ORDER_HISTORY.PICKED_UP) {
-            const nextOrder = item?.orderData?.deliveryDetails[index + 1]?.subOrderId;
-            if (item?.orderData?.deliveryDetails[index + 1]?.status == ORDER_HISTORY.PICKED_UP) {
+            const nextOrder =
+              item?.orderData?.deliveryDetails[index + 1]?.subOrderId;
+            if (
+              item?.orderData?.deliveryDetails[index + 1]?.status ==
+              ORDER_HISTORY.PICKED_UP
+            ) {
               detail.nextOrder = nextOrder;
             }
           }
@@ -3704,12 +3729,13 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
     Nowdata.deliveryDetails.forEach((detail: any, index: number) => {
       if (detail.status == ORDER_HISTORY.PICKED_UP) {
         const nextOrder = Nowdata.deliveryDetails[index + 1]?.subOrderId;
-        if (Nowdata.deliveryDetails[index + 1]?.status == ORDER_HISTORY.PICKED_UP) {
+        if (
+          Nowdata.deliveryDetails[index + 1]?.status == ORDER_HISTORY.PICKED_UP
+        ) {
           detail.nextOrder = nextOrder;
         }
       }
     });
-
 
     return res.ok({ data: Nowdata });
   } catch (error) {
@@ -3720,7 +3746,6 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
 };
 
 export const getSubOrderData = async (req: RequestParams, res: Response) => {
-
   try {
     const id = req.params.id;
     const subOrderId = req.body.subOrderId;
@@ -3731,26 +3756,30 @@ export const getSubOrderData = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
 
-
-    var subOrderData = data.deliveryDetails.find((item: any) => item.subOrderId == subOrderId);
+    var subOrderData = data.deliveryDetails.find(
+      (item: any) => item.subOrderId == subOrderId,
+    );
 
     if (!subOrderData) {
       return res.badRequest({ message: getLanguage('en').invalidSubOrderId });
     }
 
-    const dataofroot= data.route
-
+    const dataofroot = data.route;
 
     const allParcelType = (await ParcelSchema.find()) || [];
 
     const parcelType = subOrderData.parcelType2
       .map((type: any) => {
-        const foundType = allParcelType.find((e: any) => e._id.toString() == type.toString());
+        const foundType = allParcelType.find(
+          (e: any) => e._id.toString() == type.toString(),
+        );
         return foundType ? { label: foundType.label } : null;
       })
       .filter(Boolean);
 
-    const nextOrder = dataofroot.findIndex((item: any) => item.subOrderId.toString() == subOrderId.toString());
+    const nextOrder = dataofroot.findIndex(
+      (item: any) => item.subOrderId.toString() == subOrderId.toString(),
+    );
     // delete subOrderData.parcelType2;
     var nextOrderData = null;
     if (nextOrder != -1) {
@@ -3761,7 +3790,7 @@ export const getSubOrderData = async (req: RequestParams, res: Response) => {
       index: subOrderData.index,
       location: {
         latitude: subOrderData.location.latitude,
-        longitude: subOrderData.location.longitude
+        longitude: subOrderData.location.longitude,
       },
       subOrderId: subOrderData.subOrderId,
       address: subOrderData.address,
@@ -3779,19 +3808,18 @@ export const getSubOrderData = async (req: RequestParams, res: Response) => {
       status: subOrderData.status,
       trashed: subOrderData.trashed,
       parcelType: parcelType,
-      ...(nextOrderData && { nextOrder: nextOrderData.subOrderId })
+      ...(nextOrderData && { nextOrder: nextOrderData.subOrderId }),
     };
 
     // subOrderData.parcelType2 = now.parcelType; // Update parcelType2 with the new object
 
     return res.ok({ data: nowdata });
-
   } catch (error) {
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
   }
-}
+};
 
 export const logoutdeliveryboy = async (req: RequestParams, res: Response) => {
   try {

@@ -33,7 +33,6 @@ const parcel_schema_1 = __importDefault(require("../../models/parcel.schema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const order_validation_1 = require("../../utils/validation/order.validation");
-const bile_Schema_1 = __importDefault(require("../../models/bile.Schema"));
 const billing_Schema_1 = __importDefault(require("../../models/billing.Schema"));
 const paymentGet_schema_1 = __importDefault(require("../../models/paymentGet.schema"));
 const axios_1 = __importDefault(require("axios"));
@@ -1074,6 +1073,14 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                     merchantID: existingOrder.merchant,
                     deliveryBoy: value.deliveryManId,
                 });
+                yield billing_Schema_1.default.findOneAndUpdate({
+                    orderId: value.orderId,
+                    deliveryBoyId: value.deliveryManId,
+                }, {
+                    $set: {
+                        orderStatus: enum_1.ORDER_HISTORY.CANCELLED,
+                    },
+                });
             }
         }
         // await createNotification({
@@ -1094,17 +1101,22 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         const isalloderdelevever = oderdata.deliveryDetails.every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED ||
             item.status === enum_1.ORDER_HISTORY.DELIVERED);
         console.log(isalloderdelevever, 'isalloderdelevever');
-        try {
-            yield bile_Schema_1.default.deleteMany({
-                orderId: value.orderId,
-                deliveryBoyId: value.deliveryManId,
-                subOrderId: { $in: value.subOrderId },
-            });
-        }
-        catch (error) {
-            // Silently handle error if BileSchema not found
-            console.log('Error deleting from BileSchema:', error);
-        }
+        // try {
+        //   await BileSchema.findOneAndUpdate(
+        //     {
+        //       orderId: value.orderId,
+        //       deliveryBoyId: value.deliveryManId
+        //     },
+        //     {
+        //       $set: {
+        //         orderStatus: ORDER_HISTORY.CANCELLED
+        //       }
+        //     }
+        //   );
+        // } catch (error) {
+        //   // Silently handle error if BileSchema not found
+        //   console.log('Error updating BileSchema:', error);
+        // }
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
         });
@@ -2693,7 +2705,8 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 var _a, _b, _c, _d;
                 if (detail.status == enum_1.ORDER_HISTORY.PICKED_UP) {
                     const nextOrder = (_b = (_a = item === null || item === void 0 ? void 0 : item.orderData) === null || _a === void 0 ? void 0 : _a.deliveryDetails[index + 1]) === null || _b === void 0 ? void 0 : _b.subOrderId;
-                    if (((_d = (_c = item === null || item === void 0 ? void 0 : item.orderData) === null || _c === void 0 ? void 0 : _c.deliveryDetails[index + 1]) === null || _d === void 0 ? void 0 : _d.status) == enum_1.ORDER_HISTORY.PICKED_UP) {
+                    if (((_d = (_c = item === null || item === void 0 ? void 0 : item.orderData) === null || _c === void 0 ? void 0 : _c.deliveryDetails[index + 1]) === null || _d === void 0 ? void 0 : _d.status) ==
+                        enum_1.ORDER_HISTORY.PICKED_UP) {
                         detail.nextOrder = nextOrder;
                     }
                 }
@@ -2992,7 +3005,7 @@ const getSubOrderData = (req, res) => __awaiter(void 0, void 0, void 0, function
         }
         const nowdata = Object.assign({ index: subOrderData.index, location: {
                 latitude: subOrderData.location.latitude,
-                longitude: subOrderData.location.longitude
+                longitude: subOrderData.location.longitude,
             }, subOrderId: subOrderData.subOrderId, address: subOrderData.address, mobileNumber: subOrderData.mobileNumber, name: subOrderData.name, email: subOrderData.email, description: subOrderData.description, postCode: subOrderData.postCode, cashOnDelivery: subOrderData.cashOnDelivery, customerId: subOrderData.customerId, distance: Number(subOrderData.distance.toFixed(2)), duration: subOrderData.duration, parcelsCount: subOrderData.parcelsCount, paymentCollectionRupees: subOrderData.paymentCollectionRupees, status: subOrderData.status, trashed: subOrderData.trashed, parcelType: parcelType }, (nextOrderData && { nextOrder: nextOrderData.subOrderId }));
         // subOrderData.parcelType2 = now.parcelType; // Update parcelType2 with the new object
         return res.ok({ data: nowdata });
