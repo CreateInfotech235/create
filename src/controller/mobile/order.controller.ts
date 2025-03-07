@@ -6,6 +6,7 @@ import {
   DISTANCE_TYPE,
   ORDER_HISTORY,
   ORDER_LOCATION,
+  ORDER_STATUS,
   PAYMENT_INFO,
   PAYMENT_TYPE,
   PERSON_TYPE,
@@ -228,14 +229,14 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
 
     // Add subOrderId index + 1
     if (validateRequest.isValid) {
-      validateRequest.value.deliveryDetails = validateRequest.value.deliveryDetails.map((detail, index) => ({
-        ...detail,
-        subOrderId: index + 1,
-      }));
+      validateRequest.value.deliveryDetails =
+        validateRequest.value.deliveryDetails.map((detail, index) => ({
+          ...detail,
+          subOrderId: index + 1,
+        }));
     }
     console.log('data2', validateRequest);
     console.log('v:', validateRequest);
-
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -429,7 +430,11 @@ export const orderCreationMulti = async (req: RequestParams, res: Response) => {
     // await PaymentInfoSchema.create(paymentData);
     await paymentGetSchema.insertMany(newData);
     if (deliveryMan?.deviceToken && newOrder.orderId) {
-      sendNotificationinapp('Order Assigned', `New Order has been Assigned to you order id is ${newOrder.orderId}`, deliveryMan?.deviceToken);
+      sendNotificationinapp(
+        'Order Assigned',
+        `New Order has been Assigned to you order id is ${newOrder.orderId}`,
+        deliveryMan?.deviceToken,
+      );
     }
 
     return res.ok({
@@ -1398,37 +1403,38 @@ export const getAllOrdersFromMerchant = async (
     });
   }
 };
-
 export const getAllOrdersFromMerchantMulti = async (
   req: RequestParams,
   res: Response,
 ) => {
-  // console.log('ENTER');
   try {
-    const { startDate, endDate } = req.query; // Get startDate and endDate from query params
+    const { startDate, endDate, getallcancelledorders = false } = req.query;
 
-    // Initialize dateFilter object
     let dateFilter = {};
 
-    // If startDate and endDate are provided, convert them to Date objects with time set to the start and end of the day
+    if (getallcancelledorders) {
+      dateFilter = {
+        $or: [
+          { status: ORDER_HISTORY.CANCELLED },
+          { status: ORDER_HISTORY.DELIVERED },
+        ],
+      };
+    }
+
     if (startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
 
-      // Adjust start and end dates to include the full day (UTC time)
-      start.setUTCHours(0, 0, 0, 0); // Set startDate to 00:00:00 UTC
-      end.setUTCHours(23, 59, 59, 999); // Set endDate to 23:59:59 UTC
+      start.setUTCHours(0, 0, 0, 0);
+      end.setUTCHours(23, 59, 59, 999);
 
-      // Add date range filter
       dateFilter = {
         dateTime: {
-          $gte: start, // Greater than or equal to start date
-          $lte: end, // Less than or equal to end date
+          $gte: start,
+          $lte: end,
         },
       };
     }
-
-    // console.log(req.params.id);
 
     const data = await orderSchemaMulti.aggregate([
       {
@@ -1438,11 +1444,10 @@ export const getAllOrdersFromMerchantMulti = async (
       },
       {
         $match: {
-          // customer: new mongoose.Types.ObjectId(req.params.id),
           'pickupDetails.merchantId': new mongoose.Types.ObjectId(
             req.params.id,
           ),
-          ...dateFilter, // Apply the date filter if it's set
+          ...dateFilter,
         },
       },
       {
@@ -1477,7 +1482,6 @@ export const getAllOrdersFromMerchantMulti = async (
           orderAssignData: 0,
         },
       },
-
       {
         $lookup: {
           from: 'deliveryMan',
@@ -1502,12 +1506,48 @@ export const getAllOrdersFromMerchantMulti = async (
         },
       },
       {
+        $addFields: {
+          hasCancelledDelivery: {
+            $cond: {
+              if: { $eq: [getallcancelledorders, 'true'] },
+              then: {
+                $anyElementTrue: {
+                  $map: {
+                    input: '$deliveryDetails',
+                    as: 'detail',
+                    in: { $eq: ['$$detail.status', ORDER_HISTORY.CANCELLED] }
+                  }
+                }
+              },
+              else: true
+            }
+          }
+        }
+      },
+      {
+        $match: {
+          hasCancelledDelivery: true
+        }
+      },
+      {
         $project: {
           _id: 1,
           orderId: 1,
           customerId: 1,
           pickupAddress: '$pickupDetails',
-          deliveryAddress: '$deliveryDetails',
+          deliveryAddress: {
+            $cond: {
+              if: { $eq: [getallcancelledorders, 'true'] },
+              then: {
+                $filter: {
+                  input: '$deliveryDetails',
+                  as: 'detail',
+                  cond: { $eq: ['$$detail.status', ORDER_HISTORY.CANCELLED] },
+                },
+              },
+              else: '$deliveryDetails',
+            },
+          },
           deliveryMan: {
             $concat: [
               '$deliveryManData.firstName',

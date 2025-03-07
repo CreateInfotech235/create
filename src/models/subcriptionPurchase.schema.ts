@@ -15,6 +15,9 @@ const SubcriptionPurchaseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'merchant',
     },
+    startDate: {
+      type: Date,
+    },
     expiry: {
       type: Date,
     },

@@ -75,13 +75,13 @@ if (ENV === 'DEV') {
 // API routes
 app.use(routes);
 
-app.get("/favicon.ico", async function (req, res) {
+app.get('/favicon.ico', async function (req, res) {
   const menu = await WebNavbar.findOne({});
 
   const base64Image = menu?.favicon?.img; // Add full base64 string here
   console.log('base64Image', base64Image);
-  
-  const imgBuffer = Buffer.from(base64Image.split(",")[1], "base64"); // Split and decode
+
+  const imgBuffer = Buffer.from(base64Image.split(',')[1], 'base64'); // Split and decode
   const arrayoftype = [
     'png',
     'webp',
@@ -98,8 +98,8 @@ app.get("/favicon.ico", async function (req, res) {
 
   const imageType = arrayoftype.find((type) => base64Image.includes(type));
   res.writeHead(200, {
-    "Content-Type": `image/${imageType}`,
-    "Content-Length": imgBuffer.length,
+    'Content-Type': `image/${imageType}`,
+    'Content-Length': imgBuffer.length,
   });
   res.end(imgBuffer);
 });

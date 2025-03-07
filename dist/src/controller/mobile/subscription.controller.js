@@ -16,6 +16,7 @@ exports.stripPayment = exports.getApproveSubscription = void 0;
 const subcriptionPurchase_schema_1 = __importDefault(require("../../models/subcriptionPurchase.schema"));
 const mongoose_1 = require("mongoose");
 const stripe_1 = __importDefault(require("stripe"));
+const subcription_schema_1 = __importDefault(require("../../models/subcription.schema"));
 // Initialize Stripe with your secret key
 // sk_test_51QWXp5FWojz9eoui3b20GWIoF6Yxged00OdF74C7SSSqnpYie13SsJWAm6ev4AvSaA8lLl3JjZJWvRxqeIB9wihP00AaiXdZKs
 const stripe = new stripe_1.default('sk_test_51QWXp5FWojz9eoui3b20GWIoF6Yxged00OdF74C7SSSqnpYie13SsJWAm6ev4AvSaA8lLl3JjZJWvRxqeIB9wihP00AaiXdZKs');
@@ -74,12 +75,30 @@ const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         // if subscription plan is already expired then return error
         // Create subscription purchase record
         console.log(paymentIntent, 'paymentIntent');
-        // 
+        const getuserallsubcription = yield subcriptionPurchase_schema_1.default.find({
+            merchant: merchantId,
+        });
+        // get last subcription expiry date
+        const lastsubcriptionexpirydate = getuserallsubcription.reduce((latest, current) => {
+            if (!latest || !latest.expiry)
+                return current;
+            if (!current || !current.expiry)
+                return latest;
+            return new Date(current.expiry) > new Date(latest.expiry) ? current : latest;
+        }, null);
+        console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
+        // get day of lastsubcriptionexpirydate
+        const subcriptiondata = yield subcription_schema_1.default.findById(planId);
+        const startDate = lastsubcriptionexpirydate ? new Date(lastsubcriptionexpirydate.expiry) > new Date() ? new Date(lastsubcriptionexpirydate.expiry) : new Date() : new Date();
+        //  add day of subcriptiondata to startDate
+        const expiry = new Date(startDate.getTime() + subcriptiondata.seconds * 1000);
         yield subcriptionPurchase_schema_1.default.create({
             subcriptionId: planId,
             merchant: merchantId,
-            expiry: expiryDate,
+            // if last subcription expiry date is greater than current date then add 1 month to the expiry date
+            expiry: expiry,
             status: 'APPROVED',
+            startDate: startDate,
         });
         console.log('Payment Intent Created:', paymentIntent);
         res.send({

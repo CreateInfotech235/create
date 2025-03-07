@@ -70,13 +70,13 @@ if (ENV === 'DEV') {
 }
 // API routes
 app.use(routes_1.default);
-app.get("/favicon.ico", function (req, res) {
+app.get('/favicon.ico', function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
         const menu = yield webNavbar_schema_1.default.findOne({});
         const base64Image = (_a = menu === null || menu === void 0 ? void 0 : menu.favicon) === null || _a === void 0 ? void 0 : _a.img; // Add full base64 string here
         console.log('base64Image', base64Image);
-        const imgBuffer = Buffer.from(base64Image.split(",")[1], "base64"); // Split and decode
+        const imgBuffer = Buffer.from(base64Image.split(',')[1], 'base64'); // Split and decode
         const arrayoftype = [
             'png',
             'webp',
@@ -92,8 +92,8 @@ app.get("/favicon.ico", function (req, res) {
         ];
         const imageType = arrayoftype.find((type) => base64Image.includes(type));
         res.writeHead(200, {
-            "Content-Type": `image/${imageType}`,
-            "Content-Length": imgBuffer.length,
+            'Content-Type': `image/${imageType}`,
+            'Content-Length': imgBuffer.length,
         });
         res.end(imgBuffer);
     });
