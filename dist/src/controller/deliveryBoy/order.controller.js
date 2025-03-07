@@ -1444,12 +1444,6 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             optimizedRoute.push(nearestLocation);
             currentLocation = nearestLocation.location;
         }
-        const newallDeliveryDetails = optimizedRoute.forEach((data) => {
-            if (newSubOrderIds.includes(data.subOrderId)) {
-                allDeliveryDetails.find((detail) => detail.subOrderId === data.subOrderId).status = enum_1.ORDER_HISTORY.PICKED_UP;
-            }
-        });
-        console.log(newallDeliveryDetails, 'newallDeliveryDetails');
         // const leftOverDeliveryDetails= allDeliveryDetails.filter((detail:any)=> !newallDeliveryDetails.includes(detail))
         // newallDeliveryDetails.push(...leftOverDeliveryDetails)
         console.log('Optimized delivery route:', optimizedRoute);

@@ -1820,15 +1820,6 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       currentLocation = nearestLocation.location;
     }
 
-    const newallDeliveryDetails = optimizedRoute.forEach((data: any) => {
-      if (newSubOrderIds.includes(data.subOrderId)) {
-        allDeliveryDetails.find(
-          (detail: any) => detail.subOrderId === data.subOrderId,
-        ).status = ORDER_HISTORY.PICKED_UP;
-      }
-    });
-    console.log(newallDeliveryDetails, 'newallDeliveryDetails');
-
     // const leftOverDeliveryDetails= allDeliveryDetails.filter((detail:any)=> !newallDeliveryDetails.includes(detail))
 
     // newallDeliveryDetails.push(...leftOverDeliveryDetails)
