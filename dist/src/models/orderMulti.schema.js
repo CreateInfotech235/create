@@ -187,6 +187,7 @@ const OrderSchema = new mongoose_1.default.Schema({
     cashCollection: { type: Number },
     isCustomer: { type: Boolean, default: false },
     route: { type: Array, default: [] },
+    isReassign: { type: Boolean, default: false },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('orderMulti', OrderSchema);
 exports.default = Model;

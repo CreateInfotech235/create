@@ -14,6 +14,7 @@ import {
   deleteOrderFormMerchantMulti,
   moveToTrashMulti,
   moveToTrashSubOrderMulti,
+  reassignOrder,
   // getAllOrdersFromMerchantt,
 } from '../../controller/mobile/order.controller';
 
@@ -258,4 +259,7 @@ router.patch('/moveToTrashSubOrderMulti/:id', moveToTrashSubOrderMulti);
 router.get('/getAllRecentOrdersFromMerchant', getAllRecentOrdersFromMerchant);
 router.post('/createMulti', orderCreationMulti);
 router.patch('/orderUpdateMulti/:orderId', orderUpdateMulti);
+
+router.patch('/reassignOrder', reassignOrder);
+
 export default router;

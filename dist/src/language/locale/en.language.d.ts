@@ -15,6 +15,8 @@ declare const messages: {
     personNotFound: string;
     deliveryManNotFound: string;
     orderNotFound: string;
+    orderAlreadyReassigned: string;
+    orderReassigned: string;
     userNotFound: string;
     userDeleted: string;
     invalidData: string;

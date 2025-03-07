@@ -15,6 +15,8 @@ const messages = {
   personNotFound: 'Person Not Found',
   deliveryManNotFound: 'Delivery Man Not Found',
   orderNotFound: 'Order Not Found',
+  orderAlreadyReassigned: 'Order already reassigned',
+  orderReassigned: 'Order reassigned successfully',
   userNotFound: 'User Not Found',
   userDeleted: 'User deleted successfully',
   invalidData: 'Invalid Data',

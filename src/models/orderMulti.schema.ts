@@ -188,6 +188,7 @@ const OrderSchema = new mongoose.Schema(
     cashCollection: { type: Number },
     isCustomer: { type: Boolean, default: false },
     route: { type: Array, default: [] },
+    isReassign: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false },
 );

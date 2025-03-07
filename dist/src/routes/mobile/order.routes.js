@@ -227,4 +227,5 @@ router.patch('/moveToTrashSubOrderMulti/:id', order_controller_1.moveToTrashSubO
 router.get('/getAllRecentOrdersFromMerchant', order_controller_1.getAllRecentOrdersFromMerchant);
 router.post('/createMulti', order_controller_1.orderCreationMulti);
 router.patch('/orderUpdateMulti/:orderId', order_controller_1.orderUpdateMulti);
+router.patch('/reassignOrder', order_controller_1.reassignOrder);
 exports.default = router;

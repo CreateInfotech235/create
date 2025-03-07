@@ -16,6 +16,8 @@ export declare const getLanguage: (lang: language) => {
     personNotFound: string;
     deliveryManNotFound: string;
     orderNotFound: string;
+    orderAlreadyReassigned: string;
+    orderReassigned: string;
     userNotFound: string;
     userDeleted: string;
     invalidData: string;

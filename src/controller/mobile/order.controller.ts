@@ -1344,6 +1344,7 @@ export const getAllOrdersFromMerchant = async (
         $project: {
           _id: 1,
           orderId: 1,
+          
           parcelsCount: 1,
           customerName: '$deliveryDetails.name',
           cutomerEmail: '$deliveryDetails.email',
@@ -1533,6 +1534,9 @@ export const getAllOrdersFromMerchantMulti = async (
         $project: {
           _id: 1,
           orderId: 1,
+          isReassign: {
+            $ifNull: ['$isReassign', false],
+          },
           customerId: 1,
           pickupAddress: '$pickupDetails',
           deliveryAddress: {
@@ -2062,3 +2066,34 @@ export const sendNotificationToDeliveryMan = async (
     });
   }
 };
+
+
+
+export const reassignOrder = async (req: RequestParams, res: Response) => {
+  try {
+    const { merchantId , orderId} = req.query;
+
+    if (!merchantId || !orderId) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+    const order = await orderSchemaMulti.findOne({ merchant: new mongoose.Types.ObjectId(merchantId),orderId: Number(orderId) });
+
+    if (!order) {
+      return res.badRequest({ message: getLanguage('en').orderNotFound });
+    }
+
+    if (order.isReassign) {
+      return res.badRequest({ message: getLanguage('en').orderAlreadyReassigned });
+    }
+    
+    await orderSchemaMulti.updateOne({ _id: order._id }, { $set: { isReassign: true } });
+
+    return res.ok({ message: getLanguage('en').orderReassigned });    
+  } catch (error) {
+    console.error('Error reassigning order:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+}

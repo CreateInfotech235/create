@@ -16,6 +16,8 @@ declare const _default: {
         personNotFound: string;
         deliveryManNotFound: string;
         orderNotFound: string;
+        orderAlreadyReassigned: string;
+        orderReassigned: string;
         userNotFound: string;
         userDeleted: string;
         invalidData: string;

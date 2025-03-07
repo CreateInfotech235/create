@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendNotificationToDeliveryMan = exports.moveToTrashSubOrderMulti = exports.moveToTrashMulti = exports.deleteOrderFormMerchantMulti = exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchantMulti = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderUpdateMulti = exports.orderCreationMulti = exports.orderCreation = void 0;
+exports.reassignOrder = exports.sendNotificationToDeliveryMan = exports.moveToTrashSubOrderMulti = exports.moveToTrashMulti = exports.deleteOrderFormMerchantMulti = exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchantMulti = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderUpdateMulti = exports.orderCreationMulti = exports.orderCreation = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -1203,6 +1203,9 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                 $project: {
                     _id: 1,
                     orderId: 1,
+                    isReassign: {
+                        $ifNull: ['$isReassign', false],
+                    },
                     customerId: 1,
                     pickupAddress: '$pickupDetails',
                     deliveryAddress: {
@@ -1662,3 +1665,27 @@ const sendNotificationToDeliveryMan = (req, res) => __awaiter(void 0, void 0, vo
     }
 });
 exports.sendNotificationToDeliveryMan = sendNotificationToDeliveryMan;
+const reassignOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { merchantId, orderId } = req.query;
+        if (!merchantId || !orderId) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
+        const order = yield orderMulti_schema_1.default.findOne({ merchant: new mongoose_1.default.Types.ObjectId(merchantId), orderId: Number(orderId) });
+        if (!order) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').orderNotFound });
+        }
+        if (order.isReassign) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').orderAlreadyReassigned });
+        }
+        yield orderMulti_schema_1.default.updateOne({ _id: order._id }, { $set: { isReassign: true } });
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').orderReassigned });
+    }
+    catch (error) {
+        console.error('Error reassigning order:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.reassignOrder = reassignOrder;
