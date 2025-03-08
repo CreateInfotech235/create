@@ -505,7 +505,14 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     balance: {
                         $round: ['$balance', 2],
                     },
-                    earning: { $ifNull: ['$earning', 0] },
+                    earning: {
+                        $ifNull: [
+                            {
+                                $round: ['$earning', 2]
+                            },
+                            0
+                        ]
+                    },
                 },
             },
         ]);

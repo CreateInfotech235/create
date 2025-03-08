@@ -611,7 +611,14 @@ export const getDeliveryManProfile = async (
           balance: {
             $round: ['$balance', 2],
           },
-          earning: { $ifNull: ['$earning', 0] },
+          earning: {
+            $ifNull: [
+              {
+                $round: ['$earning', 2]
+              },
+              0
+            ]
+          },
         },
       },
     ]);
