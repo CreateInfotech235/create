@@ -1410,11 +1410,11 @@ export const getAllOrdersFromMerchantMulti = async (
   res: Response,
 ) => {
   try {
-    const { startDate, endDate, getallcancelledorders = false } = req.query;
+    const { startDate, endDate, getallcancelledorders = "false" } = req.query;
 
     let dateFilter = {};
 
-    if (getallcancelledorders) {
+    if (getallcancelledorders === 'true') {
       dateFilter = {
         $or: [
           { status: ORDER_HISTORY.CANCELLED },
@@ -1585,6 +1585,9 @@ export const getAllOrdersFromMerchantMulti = async (
         },
       },
     ]);
+
+    // console.log("data", data);
+    
     return res.ok({ data });
   } catch (error) {
     return res.failureResponse({
@@ -1908,6 +1911,7 @@ export const deleteOrderFormMerchantMulti = async (
 export const moveToTrashMulti = async (req: RequestParams, res: Response) => {
   try {
     const { id } = req.params;
+    const { trashed } = req.body;
 
     if (!id) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
@@ -1919,7 +1923,11 @@ export const moveToTrashMulti = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').orderNotFound });
     }
 
-    const trash = OrderData.trashed === true ? false : true;
+    const trash =trashed==undefined ? OrderData.trashed === true ? false : true : trashed;
+
+
+    console.log("OrderData", OrderData);
+    console.log("trash", trash);
 
     // Update main order trashed status and all delivery details trashed status
     await orderSchemaMulti.findByIdAndUpdate(id, {
@@ -2034,6 +2042,40 @@ export const moveToTrashSubOrderMulti = async (
     });
   }
 };
+
+
+
+export const moveToTrashMultiOrderarray = async (req: RequestParams, res: Response) => {
+  try {
+    const { orderIds } = req.body;
+
+    if (!orderIds || !Array.isArray(orderIds)) {
+      return res.badRequest({ message: getLanguage('en').invalidOrder });
+    }
+
+    const orders = await orderSchemaMulti.find({ _id: { $in: orderIds } });
+
+    if (orders.length !== orderIds.length) {
+      return res.badRequest({ message: getLanguage('en').orderNotFound });
+    }
+
+    for (const order of orders) {
+      const updatedOrder = await orderSchemaMulti.findByIdAndUpdate(order._id, {
+        trashed: true,
+        'deliveryDetails.$[].trashed': true,
+      },{new: true});
+      console.log("updatedOrder", updatedOrder);
+    }
+
+    return res.ok({ message: getLanguage('en').orderMoveToTrashMulti });  
+  } catch (error) {
+    console.error('Error moving orders to trash:', error);
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+
 
 export const sendNotificationToDeliveryMan = async (
   req: RequestParams,

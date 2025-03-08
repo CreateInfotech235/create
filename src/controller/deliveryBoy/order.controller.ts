@@ -1251,6 +1251,7 @@ export const cancelMultiSubOrder = async (
       ) {
         if (item.status !== ORDER_HISTORY.CANCELLED) {
           item.status = ORDER_HISTORY.CANCELLED;
+          item.reason = value.reason.toString();
         } else {
           return res.badRequest({
             message: getLanguage('en').orderAlreadyCancelled,
@@ -1288,8 +1289,6 @@ export const cancelMultiSubOrder = async (
             reason: value.reason,
           });
         }
-
-
         const alldataoforder = await orderSchemaMulti.findOne({
           orderId: value.orderId,
         });
@@ -1367,8 +1366,7 @@ export const cancelMultiSubOrder = async (
         item.status === ORDER_HISTORY.DELIVERED,
     );
     const isanyoderdelevever = oderdata.deliveryDetails.some(
-      (item: any) =>
-        item.status === ORDER_HISTORY.DELIVERED,
+      (item: any) => item.status === ORDER_HISTORY.DELIVERED,
     );
     console.log(isanyoderdelevever, 'isanyoderdelevever');
 
@@ -1404,34 +1402,25 @@ export const cancelMultiSubOrder = async (
     if (subOrderStatuses.length === 0) {
       await orderSchemaMulti.findOneAndUpdate(
         { orderId: value.orderId },
-        { $set: { status: ORDER_HISTORY.CANCELLED } }
+        { $set: { status: ORDER_HISTORY.CANCELLED } },
       );
-    } 
+    }
     // If any sub orders exist
     else {
       // Find the highest priority status from statusoforderlist that exists in subOrderStatuses
       const highestPriorityStatus = statusoforderlist
         .sort((a, b) => a.priority - b.priority)
-        .find(statusItem => subOrderStatuses.includes(statusItem.status));
+        .find((statusItem) => subOrderStatuses.includes(statusItem.status));
 
       if (highestPriorityStatus) {
         await orderSchemaMulti.findOneAndUpdate(
           { orderId: value.orderId },
-          { $set: { status: highestPriorityStatus.status } }
+          { $set: { status: highestPriorityStatus.status } },
         );
       }
     }
 
-
-
-
-
-
-
-
-
     console.log(lateststatusoforder, 'lateststatusoforder');
-
 
     // try {
     //   await BileSchema.findOneAndUpdate(
@@ -3203,11 +3192,11 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
           deliveryBoy: new mongoose.Types.ObjectId(req.id),
           ...(startDate &&
             endDate && {
-            createdAt: {
-              $gte: new Date(startDate),
-              $lte: new Date(endDate),
-            },
-          }),
+              createdAt: {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+              },
+            }),
           // ...(status && { 'orderData.status': status }),
         },
       },

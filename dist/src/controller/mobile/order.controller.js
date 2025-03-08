@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reassignOrder = exports.sendNotificationToDeliveryMan = exports.moveToTrashSubOrderMulti = exports.moveToTrashMulti = exports.deleteOrderFormMerchantMulti = exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchantMulti = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderUpdateMulti = exports.orderCreationMulti = exports.orderCreation = void 0;
+exports.reassignOrder = exports.sendNotificationToDeliveryMan = exports.moveToTrashMultiOrderarray = exports.moveToTrashSubOrderMulti = exports.moveToTrashMulti = exports.deleteOrderFormMerchantMulti = exports.moveToTrash = exports.deleteOrderFormMerchant = exports.getAllRecentOrdersFromMerchant = exports.getAllOrdersFromMerchantMulti = exports.getAllOrdersFromMerchant = exports.cancelOrder = exports.orderUpdate = exports.getAllPaymentInfo = exports.orderUpdateMulti = exports.orderCreationMulti = exports.orderCreation = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -1089,9 +1089,9 @@ const getAllOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0,
 exports.getAllOrdersFromMerchant = getAllOrdersFromMerchant;
 const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { startDate, endDate, getallcancelledorders = false } = req.query;
+        const { startDate, endDate, getallcancelledorders = "false" } = req.query;
         let dateFilter = {};
-        if (getallcancelledorders) {
+        if (getallcancelledorders === 'true') {
             dateFilter = {
                 $or: [
                     { status: enum_1.ORDER_HISTORY.CANCELLED },
@@ -1253,6 +1253,7 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                 },
             },
         ]);
+        // console.log("data", data);
         return res.ok({ data });
     }
     catch (error) {
@@ -1545,6 +1546,7 @@ exports.deleteOrderFormMerchantMulti = deleteOrderFormMerchantMulti;
 const moveToTrashMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
+        const { trashed } = req.body;
         if (!id) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
         }
@@ -1552,7 +1554,9 @@ const moveToTrashMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         if (!OrderData) {
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').orderNotFound });
         }
-        const trash = OrderData.trashed === true ? false : true;
+        const trash = trashed == undefined ? OrderData.trashed === true ? false : true : trashed;
+        console.log("OrderData", OrderData);
+        console.log("trash", trash);
         // Update main order trashed status and all delivery details trashed status
         yield orderMulti_schema_1.default.findByIdAndUpdate(id, {
             trashed: trash,
@@ -1639,6 +1643,33 @@ const moveToTrashSubOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.moveToTrashSubOrderMulti = moveToTrashSubOrderMulti;
+const moveToTrashMultiOrderarray = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { orderIds } = req.body;
+        if (!orderIds || !Array.isArray(orderIds)) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidOrder });
+        }
+        const orders = yield orderMulti_schema_1.default.find({ _id: { $in: orderIds } });
+        if (orders.length !== orderIds.length) {
+            return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').orderNotFound });
+        }
+        for (const order of orders) {
+            const updatedOrder = yield orderMulti_schema_1.default.findByIdAndUpdate(order._id, {
+                trashed: true,
+                'deliveryDetails.$[].trashed': true,
+            }, { new: true });
+            console.log("updatedOrder", updatedOrder);
+        }
+        return res.ok({ message: (0, languageHelper_1.getLanguage)('en').orderMoveToTrashMulti });
+    }
+    catch (error) {
+        console.error('Error moving orders to trash:', error);
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.moveToTrashMultiOrderarray = moveToTrashMultiOrderarray;
 const sendNotificationToDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { deliveryManId, title, message } = req.body;

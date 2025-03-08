@@ -224,6 +224,7 @@ router.delete('/deleteOrderFormMerchantMulti/:id', order_controller_1.deleteOrde
 router.patch('/moveToTrashFormMerchant/:id', order_controller_1.moveToTrash);
 router.patch('/moveToTrashFormMerchantMulti/:id', order_controller_1.moveToTrashMulti);
 router.patch('/moveToTrashSubOrderMulti/:id', order_controller_1.moveToTrashSubOrderMulti);
+router.patch('/moveToTrashMultiOrder', order_controller_1.moveToTrashMultiOrderarray);
 router.get('/getAllRecentOrdersFromMerchant', order_controller_1.getAllRecentOrdersFromMerchant);
 router.post('/createMulti', order_controller_1.orderCreationMulti);
 router.patch('/orderUpdateMulti/:orderId', order_controller_1.orderUpdateMulti);

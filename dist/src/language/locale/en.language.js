@@ -99,6 +99,7 @@ const messages = {
     deliveryBoysDeleted: 'Delivery boys deleted successfully.',
     orderDeleted: 'Order deleted successfully.',
     orderMoveToTrash: 'Order move to trash successfully.',
+    orderMoveToTrashMulti: 'Order move to trash successfully.',
     orderUndoToTrash: 'Order undo from to trash successfully.',
     invalidcustomer: 'customer invalid',
     customerNotFound: 'Customer Not Found',

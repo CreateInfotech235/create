@@ -1012,6 +1012,7 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                 value.subOrderId.includes(item.subOrderId)) {
                 if (item.status !== enum_1.ORDER_HISTORY.CANCELLED) {
                     item.status = enum_1.ORDER_HISTORY.CANCELLED;
+                    item.reason = value.reason.toString();
                 }
                 else {
                     return res.badRequest({
@@ -1132,7 +1133,7 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
             // Find the highest priority status from statusoforderlist that exists in subOrderStatuses
             const highestPriorityStatus = statusoforderlist
                 .sort((a, b) => a.priority - b.priority)
-                .find(statusItem => subOrderStatuses.includes(statusItem.status));
+                .find((statusItem) => subOrderStatuses.includes(statusItem.status));
             if (highestPriorityStatus) {
                 yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { status: highestPriorityStatus.status } });
             }

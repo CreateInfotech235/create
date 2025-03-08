@@ -98,6 +98,7 @@ export declare const getLanguage: (lang: language) => {
     deliveryBoysDeleted: string;
     orderDeleted: string;
     orderMoveToTrash: string;
+    orderMoveToTrashMulti: string;
     orderUndoToTrash: string;
     invalidcustomer: string;
     customerNotFound: string;

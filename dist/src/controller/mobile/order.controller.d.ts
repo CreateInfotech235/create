@@ -14,5 +14,6 @@ export declare const moveToTrash: (req: RequestParams, res: Response) => Promise
 export declare const deleteOrderFormMerchantMulti: (req: RequestParams, res: Response) => Promise<void>;
 export declare const moveToTrashMulti: (req: RequestParams, res: Response) => Promise<void>;
 export declare const moveToTrashSubOrderMulti: (req: RequestParams, res: Response) => Promise<void>;
+export declare const moveToTrashMultiOrderarray: (req: RequestParams, res: Response) => Promise<void>;
 export declare const sendNotificationToDeliveryMan: (req: RequestParams, res: Response) => Promise<void>;
 export declare const reassignOrder: (req: RequestParams, res: Response) => Promise<void>;

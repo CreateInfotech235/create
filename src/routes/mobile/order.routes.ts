@@ -15,6 +15,7 @@ import {
   moveToTrashMulti,
   moveToTrashSubOrderMulti,
   reassignOrder,
+  moveToTrashMultiOrderarray,
   // getAllOrdersFromMerchantt,
 } from '../../controller/mobile/order.controller';
 
@@ -254,6 +255,8 @@ router.patch('/moveToTrashFormMerchant/:id', moveToTrash);
 
 router.patch('/moveToTrashFormMerchantMulti/:id', moveToTrashMulti);
 router.patch('/moveToTrashSubOrderMulti/:id', moveToTrashSubOrderMulti);
+
+router.patch('/moveToTrashMultiOrder', moveToTrashMultiOrderarray);
 
 
 router.get('/getAllRecentOrdersFromMerchant', getAllRecentOrdersFromMerchant);
