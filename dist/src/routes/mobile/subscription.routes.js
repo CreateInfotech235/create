@@ -48,4 +48,6 @@ router.get('/getApproveSubscription/:id', subscription_controller_1.getApproveSu
 //  *         description: Something went wrong
 //  */
 router.post('/create-payment-intent', subscription_controller_1.stripPayment);
+// switch subscription plan
+router.post('/switch-subscription-plan', subscription_controller_1.switchSubscriptionPlan);
 exports.default = router;

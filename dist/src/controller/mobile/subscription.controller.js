@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.stripPayment = exports.getApproveSubscription = void 0;
+exports.switchSubscriptionPlan = exports.stripPayment = exports.getApproveSubscription = void 0;
 const subcriptionPurchase_schema_1 = __importDefault(require("../../models/subcriptionPurchase.schema"));
 const mongoose_1 = require("mongoose");
 const stripe_1 = __importDefault(require("stripe"));
@@ -113,3 +113,58 @@ const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.stripPayment = stripPayment;
+const switchSubscriptionPlan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { planId, merchantId } = req.body;
+    try {
+        // Validate input data
+        if (!planId || !merchantId) {
+            return res.status(400).json({
+                status: false,
+                message: 'Plan ID and Merchant ID are required'
+            });
+        }
+        // Find and expire all active subscriptions for the merchant
+        const activeSubscriptions = yield subcriptionPurchase_schema_1.default.find({
+            merchant: merchantId,
+            status: 'APPROVED',
+            expiry: { $gt: new Date() }
+        });
+        if (activeSubscriptions.length > 0) {
+            yield Promise.all(activeSubscriptions.map((subscription) => __awaiter(void 0, void 0, void 0, function* () {
+                yield subcriptionPurchase_schema_1.default.findByIdAndUpdate(subscription._id, {
+                    status: 'EXPIRED'
+                });
+            })));
+        }
+        // Get the new plan details
+        const newPlan = yield subcriptionPurchase_schema_1.default.findById(planId);
+        if (!newPlan) {
+            return res.status(404).json({
+                status: false,
+                message: 'Invalid plan ID'
+            });
+        }
+        // Calculate new expiry date
+        const planDetails = yield subcription_schema_1.default.findById(newPlan.subcriptionId);
+        const startDate = new Date();
+        const newExpiry = new Date(startDate.getTime() + planDetails.seconds * 1000);
+        // Update the new subscription plan
+        yield subcriptionPurchase_schema_1.default.findByIdAndUpdate(newPlan._id, {
+            expiry: newExpiry,
+            startDate: startDate,
+            status: 'APPROVED'
+        });
+        return res.status(200).json({
+            status: true,
+            message: 'Subscription plan switched successfully'
+        });
+    }
+    catch (error) {
+        console.error('Error switching subscription plan:', error);
+        return res.status(500).json({
+            status: false,
+            message: 'Something went wrong while switching subscription plan'
+        });
+    }
+});
+exports.switchSubscriptionPlan = switchSubscriptionPlan;

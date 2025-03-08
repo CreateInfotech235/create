@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { getApproveSubscription, stripPayment } from '../../controller/mobile/subscription.controller';
+import { getApproveSubscription, stripPayment, switchSubscriptionPlan } from '../../controller/mobile/subscription.controller';
 
 const router = express.Router();
 
@@ -47,5 +47,6 @@ router.get('/getApproveSubscription/:id', getApproveSubscription);
 //  *         description: Something went wrong
 //  */
 router.post('/create-payment-intent', stripPayment);
-
+// switch subscription plan
+router.post('/switch-subscription-plan', switchSubscriptionPlan);
 export default router;
