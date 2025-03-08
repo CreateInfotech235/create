@@ -502,7 +502,9 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     totalAssignedOrdersCount: 1,
                     location: 1,
                     postCode: 1,
-                    balance: 1,
+                    balance: {
+                        $round: ['$balance', 2],
+                    },
                     earning: { $ifNull: ['$earning', 0] },
                 },
             },
@@ -722,7 +724,7 @@ exports.resetPassword = resetPassword;
 const getApproveSubscription = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        console.log(id, "id1234");
+        console.log(id, 'id1234');
         // Validate ID
         if (!(0, mongoose_1.isValidObjectId)(id)) {
             return res.status(400).json({
@@ -739,7 +741,7 @@ const getApproveSubscription = (req, res) => __awaiter(void 0, void 0, void 0, f
             merchant: id,
         })
             .populate('subcriptionId');
-        console.log(data, "data1234");
+        console.log(data, 'data1234');
         // Handle case with no results
         // if (!data.length) {
         //   return res.status(404).json({

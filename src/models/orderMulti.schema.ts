@@ -142,7 +142,7 @@ const OrderSchema = new mongoose.Schema(
         ],
         pickupsignature: { type: String },
         deliverysignature: { type: String },
-
+        reason: { type: String },
         // },
       },
     ],

@@ -1404,6 +1404,7 @@ export const getAllOrdersFromMerchant = async (
     });
   }
 };
+
 export const getAllOrdersFromMerchantMulti = async (
   req: RequestParams,
   res: Response,

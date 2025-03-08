@@ -192,7 +192,6 @@ export const signUp = async (req: RequestParams, res: Response) => {
   }
 };
 
-
 export const updateDeliveryManProfileAndPassword = async (
   req: RequestParams,
   res: Response,
@@ -446,8 +445,6 @@ export const getDeliveryManProfile = async (
       },
     ]);
 
-
-
     console.log(totalsuboder, 'totalsuboder');
 
     let totalOrderCount = 0;
@@ -611,7 +608,9 @@ export const getDeliveryManProfile = async (
           totalAssignedOrdersCount: 1,
           location: 1,
           postCode: 1,
-          balance: 1,
+          balance: {
+            $round: ['$balance', 2],
+          },
           earning: { $ifNull: ['$earning', 0] },
         },
       },
@@ -896,16 +895,13 @@ export const resetPassword = async (req: RequestParams, res: Response) => {
   }
 };
 
-
-
-
 export const getApproveSubscription = async (
   req: RequestParams,
   res: Response,
 ) => {
   try {
     const { id } = req.params;
-    console.log(id, "id1234");
+    console.log(id, 'id1234');
 
     // Validate ID
     if (!isValidObjectId(id)) {
@@ -924,7 +920,7 @@ export const getApproveSubscription = async (
         merchant: id,
       })
       .populate('subcriptionId');
-    console.log(data, "data1234");
+    console.log(data, 'data1234');
     // Handle case with no results
     // if (!data.length) {
     //   return res.status(404).json({

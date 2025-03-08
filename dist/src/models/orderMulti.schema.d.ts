@@ -55,6 +55,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -83,6 +84,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -111,6 +113,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -205,6 +208,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -233,6 +237,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -261,6 +266,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -355,6 +361,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -383,6 +390,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -411,6 +419,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -512,6 +521,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -540,6 +550,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -568,6 +579,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -662,6 +674,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -690,6 +703,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -718,6 +732,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -812,6 +827,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -840,6 +856,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;
@@ -868,6 +885,7 @@ declare const Model: mongoose.Model<{
         paymentCollectionRupees?: number;
         orderTimestamp?: NativeDate;
         deliveryBoySignature?: string;
+        reason?: string;
         distance?: number;
         duration?: string;
         subOrderId?: number;

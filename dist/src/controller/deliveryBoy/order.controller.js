@@ -1100,7 +1100,44 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         // IF ALL ODER IN CANCELLED OR DELIVERED THEN TRUE ELSE FALSE
         const isalloderdelevever = oderdata.deliveryDetails.every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED ||
             item.status === enum_1.ORDER_HISTORY.DELIVERED);
+        const isanyoderdelevever = oderdata.deliveryDetails.some((item) => item.status === enum_1.ORDER_HISTORY.DELIVERED);
+        console.log(isanyoderdelevever, 'isanyoderdelevever');
         console.log(isalloderdelevever, 'isalloderdelevever');
+        if (isanyoderdelevever) {
+            yield orderMulti_schema_1.default.findOneAndUpdate({
+                orderId: value.orderId,
+            }, { $set: { status: enum_1.ORDER_HISTORY.DELIVERED } });
+        }
+        // if ane oder is cancelled then get latest status of order and set it to status
+        const lateststatusoforder = yield orderMulti_schema_1.default.findOne({
+            orderId: value.orderId,
+        });
+        const statusoforderlist = [
+            { priority: 1, status: enum_1.ORDER_HISTORY.ARRIVED },
+            { priority: 2, status: enum_1.ORDER_HISTORY.PICKED_UP },
+            { priority: 3, status: enum_1.ORDER_HISTORY.DEPARTED },
+            { priority: 4, status: enum_1.ORDER_HISTORY.DELIVERED },
+            { priority: 5, status: enum_1.ORDER_HISTORY.CANCELLED },
+        ];
+        // Get all sub order statuses
+        const subOrderStatuses = lateststatusoforder.deliveryDetails
+            .filter((item) => item.status !== enum_1.ORDER_HISTORY.CANCELLED)
+            .map((item) => item.status);
+        // If all sub orders are cancelled
+        if (subOrderStatuses.length === 0) {
+            yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { status: enum_1.ORDER_HISTORY.CANCELLED } });
+        }
+        // If any sub orders exist
+        else {
+            // Find the highest priority status from statusoforderlist that exists in subOrderStatuses
+            const highestPriorityStatus = statusoforderlist
+                .sort((a, b) => a.priority - b.priority)
+                .find(statusItem => subOrderStatuses.includes(statusItem.status));
+            if (highestPriorityStatus) {
+                yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { status: highestPriorityStatus.status } });
+            }
+        }
+        console.log(lateststatusoforder, 'lateststatusoforder');
         // try {
         //   await BileSchema.findOneAndUpdate(
         //     {
@@ -1243,7 +1280,8 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             deliveryBoy: value.deliveryManId,
         });
         const isalloderdeparted = isCreated.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED ||
-            item.status == enum_1.ORDER_HISTORY.DELIVERED);
+            item.status == enum_1.ORDER_HISTORY.DELIVERED ||
+            item.status == enum_1.ORDER_HISTORY.CANCELLED);
         try {
             yield billing_Schema_1.default.updateOne({
                 orderId: value.orderId,
