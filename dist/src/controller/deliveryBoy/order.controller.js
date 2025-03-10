@@ -2109,12 +2109,13 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         const isalloderdelever = oderdata.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED);
         // Create notification
+        console.log(isArrived, 'isArrived');
         yield (0, common_1.createNotification)({
             userId: isArrived.merchant,
             orderId: isArrived.orderId,
             subOrderId: [value.subOrderId],
             title: isalloderdelever ? 'All Order Delivered' : 'Some Order Delivered',
-            message: `Your order ${isArrived.showOrderNumber} has been delivered`,
+            message: `Your order ${isArrived.orderId} has been delivered`,
             deliveryBoyname: (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.firstName) + ' ' + (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.lastName),
             ismerchantdeliveryboy: dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.createdByMerchant,
             type: 'MERCHANT',

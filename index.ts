@@ -123,20 +123,14 @@ io.use((socket, next) => {
 
 // Handle socket connections
 io.on('connection', (socket) => {
-  console.log('New client connected', socket.id);
   socket.on("userdata", async (data) => {
-    console.log("User connected:", data);
     const user = await MerchantSchema.findOne({ _id: data.userId });
     if (user) {
       await MerchantSchema.updateOne({ _id: data.userId }, { $set: { socketId: socket.id } });
     }
   });
 
-  socket.emit('welcome', { message: 'server is connected' });
 
-  // Emit welcome message with a custom event name
-
-  // Join user to their own room using userId
   const userId = socket.handshake.query.userId;
   if (userId) {
     socket.join(userId.toString());

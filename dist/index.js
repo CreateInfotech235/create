@@ -117,17 +117,12 @@ io.use((socket, next) => {
 });
 // Handle socket connections
 io.on('connection', (socket) => {
-    console.log('New client connected', socket.id);
     socket.on("userdata", (data) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log("User connected:", data);
         const user = yield user_schema_1.default.findOne({ _id: data.userId });
         if (user) {
             yield user_schema_1.default.updateOne({ _id: data.userId }, { $set: { socketId: socket.id } });
         }
     }));
-    socket.emit('welcome', { message: 'server is connected' });
-    // Emit welcome message with a custom event name
-    // Join user to their own room using userId
     const userId = socket.handshake.query.userId;
     if (userId) {
         socket.join(userId.toString());

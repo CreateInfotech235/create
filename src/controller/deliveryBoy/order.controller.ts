@@ -2771,12 +2771,13 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       (detail: any) => detail.status === ORDER_HISTORY.DELIVERED,
     );
     // Create notification
+    console.log(isArrived, 'isArrived');
     await createNotification({
       userId: isArrived.merchant,
       orderId: isArrived.orderId,
       subOrderId: [value.subOrderId],
       title: isalloderdelever ? 'All Order Delivered' : 'Some Order Delivered',
-      message: `Your order ${isArrived.showOrderNumber} has been delivered`,
+      message: `Your order ${isArrived.orderId} has been delivered`,
       deliveryBoyname:
         dataofdeliveryboy?.firstName + ' ' + dataofdeliveryboy?.lastName,
       ismerchantdeliveryboy: dataofdeliveryboy?.createdByMerchant,

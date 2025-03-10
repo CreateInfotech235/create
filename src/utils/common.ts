@@ -125,7 +125,6 @@ export const createNotification = async ({
     // Get user data to find socket ID
     const user = await merchantSchema.findOne({ _id: userId });
     if (user && user.socketId) {
-      // Emit notification to specific user's socket
       io.to(user.socketId).emit('notification', {
         _id: notification._id,
         title,

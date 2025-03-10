@@ -103,7 +103,6 @@ const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ 
         // Get user data to find socket ID
         const user = yield user_schema_1.default.findOne({ _id: userId });
         if (user && user.socketId) {
-            // Emit notification to specific user's socket
             index_1.io.to(user.socketId).emit('notification', {
                 _id: notification._id,
                 title,
