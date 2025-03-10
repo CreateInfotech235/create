@@ -32,6 +32,7 @@ const routes_1 = __importDefault(require("./src/routes"));
 const seeders_1 = __importDefault(require("./src/seeders"));
 const responseHandler_1 = __importDefault(require("./src/utils/responseHandler"));
 const webNavbar_schema_1 = __importDefault(require("./src/models/webNavbar.schema"));
+const user_schema_1 = __importDefault(require("./src/models/user.schema"));
 const path = require('path');
 const app = (0, express_1.default)();
 app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
@@ -40,13 +41,9 @@ app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
 // Set up server
 const server = http_1.default.createServer(app);
 // Database connection and seeders
-// var db;
-// do{
 mongoose_1.default.set('bufferTimeoutMS', 30000); // Increase timeout to 30 seconds
-// console.log(process.env.DB_URI);
 (0, conn_1.default)(process.env.DB_URI);
 (0, seeders_1.default)();
-// }while(db === undefined)
 // Set server port
 const PORT = process.env.PORT || 1000;
 // Logger middleware
@@ -101,13 +98,40 @@ app.get('/favicon.ico', function (req, res) {
 // Socket.IO Setup
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: process.env.ALLOW_ORIGIN, // CORS for Socket.IO
+        origin: process.env.ALLOW_ORIGIN,
         methods: ['GET', 'POST'],
+        credentials: true,
     },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
 });
 exports.io = io;
+// Authentication middleware for socket connections
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error('Authentication error'));
+    }
+    // Verify token here if needed
+    next();
+});
+// Handle socket connections
 io.on('connection', (socket) => {
-    console.log('🚀 ~ io.on ~ socket:', 'socket connected');
+    console.log('New client connected', socket.id);
+    socket.on("userdata", (data) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("User connected:", data);
+        const user = yield user_schema_1.default.findOne({ _id: data.userId });
+        if (user) {
+            yield user_schema_1.default.updateOne({ _id: data.userId }, { $set: { socketId: socket.id } });
+        }
+    }));
+    socket.emit('welcome', { message: 'server is connected' });
+    // Emit welcome message with a custom event name
+    // Join user to their own room using userId
+    const userId = socket.handshake.query.userId;
+    if (userId) {
+        socket.join(userId.toString());
+    }
     // Order tracking event
     socket.on('orderTracking', (deliveryManId, lat, long) => __awaiter(void 0, void 0, void 0, function* () {
         if (!(long && lat)) {
@@ -143,26 +167,37 @@ io.on('connection', (socket) => {
     // Join a specific socket room (e.g., for order tracking)
     socket.on('socketJoin', (orderId) => {
         socket.join(orderId.toString());
+        console.log(`Client joined room: ${orderId}`);
     });
     // Leave a specific socket room
     socket.on('socketLeave', (orderId) => {
         socket.leave(orderId.toString());
+        console.log(`Client left room: ${orderId}`);
     });
     // Send a message to a specific ticket
     socket.on('sendMessage', (ticketId, message) => {
-        io.to(ticketId).emit('newMessage', message);
+        io.to(ticketId).emit('newMessage', {
+            id: Math.random().toString(36).substr(2, 9),
+            message,
+            timestamp: new Date(),
+            sender: socket.id,
+        });
     });
     // Join ticket room
     socket.on('joinTicket', (ticketId) => {
         socket.join(ticketId);
+        console.log(`Client joined ticket: ${ticketId}`);
     });
     socket.on('deleteMessage', (ticketId, messageId) => {
-        // Emit the deletion to all clients in the ticket's room
         io.to(ticketId).emit('messageDeleted', { messageId });
+    });
+    // Handle errors
+    socket.on('error', (error) => {
+        console.error('Socket error:', error);
     });
     // Socket disconnection
     socket.on('disconnect', () => {
-        console.log('🚀 ~ socket.on ~ disconnect:', 'socket disconnected');
+        console.log('Client disconnected', socket.id);
     });
 });
 // Start the server

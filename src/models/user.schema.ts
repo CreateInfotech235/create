@@ -102,6 +102,7 @@ const merchantSchema = new mongoose.Schema(
     },
     isApproved: { type: String, default: isApprovedStatus.PENDING },
     reason: { type: String, default: '' },
+    socketId: { type: String, default: '' },
     isApprovedfasttime: { type: Boolean, default: true },
     createdByAdmin: { type: Boolean, default: false },
   },

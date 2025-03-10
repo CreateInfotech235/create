@@ -13,6 +13,7 @@ import merchantSchema from '../models/user.schema';
 import WalletSchema from '../models/wallet.schema';
 import { encryptPasswordParams } from './types/expressTypes';
 import Notifications from '../models/notificatio.schema';
+import { io } from '../../index';
 
 export const sendMailService = async (
   to: string,
@@ -120,6 +121,25 @@ export const createNotification = async ({
       isRead: false,
       adminId,
     });
+
+    // Get user data to find socket ID
+    const user = await merchantSchema.findOne({ _id: userId });
+    if (user && user.socketId) {
+      // Emit notification to specific user's socket
+      io.to(user.socketId).emit('notification', {
+        _id: notification._id,
+        title,
+        message,
+        subOrderId,
+        deliveryBoyname,
+        ismerchantdeliveryboy,
+        type,
+        orderId,
+        isRead: false,
+        createdAt: notification.createdAt,
+      });
+    }
+
     return notification;
   } catch (error) {
     console.error('Error creating notification:', error);

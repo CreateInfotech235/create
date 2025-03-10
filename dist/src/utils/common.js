@@ -25,6 +25,7 @@ const deliveryMan_schema_1 = __importDefault(require("../models/deliveryMan.sche
 const user_schema_1 = __importDefault(require("../models/user.schema"));
 const wallet_schema_1 = __importDefault(require("../models/wallet.schema"));
 const notificatio_schema_1 = __importDefault(require("../models/notificatio.schema"));
+const index_1 = require("../../index");
 const sendMailService = (to, subject, text) => __awaiter(void 0, void 0, void 0, function* () {
     const transporter = nodemailer_1.default.createTransport({
         service: 'gmail',
@@ -99,6 +100,23 @@ const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ 
             isRead: false,
             adminId,
         });
+        // Get user data to find socket ID
+        const user = yield user_schema_1.default.findOne({ _id: userId });
+        if (user && user.socketId) {
+            // Emit notification to specific user's socket
+            index_1.io.to(user.socketId).emit('notification', {
+                _id: notification._id,
+                title,
+                message,
+                subOrderId,
+                deliveryBoyname,
+                ismerchantdeliveryboy,
+                type,
+                orderId,
+                isRead: false,
+                createdAt: notification.createdAt,
+            });
+        }
         return notification;
     }
     catch (error) {

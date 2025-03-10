@@ -17,6 +17,7 @@ import routes from './src/routes';
 import loadSeeders from './src/seeders';
 import responseHandler from './src/utils/responseHandler';
 import WebNavbar from './src/models/webNavbar.schema';
+import MerchantSchema from './src/models/user.schema';
 const path = require('path');
 
 const app = express();
@@ -29,15 +30,10 @@ config({ path: `.env.development.local` });
 const server = http.createServer(app);
 
 // Database connection and seeders
-
-// var db;
-// do{
 mongoose.set('bufferTimeoutMS', 30000); // Increase timeout to 30 seconds
-// console.log(process.env.DB_URI);
 
 databaseConnection(process.env.DB_URI);
 loadSeeders();
-// }while(db === undefined)
 
 // Set server port
 const PORT = process.env.PORT || 1000;
@@ -107,14 +103,44 @@ app.get('/favicon.ico', async function (req, res) {
 // Socket.IO Setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.ALLOW_ORIGIN, // CORS for Socket.IO
+    origin: process.env.ALLOW_ORIGIN,
     methods: ['GET', 'POST'],
+    credentials: true,
   },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
 });
 
-export { io };
+// Authentication middleware for socket connections
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error('Authentication error'));
+  }
+  // Verify token here if needed
+  next();
+});
+
+// Handle socket connections
 io.on('connection', (socket) => {
-  console.log('🚀 ~ io.on ~ socket:', 'socket connected');
+  console.log('New client connected', socket.id);
+  socket.on("userdata", async (data) => {
+    console.log("User connected:", data);
+    const user = await MerchantSchema.findOne({ _id: data.userId });
+    if (user) {
+      await MerchantSchema.updateOne({ _id: data.userId }, { $set: { socketId: socket.id } });
+    }
+  });
+
+  socket.emit('welcome', { message: 'server is connected' });
+
+  // Emit welcome message with a custom event name
+
+  // Join user to their own room using userId
+  const userId = socket.handshake.query.userId;
+  if (userId) {
+    socket.join(userId.toString());
+  }
 
   // Order tracking event
   socket.on(
@@ -162,33 +188,48 @@ io.on('connection', (socket) => {
   // Join a specific socket room (e.g., for order tracking)
   socket.on('socketJoin', (orderId: number) => {
     socket.join(orderId.toString());
+    console.log(`Client joined room: ${orderId}`);
   });
 
   // Leave a specific socket room
   socket.on('socketLeave', (orderId: number) => {
     socket.leave(orderId.toString());
+    console.log(`Client left room: ${orderId}`);
   });
 
   // Send a message to a specific ticket
   socket.on('sendMessage', (ticketId, message) => {
-    io.to(ticketId).emit('newMessage', message);
+    io.to(ticketId).emit('newMessage', {
+      id: Math.random().toString(36).substr(2, 9),
+      message,
+      timestamp: new Date(),
+      sender: socket.id,
+    });
   });
 
   // Join ticket room
   socket.on('joinTicket', (ticketId) => {
     socket.join(ticketId);
+    console.log(`Client joined ticket: ${ticketId}`);
   });
 
   socket.on('deleteMessage', (ticketId, messageId) => {
-    // Emit the deletion to all clients in the ticket's room
     io.to(ticketId).emit('messageDeleted', { messageId });
+  });
+
+  // Handle errors
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
   });
 
   // Socket disconnection
   socket.on('disconnect', () => {
-    console.log('🚀 ~ socket.on ~ disconnect:', 'socket disconnected');
+    console.log('Client disconnected', socket.id);
   });
 });
+
+// Export io instance for use in other files
+export { io };
 
 // Start the server
 server.listen(PORT, async () => {
