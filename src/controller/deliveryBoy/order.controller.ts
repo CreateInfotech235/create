@@ -3290,10 +3290,10 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                         ORDER_HISTORY.CANCELLED,
                                       ],
                                     },
-                                    then: 5,
+                                    then: 6,
                                   },
                                 ],
-                                default: 6,
+                                default: 5,
                               },
                             },
                           ],
@@ -3539,7 +3539,12 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                 if: { $isArray: '$deliveryDetails' },
                 then: {
                   $map: {
-                    input: '$deliveryDetails',
+                    input: {
+                      $sortArray: {
+                        input: '$deliveryDetails',
+                        sortBy: { sortOrder: 1 },
+                      },
+                    },
                     as: 'detail',
                     in: {
                       $mergeObjects: [
@@ -3592,10 +3597,10 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
                                       ORDER_HISTORY.CANCELLED,
                                     ],
                                   },
-                                  then: 5,
+                                  then: 6,
                                 },
                               ],
-                              default: 6,
+                              default: 5,
                             },
                           },
                           distance: {
@@ -3740,6 +3745,8 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
       ])
       .exec();
 
+    console.log(multiOrder, 'multiOrder');
+
     const Nowdata = {
       ...multiOrder,
       deliveryDetails: multiOrder.deliveryDetails.map((item: any) => {
@@ -3782,6 +3789,8 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
         }
       }
     });
+
+    // console.log(Nowdata, 'Nowdata');
 
     return res.ok({ data: Nowdata });
   } catch (error) {

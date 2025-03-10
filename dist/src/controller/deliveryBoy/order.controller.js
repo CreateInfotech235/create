@@ -2547,10 +2547,10 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                                                                                 enum_1.ORDER_HISTORY.CANCELLED,
                                                                             ],
                                                                         },
-                                                                        then: 5,
+                                                                        then: 6,
                                                                     },
                                                                 ],
-                                                                default: 6,
+                                                                default: 5,
                                                             },
                                                         },
                                                     ],
@@ -2772,7 +2772,12 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                             if: { $isArray: '$deliveryDetails' },
                             then: {
                                 $map: {
-                                    input: '$deliveryDetails',
+                                    input: {
+                                        $sortArray: {
+                                            input: '$deliveryDetails',
+                                            sortBy: { sortOrder: 1 },
+                                        },
+                                    },
                                     as: 'detail',
                                     in: {
                                         $mergeObjects: [
@@ -2824,10 +2829,10 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                                                                         enum_1.ORDER_HISTORY.CANCELLED,
                                                                     ],
                                                                 },
-                                                                then: 5,
+                                                                then: 6,
                                                             },
                                                         ],
-                                                        default: 6,
+                                                        default: 5,
                                                     },
                                                 },
                                                 distance: {
@@ -2971,6 +2976,7 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             },
         ])
             .exec();
+        console.log(multiOrder, 'multiOrder');
         const Nowdata = Object.assign(Object.assign({}, multiOrder), { deliveryDetails: multiOrder.deliveryDetails.map((item) => {
                 const parcelType = item.parcelType2
                     .map((type) => {
@@ -3000,6 +3006,7 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 }
             }
         });
+        // console.log(Nowdata, 'Nowdata');
         return res.ok({ data: Nowdata });
     }
     catch (error) {
