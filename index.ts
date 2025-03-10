@@ -75,7 +75,6 @@ app.get('/favicon.ico', async function (req, res) {
   const menu = await WebNavbar.findOne({});
 
   const base64Image = menu?.favicon?.img; // Add full base64 string here
-  console.log('base64Image', base64Image);
 
   const imgBuffer = Buffer.from(base64Image.split(',')[1], 'base64'); // Split and decode
   const arrayoftype = [
@@ -123,14 +122,23 @@ io.use((socket, next) => {
 
 // Handle socket connections
 io.on('connection', (socket) => {
-  socket.on("userdata", async (data) => {
+  console.log('New client connected', socket.id);
+  socket.on('userdata', async (data) => {
+    console.log('User connected:', data);
     const user = await MerchantSchema.findOne({ _id: data.userId });
     if (user) {
-      await MerchantSchema.updateOne({ _id: data.userId }, { $set: { socketId: socket.id } });
+      await MerchantSchema.updateOne(
+        { _id: data.userId },
+        { $set: { socketId: socket.id } },
+      );
     }
   });
 
+  socket.emit('welcome', { message: 'server is connected' });
 
+  // Emit welcome message with a custom event name
+
+  // Join user to their own room using userId
   const userId = socket.handshake.query.userId;
   if (userId) {
     socket.join(userId.toString());

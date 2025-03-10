@@ -3,7 +3,6 @@ export const getimgurl =  (value: string) => {
   const base64Image = value; // Assuming userSignature is a base64 image
   const prefixFilename = `${currentTime}`;
 
-  console.log(base64Image, 'base64Image');
 
   fetch(process.env.IMAGE_STORAGE_UPLOAD_URL, {
     method: 'POST',

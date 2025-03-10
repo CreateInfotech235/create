@@ -72,7 +72,6 @@ app.get('/favicon.ico', function (req, res) {
         var _a;
         const menu = yield webNavbar_schema_1.default.findOne({});
         const base64Image = (_a = menu === null || menu === void 0 ? void 0 : menu.favicon) === null || _a === void 0 ? void 0 : _a.img; // Add full base64 string here
-        console.log('base64Image', base64Image);
         const imgBuffer = Buffer.from(base64Image.split(',')[1], 'base64'); // Split and decode
         const arrayoftype = [
             'png',
@@ -117,12 +116,17 @@ io.use((socket, next) => {
 });
 // Handle socket connections
 io.on('connection', (socket) => {
-    socket.on("userdata", (data) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('New client connected', socket.id);
+    socket.on('userdata', (data) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log('User connected:', data);
         const user = yield user_schema_1.default.findOne({ _id: data.userId });
         if (user) {
             yield user_schema_1.default.updateOne({ _id: data.userId }, { $set: { socketId: socket.id } });
         }
     }));
+    socket.emit('welcome', { message: 'server is connected' });
+    // Emit welcome message with a custom event name
+    // Join user to their own room using userId
     const userId = socket.handshake.query.userId;
     if (userId) {
         socket.join(userId.toString());
