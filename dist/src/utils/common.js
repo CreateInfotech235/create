@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMongoCommonPagination = exports.updateWallet = exports.emailSend = exports.emailOrMobileOtp = exports.createAuthTokens = exports.removeUploadedFile = exports.createNotification = exports.uploadFile = exports.generateIntRandomNo = exports.encryptPassword = exports.passwordValidation = exports.sendMailService = void 0;
+exports.getMongoCommonPagination = exports.updateWallet = exports.emailSend = exports.emailOrMobileOtp = exports.createAuthTokens = exports.removeUploadedFile = exports.updateoderdataNotification = exports.createNotification = exports.uploadFile = exports.generateIntRandomNo = exports.encryptPassword = exports.passwordValidation = exports.sendMailService = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const crypto_1 = require("crypto");
 const fs_1 = __importDefault(require("fs"));
@@ -26,6 +26,7 @@ const user_schema_1 = __importDefault(require("../models/user.schema"));
 const wallet_schema_1 = __importDefault(require("../models/wallet.schema"));
 const notificatio_schema_1 = __importDefault(require("../models/notificatio.schema"));
 const index_1 = require("../../index");
+const orderMulti_schema_1 = __importDefault(require("../models/orderMulti.schema"));
 const sendMailService = (to, subject, text) => __awaiter(void 0, void 0, void 0, function* () {
     const transporter = nodemailer_1.default.createTransport({
         service: 'gmail',
@@ -124,6 +125,103 @@ const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ 
     }
 });
 exports.createNotification = createNotification;
+const updateoderdataNotification = (_c) => __awaiter(void 0, [_c], void 0, function* ({ userId, orderId, }) {
+    try {
+        // Get order data for this specific order
+        const orderData = yield orderMulti_schema_1.default.aggregate([
+            {
+                $match: {
+                    orderId: orderId,
+                    'pickupDetails.merchantId': userId,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'orderAssigneeMulti',
+                    localField: 'orderId',
+                    foreignField: 'order',
+                    as: 'orderAssignData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 0,
+                                deliveryBoy: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$orderAssignData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'deliveryMan',
+                    localField: 'orderAssignData.deliveryBoy',
+                    foreignField: '_id',
+                    as: 'deliveryManData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                firstName: 1,
+                                lastName: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$deliveryManData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    orderId: 1,
+                    status: 1,
+                    deliveryDetails: 1,
+                    pickupDetails: 1,
+                    deliveryMan: {
+                        $concat: [
+                            '$deliveryManData.firstName',
+                            ' ',
+                            '$deliveryManData.lastName',
+                        ],
+                    },
+                    deliveryManId: '$deliveryManData._id',
+                    createdDate: {
+                        $dateToString: {
+                            format: '%d-%m-%Y , %H:%M',
+                            date: '$createdAt',
+                        },
+                    },
+                },
+            },
+        ]);
+        const user = yield user_schema_1.default.findOne({ _id: userId });
+        if (user && user.socketId) {
+            try {
+                index_1.io.to(user.socketId).emit('notificationoderdataupdate', {
+                    orderData: Object.assign({}, orderData[0]),
+                });
+                console.log('Socket emit successful to:', user.socketId);
+            }
+            catch (error) {
+                console.error('Socket emit error:', error);
+            }
+        }
+    }
+    catch (error) {
+        console.log('Error fetching order data:', error);
+    }
+});
+exports.updateoderdataNotification = updateoderdataNotification;
 const removeUploadedFile = (fileName) => {
     try {
         fs_1.default.unlinkSync(fileName);

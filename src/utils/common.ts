@@ -14,6 +14,7 @@ import WalletSchema from '../models/wallet.schema';
 import { encryptPasswordParams } from './types/expressTypes';
 import Notifications from '../models/notificatio.schema';
 import { io } from '../../index';
+import orderSchemaMulti from '../models/orderMulti.schema';
 
 export const sendMailService = async (
   to: string,
@@ -143,6 +144,111 @@ export const createNotification = async ({
   } catch (error) {
     console.error('Error creating notification:', error);
     throw new Error('Failed to create notification');
+  }
+};
+
+export const updateoderdataNotification = async ({
+  userId,
+  orderId,
+}: {
+  userId: mongoose.Types.ObjectId;
+  orderId: number;
+}) => {
+  try {
+    // Get order data for this specific order
+    const orderData = await orderSchemaMulti.aggregate([
+      {
+        $match: {
+          orderId: orderId,
+          'pickupDetails.merchantId': userId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'orderAssigneeMulti',
+          localField: 'orderId',
+          foreignField: 'order',
+          as: 'orderAssignData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                deliveryBoy: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$orderAssignData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'deliveryMan',
+          localField: 'orderAssignData.deliveryBoy',
+          foreignField: '_id',
+          as: 'deliveryManData',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$deliveryManData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          orderId: 1,
+          status: 1,
+          deliveryDetails: 1,
+          pickupDetails: 1,
+          deliveryMan: {
+            $concat: [
+              '$deliveryManData.firstName',
+              ' ',
+              '$deliveryManData.lastName',
+            ],
+          },
+          deliveryManId: '$deliveryManData._id',
+          createdDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$createdAt',
+            },
+          },
+        },
+      },
+    ]);
+
+    const user = await merchantSchema.findOne({ _id: userId });
+    if (user && user.socketId) {
+      try {
+        io.to(user.socketId).emit('notificationoderdataupdate', {
+          orderData: {
+            ...orderData[0],
+            // Make sure all required fields are included
+          },
+        });
+        console.log('Socket emit successful to:', user.socketId);
+      } catch (error) {
+        console.error('Socket emit error:', error);
+      }
+    }
+  } catch (error) {
+    console.log('Error fetching order data:', error);
   }
 };
 

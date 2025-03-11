@@ -78,6 +78,10 @@ export declare const createNotification: ({ userId, subOrderId, title, message, 
 } & {
     __v: number;
 }>;
+export declare const updateoderdataNotification: ({ userId, orderId, }: {
+    userId: mongoose.Types.ObjectId;
+    orderId: number;
+}) => Promise<void>;
 export declare const removeUploadedFile: (fileName: string) => void;
 export declare const createAuthTokens: (id: Types.ObjectId) => {
     accessToken: string;

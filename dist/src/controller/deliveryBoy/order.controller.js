@@ -743,6 +743,10 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 console.log(error, 'error');
             }
         }
+        yield (0, common_1.updateoderdataNotification)({
+            userId: isCreated.merchant,
+            orderId: isCreated.orderId,
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -1155,6 +1159,10 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         //   // Silently handle error if BileSchema not found
         //   console.log('Error updating BileSchema:', error);
         // }
+        yield (0, common_1.updateoderdataNotification)({
+            userId: existingOrder.merchant,
+            orderId: existingOrder.orderId
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
         });
@@ -1322,6 +1330,10 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         //   message: `Your order ${isCreated.orderId} has been departed`,
         //   type: 'MERCHANT',
         // });
+        yield (0, common_1.updateoderdataNotification)({
+            userId: isCreated.merchant,
+            orderId: isCreated.orderId,
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -1603,6 +1615,10 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             title: 'Order Picked Up',
             message: `Your order ${isArrived.orderId} has been picked up`,
             type: 'MERCHANT',
+        });
+        yield (0, common_1.updateoderdataNotification)({
+            userId: isArrived.merchant,
+            orderId: isArrived.orderId,
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -2232,6 +2248,10 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             $inc: {
                 totalCharge: chargeofDeliveryBoy,
             },
+        });
+        yield (0, common_1.updateoderdataNotification)({
+            userId: oderdata.merchant,
+            orderId: oderdata.orderId,
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,

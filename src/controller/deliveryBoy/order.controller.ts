@@ -33,6 +33,7 @@ import {
   generateIntRandomNo,
   getMongoCommonPagination,
   sendMailService,
+  updateoderdataNotification,
   updateWallet,
   uploadFile,
 } from '../../utils/common';
@@ -903,6 +904,11 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       }
     }
 
+    await updateoderdataNotification({
+      userId: isCreated.merchant,
+      orderId: isCreated.orderId,
+    });
+
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
@@ -1174,6 +1180,8 @@ export const cancelMultiOrder = async (req: RequestParams, res: Response) => {
       type: 'MERCHANT',
     });
 
+    
+
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
     });
@@ -1439,6 +1447,11 @@ export const cancelMultiSubOrder = async (
     //   console.log('Error updating BileSchema:', error);
     // }
 
+    await updateoderdataNotification({
+      userId: existingOrder.merchant,
+      orderId: existingOrder.orderId
+    });
+
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
     });
@@ -1651,6 +1664,12 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
     //   message: `Your order ${isCreated.orderId} has been departed`,
     //   type: 'MERCHANT',
     // });
+
+    await updateoderdataNotification({
+      userId: isCreated.merchant,
+      orderId: isCreated.orderId,
+    });
+
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
@@ -2046,6 +2065,11 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       title: 'Order Picked Up',
       message: `Your order ${isArrived.orderId} has been picked up`,
       type: 'MERCHANT',
+    });
+
+    await updateoderdataNotification({
+      userId: isArrived.merchant,
+      orderId: isArrived.orderId,
     });
 
     return res.ok({
@@ -2952,6 +2976,12 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
         },
       },
     );
+
+
+    await updateoderdataNotification({
+      userId: oderdata.merchant,
+      orderId: oderdata.orderId,
+    });
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,

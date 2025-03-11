@@ -1595,6 +1595,7 @@ export const getAllOrdersFromMerchantMulti = async (
     });
   }
 };
+
 export const getAllRecentOrdersFromMerchant = async (
   req: RequestParams,
   res: Response,
