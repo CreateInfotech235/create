@@ -42,7 +42,10 @@ const PORT = process.env.PORT || 1000;
 app.use(logger('dev'));
 
 // CORS Configuration
-const corsOptions = { origin: process.env.ALLOW_ORIGIN }; // Ensure this points to your frontend's URL (e.g., http://localhost:5173)
+const corsOptions = {
+  origin: JSON.parse(process.env.ALLOW_ORIGIN || '[]'),
+  credentials: true,
+};
 app.use(cors(corsOptions));
 
 // Body parser middleware
