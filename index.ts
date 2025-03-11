@@ -43,7 +43,15 @@ app.use(logger('dev'));
 
 // CORS Configuration
 const corsOptions = {
-  origin: JSON.parse(process.env.ALLOW_ORIGIN || '[]'),
+  origin: (() => {
+    const allowOrigin = process.env.ALLOW_ORIGIN || '[]';
+    try {
+      return JSON.parse(allowOrigin.replace(/^'|'$/g, ''));
+    } catch (e) {
+      console.error('Error parsing ALLOW_ORIGIN:', e);
+      return [];
+    }
+  })(),
   credentials: true,
 };
 app.use(cors(corsOptions));

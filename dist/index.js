@@ -50,7 +50,16 @@ const PORT = process.env.PORT || 1000;
 app.use((0, morgan_1.default)('dev'));
 // CORS Configuration
 const corsOptions = {
-    origin: JSON.parse(process.env.ALLOW_ORIGIN || '[]'),
+    origin: (() => {
+        const allowOrigin = process.env.ALLOW_ORIGIN || '[]';
+        try {
+            return JSON.parse(allowOrigin.replace(/^'|'$/g, ''));
+        }
+        catch (e) {
+            console.error('Error parsing ALLOW_ORIGIN:', e);
+            return [];
+        }
+    })(),
     credentials: true,
 };
 app.use((0, cors_1.default)(corsOptions));
