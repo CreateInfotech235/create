@@ -1573,7 +1573,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       });
     }
 
-    await orderSchemaMulti.findOneAndUpdate(
+    const neworderdata = await orderSchemaMulti.findOneAndUpdate(
       {
         orderId: value.orderId,
         'deliveryDetails.subOrderId': value.subOrderId,
@@ -1584,6 +1584,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
           'deliveryDetails.$.time.start': Date.now(), // Update all elements' time.start
         },
       },
+      { new: true },
     );
 
     await OrderHistorySchema.create({
@@ -1594,15 +1595,17 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       merchantID: isCreated.merchant,
       deliveryBoy: value.deliveryManId,
     });
+    console.log(isCreated.deliveryDetails, 'isCreated.deliveryDetails');
 
-    const isalloderdeparted = isCreated.deliveryDetails.every(
+    const isalloderdeparted = neworderdata.deliveryDetails.every(
       (item: any) =>
         item.status == ORDER_HISTORY.DEPARTED ||
         item.status == ORDER_HISTORY.DELIVERED ||
         item.status == ORDER_HISTORY.CANCELLED,
     );
 
-    await orderSchemaMulti.findOneAndUpdate(
+    console.log(isalloderdeparted, 'isalloderdeparted');
+    const isupdated = await orderSchemaMulti.findOneAndUpdate(
       {
         orderId: value.orderId,
         'deliveryDetails.subOrderId': value.subOrderId,
@@ -1612,7 +1615,9 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
           status: isalloderdeparted ? ORDER_HISTORY.DEPARTED : isCreated.status,
         },
       },
+      { new: true },
     );
+    console.log(isupdated, 'isupdated');
 
     try {
       await BillingSchema.updateOne(

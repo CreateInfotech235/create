@@ -1263,7 +1263,7 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 message: (0, languageHelper_1.getLanguage)('en').invalidDeliveryMan,
             });
         }
-        yield orderMulti_schema_1.default.findOneAndUpdate({
+        const neworderdata = yield orderMulti_schema_1.default.findOneAndUpdate({
             orderId: value.orderId,
             'deliveryDetails.subOrderId': value.subOrderId,
         }, {
@@ -1271,7 +1271,7 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 'deliveryDetails.$.status': enum_1.ORDER_HISTORY.DEPARTED, // Update all elements
                 'deliveryDetails.$.time.start': Date.now(), // Update all elements' time.start
             },
-        });
+        }, { new: true });
         yield orderHistory_schema_1.default.create({
             message: `Your order ${value.orderId} suborder ${value.subOrderId} has been out for delivery`,
             order: value.orderId,
@@ -1280,17 +1280,20 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             merchantID: isCreated.merchant,
             deliveryBoy: value.deliveryManId,
         });
-        const isalloderdeparted = isCreated.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED ||
+        console.log(isCreated.deliveryDetails, 'isCreated.deliveryDetails');
+        const isalloderdeparted = neworderdata.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED ||
             item.status == enum_1.ORDER_HISTORY.DELIVERED ||
             item.status == enum_1.ORDER_HISTORY.CANCELLED);
-        yield orderMulti_schema_1.default.findOneAndUpdate({
+        console.log(isalloderdeparted, 'isalloderdeparted');
+        const isupdated = yield orderMulti_schema_1.default.findOneAndUpdate({
             orderId: value.orderId,
             'deliveryDetails.subOrderId': value.subOrderId,
         }, {
             $set: {
                 status: isalloderdeparted ? enum_1.ORDER_HISTORY.DEPARTED : isCreated.status,
             },
-        });
+        }, { new: true });
+        console.log(isupdated, 'isupdated');
         try {
             yield billing_Schema_1.default.updateOne({
                 orderId: value.orderId,
