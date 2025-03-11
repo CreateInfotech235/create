@@ -1602,6 +1602,18 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
         item.status == ORDER_HISTORY.CANCELLED,
     );
 
+    await orderSchemaMulti.findOneAndUpdate(
+      {
+        orderId: value.orderId,
+        'deliveryDetails.subOrderId': value.subOrderId,
+      },
+      {
+        $set: {
+          status: isalloderdeparted ? ORDER_HISTORY.DEPARTED : isCreated.status,
+        },
+      },
+    );
+
     try {
       await BillingSchema.updateOne(
         {

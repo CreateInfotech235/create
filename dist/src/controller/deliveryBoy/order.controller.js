@@ -1283,6 +1283,14 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const isalloderdeparted = isCreated.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED ||
             item.status == enum_1.ORDER_HISTORY.DELIVERED ||
             item.status == enum_1.ORDER_HISTORY.CANCELLED);
+        yield orderMulti_schema_1.default.findOneAndUpdate({
+            orderId: value.orderId,
+            'deliveryDetails.subOrderId': value.subOrderId,
+        }, {
+            $set: {
+                status: isalloderdeparted ? enum_1.ORDER_HISTORY.DEPARTED : isCreated.status,
+            },
+        });
         try {
             yield billing_Schema_1.default.updateOne({
                 orderId: value.orderId,
