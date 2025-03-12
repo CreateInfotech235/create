@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.signIn = exports.activateFreeSubcription = exports.signUp = void 0;
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteAllNotifications = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.signIn = exports.activateFreeSubcription = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -1269,6 +1269,32 @@ const deleteNotification = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.deleteNotification = deleteNotification;
+const deleteAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { notificationIds } = req.body;
+        const userId = req.params.id;
+        const deletedNotification = yield notificatio_schema_1.default.deleteMany({
+            _id: { $in: notificationIds },
+            userId,
+        });
+        if (!deletedNotification) {
+            return res.status(404).json({
+                message: 'Notification not found',
+            });
+        }
+        return res.status(200).json({
+            message: 'Notification deleted successfully',
+            data: deletedNotification,
+        });
+    }
+    catch (error) {
+        console.error('Error deleting notification:', error);
+        return res.status(500).json({
+            message: 'There was an error deleting the notification',
+        });
+    }
+});
+exports.deleteAllNotifications = deleteAllNotifications;
 const getUnreadNotificationCount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.params.id;

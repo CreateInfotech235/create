@@ -66,8 +66,115 @@ import BileSchema from '../../models/bile.Schema';
 import BillingSchema from '../../models/billing.Schema';
 import paymentGetSchema from '../../models/paymentGet.schema';
 import axios from 'axios';
-import { log } from 'node:console';
-import { convertToObject } from 'typescript';
+import { io } from '../../../index';
+import merchantSchema from '../../models/user.schema';
+
+const handlebilling = async ({
+  merchant,
+  orderId,
+}: {
+  merchant: string;
+  orderId: string;
+}): Promise<null> => {
+  try {
+    const merchantObjectId = new mongoose.Types.ObjectId(merchant);
+    const billingData = await BillingSchema.aggregate([
+      {
+        $match: {
+          merchantId: merchantObjectId,
+          orderId: orderId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'deliveryMan',
+          localField: 'deliveryBoyId',
+          foreignField: '_id',
+          as: 'deliveryBoy',
+        },
+      },
+      {
+        $unwind: {
+          path: '$deliveryBoy',
+          preserveNullAndEmptyArrays: true, // Keep documents even if no match
+        },
+      },
+      {
+        $addFields: {
+          deliveryBoyName: {
+            $cond: {
+              if: { $and: ['$deliveryBoy.firstName', '$deliveryBoy.lastName'] },
+              then: {
+                $concat: [
+                  '$deliveryBoy.firstName',
+                  ' ',
+                  '$deliveryBoy.lastName',
+                ],
+              },
+              else: '',
+            },
+          },
+          totalAmountOfPackage: {
+            $sum: '$subOrderdata.amountOfPackage',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          deliveryBoyId: 1,
+          merchantId: 1,
+          orderId: 1,
+          charge: 1,
+          panaltyAmount: 1,
+          interestAmount: 1,
+          paidAmount: 1,
+          totalAmountOfPackage: 1,
+          orderStatus: 1,
+          isApproved: 1,
+          isPaid: 1,
+          showOrderId: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          subOrderdata: 1,
+          chargeMethod: 1,
+          deliveryBoyName: 1,
+          totalCharge: 1,
+          'deliveryBoy.contactNumber': 1,
+          'deliveryBoy.email': 1,
+          'deliveryBoy.adminCharge': 1,
+        },
+      },
+    ]);
+
+    console.log('billingData', billingData);
+
+    const user = await merchantSchema.findOne({ _id: merchantObjectId });
+    if (user && user.socketId && billingData.length > 0) {
+      try {
+        // Send just the first object instead of array
+        io.to(user.socketId).emit('billingDataupdate', billingData[0]);
+        console.log('Socket emit successful to:', user.socketId);
+      } catch (error) {
+        console.error('Socket emit error:', error);
+        console.log('No billing data found:', {
+          merchant,
+          orderId,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting billing data:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      merchant,
+      orderId,
+      timestamp: new Date().toISOString(),
+    });
+    throw error;
+  }
+};
 
 export const getAssignedOrders = async (req: RequestParams, res: Response) => {
   try {
@@ -899,6 +1006,10 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       try {
         const billing = await BillingSchema.create(billingDataPayload);
         console.log(billing, 'billing');
+        await handlebilling({
+          merchant: merchantId.toString(),
+          orderId: orderId.toString(),
+        });
       } catch (error) {
         console.log(error, 'error');
       }
@@ -908,6 +1019,12 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       userId: isCreated.merchant,
       orderId: isCreated.orderId,
     });
+    await handlebilling({
+      merchant: isCreated.merchant.toString(),
+      orderId: isCreated.orderId.toString(),
+    });
+
+
 
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
@@ -1180,8 +1297,6 @@ export const cancelMultiOrder = async (req: RequestParams, res: Response) => {
       type: 'MERCHANT',
     });
 
-    
-
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
     });
@@ -1449,8 +1564,14 @@ export const cancelMultiSubOrder = async (
 
     await updateoderdataNotification({
       userId: existingOrder.merchant,
-      orderId: existingOrder.orderId
+      orderId: existingOrder.orderId,
     });
+
+    await handlebilling({
+      merchant: existingOrder.merchant.toString(),
+      orderId: existingOrder.orderId.toString(),
+    });
+
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -1668,6 +1789,11 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
     await updateoderdataNotification({
       userId: isCreated.merchant,
       orderId: isCreated.orderId,
+    });
+
+    await handlebilling({
+      merchant: isCreated.merchant.toString(),
+      orderId: isCreated.orderId.toString(),
     });
 
     return res.ok({
@@ -2070,6 +2196,11 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
     await updateoderdataNotification({
       userId: isArrived.merchant,
       orderId: isArrived.orderId,
+    });
+
+    await handlebilling({
+      merchant: isArrived.merchant.toString(),
+      orderId: isArrived.orderId.toString(),
     });
 
     return res.ok({
@@ -2977,12 +3108,15 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       },
     );
 
-
     await updateoderdataNotification({
       userId: oderdata.merchant,
       orderId: oderdata.orderId,
     });
 
+    await handlebilling({
+      merchant: oderdata.merchant.toString(),
+      orderId: oderdata.orderId.toString(),
+    });
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });

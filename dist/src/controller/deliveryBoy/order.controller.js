@@ -36,8 +36,110 @@ const order_validation_1 = require("../../utils/validation/order.validation");
 const billing_Schema_1 = __importDefault(require("../../models/billing.Schema"));
 const paymentGet_schema_1 = __importDefault(require("../../models/paymentGet.schema"));
 const axios_1 = __importDefault(require("axios"));
+const index_1 = require("../../../index");
+const user_schema_1 = __importDefault(require("../../models/user.schema"));
+const handlebilling = (_a) => __awaiter(void 0, [_a], void 0, function* ({ merchant, orderId, }) {
+    try {
+        const merchantObjectId = new mongoose_1.default.Types.ObjectId(merchant);
+        const billingData = yield billing_Schema_1.default.aggregate([
+            {
+                $match: {
+                    merchantId: merchantObjectId,
+                    orderId: orderId,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'deliveryMan',
+                    localField: 'deliveryBoyId',
+                    foreignField: '_id',
+                    as: 'deliveryBoy',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$deliveryBoy',
+                    preserveNullAndEmptyArrays: true, // Keep documents even if no match
+                },
+            },
+            {
+                $addFields: {
+                    deliveryBoyName: {
+                        $cond: {
+                            if: { $and: ['$deliveryBoy.firstName', '$deliveryBoy.lastName'] },
+                            then: {
+                                $concat: [
+                                    '$deliveryBoy.firstName',
+                                    ' ',
+                                    '$deliveryBoy.lastName',
+                                ],
+                            },
+                            else: '',
+                        },
+                    },
+                    totalAmountOfPackage: {
+                        $sum: '$subOrderdata.amountOfPackage',
+                    },
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    deliveryBoyId: 1,
+                    merchantId: 1,
+                    orderId: 1,
+                    charge: 1,
+                    panaltyAmount: 1,
+                    interestAmount: 1,
+                    paidAmount: 1,
+                    totalAmountOfPackage: 1,
+                    orderStatus: 1,
+                    isApproved: 1,
+                    isPaid: 1,
+                    showOrderId: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    subOrderdata: 1,
+                    chargeMethod: 1,
+                    deliveryBoyName: 1,
+                    totalCharge: 1,
+                    'deliveryBoy.contactNumber': 1,
+                    'deliveryBoy.email': 1,
+                    'deliveryBoy.adminCharge': 1,
+                },
+            },
+        ]);
+        console.log('billingData', billingData);
+        const user = yield user_schema_1.default.findOne({ _id: merchantObjectId });
+        if (user && user.socketId && billingData.length > 0) {
+            try {
+                // Send just the first object instead of array
+                index_1.io.to(user.socketId).emit('billingDataupdate', billingData[0]);
+                console.log('Socket emit successful to:', user.socketId);
+            }
+            catch (error) {
+                console.error('Socket emit error:', error);
+                console.log('No billing data found:', {
+                    merchant,
+                    orderId,
+                    timestamp: new Date().toISOString(),
+                });
+            }
+        }
+        return null;
+    }
+    catch (error) {
+        console.error('Error getting billing data:', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            merchant,
+            orderId,
+            timestamp: new Date().toISOString(),
+        });
+        throw error;
+    }
+});
 const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const validateRequest = (0, validateRequest_1.default)(req.query, order_validation_1.orderListByDeliveryManValidation);
         if (!validateRequest.isValid) {
@@ -184,7 +286,7 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
         ]);
         const data = {
             data: data1[0].data,
-            totalCount: ((_a = data1[0].totalCount[0]) === null || _a === void 0 ? void 0 : _a.count) || 0,
+            totalCount: ((_b = data1[0].totalCount[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
         };
         // Calculate total count for pagination
         const totalCount = yield orderAssignee_schema_1.default.countDocuments(query);
@@ -335,7 +437,7 @@ const getAssignedOrdersMulti = (req, res) => __awaiter(void 0, void 0, void 0, f
 });
 exports.getAssignedOrdersMulti = getAssignedOrdersMulti;
 const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _c;
     try {
         const { startDate, endDate, status, pageCount = 1, pageLimit = 10, } = req.query; // Add pageCount and pageLimit params
         // Calculate pagination values
@@ -492,7 +594,7 @@ const getOederForDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, f
         ]);
         const data = {
             data: data1[0].data,
-            totalCount: ((_b = data1[0].totalCount[0]) === null || _b === void 0 ? void 0 : _b.count) || 0,
+            totalCount: ((_c = data1[0].totalCount[0]) === null || _c === void 0 ? void 0 : _c.count) || 0,
         };
         // Get total count for pagination
         const totalCount = yield order_schema_1.default.countDocuments(matchCondition);
@@ -738,6 +840,10 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             try {
                 const billing = yield billing_Schema_1.default.create(billingDataPayload);
                 console.log(billing, 'billing');
+                yield handlebilling({
+                    merchant: merchantId.toString(),
+                    orderId: orderId.toString(),
+                });
             }
             catch (error) {
                 console.log(error, 'error');
@@ -746,6 +852,10 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         yield (0, common_1.updateoderdataNotification)({
             userId: isCreated.merchant,
             orderId: isCreated.orderId,
+        });
+        yield handlebilling({
+            merchant: isCreated.merchant.toString(),
+            orderId: isCreated.orderId.toString(),
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -1161,7 +1271,11 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         // }
         yield (0, common_1.updateoderdataNotification)({
             userId: existingOrder.merchant,
-            orderId: existingOrder.orderId
+            orderId: existingOrder.orderId,
+        });
+        yield handlebilling({
+            merchant: existingOrder.merchant.toString(),
+            orderId: existingOrder.orderId.toString(),
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderCancelledSuccessfully,
@@ -1334,6 +1448,10 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             userId: isCreated.merchant,
             orderId: isCreated.orderId,
         });
+        yield handlebilling({
+            merchant: isCreated.merchant.toString(),
+            orderId: isCreated.orderId.toString(),
+        });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
         });
@@ -1423,7 +1541,7 @@ const pickUpOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.pickUpOrder = pickUpOrder;
 const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderPickUpValidation);
         if (!validateRequest.isValid) {
@@ -1488,8 +1606,8 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                     },
                 });
                 // console.log(response.data.rows[0].elements[0],'response.data')
-                const distance = (_g = (_f = (_e = (_d = (_c = response.data) === null || _c === void 0 ? void 0 : _c.rows[0]) === null || _d === void 0 ? void 0 : _d.elements[0]) === null || _e === void 0 ? void 0 : _e.distance) === null || _f === void 0 ? void 0 : _f.value) !== null && _g !== void 0 ? _g : 0;
-                const duration = (_m = (_l = (_k = (_j = (_h = response.data) === null || _h === void 0 ? void 0 : _h.rows[0]) === null || _j === void 0 ? void 0 : _j.elements[0]) === null || _k === void 0 ? void 0 : _k.duration) === null || _l === void 0 ? void 0 : _l.value) !== null && _m !== void 0 ? _m : 0;
+                const distance = (_h = (_g = (_f = (_e = (_d = response.data) === null || _d === void 0 ? void 0 : _d.rows[0]) === null || _e === void 0 ? void 0 : _e.elements[0]) === null || _f === void 0 ? void 0 : _f.distance) === null || _g === void 0 ? void 0 : _g.value) !== null && _h !== void 0 ? _h : 0;
+                const duration = (_o = (_m = (_l = (_k = (_j = response.data) === null || _j === void 0 ? void 0 : _j.rows[0]) === null || _k === void 0 ? void 0 : _k.elements[0]) === null || _l === void 0 ? void 0 : _l.duration) === null || _m === void 0 ? void 0 : _m.value) !== null && _o !== void 0 ? _o : 0;
                 console.log(distance, 'distance');
                 console.log(duration, 'duration');
                 console.log(shortestDistance, 'shortestDistance');
@@ -1586,8 +1704,8 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         console.log(isArrived, 'isArrived');
         // in milles
         for (const elem of allid) {
-            const distance = ((_o = optimizedRoute.find((data) => data.subOrderId === elem)) === null || _o === void 0 ? void 0 : _o.distance) || 0;
-            const duration = ((_p = optimizedRoute.find((data) => data.subOrderId === elem)) === null || _p === void 0 ? void 0 : _p.duration) || 0;
+            const distance = ((_p = optimizedRoute.find((data) => data.subOrderId === elem)) === null || _p === void 0 ? void 0 : _p.distance) || 0;
+            const duration = ((_q = optimizedRoute.find((data) => data.subOrderId === elem)) === null || _q === void 0 ? void 0 : _q.duration) || 0;
             if (distance) {
                 yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId, 'deliveryDetails.subOrderId': elem }, { $set: { 'deliveryDetails.$.distance': distance / 1609.34 } });
             }
@@ -1619,6 +1737,10 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         yield (0, common_1.updateoderdataNotification)({
             userId: isArrived.merchant,
             orderId: isArrived.orderId,
+        });
+        yield handlebilling({
+            merchant: isArrived.merchant.toString(),
+            orderId: isArrived.orderId.toString(),
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -2058,7 +2180,7 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.deliverOrder = deliverOrder;
 const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6;
+    var _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
     try {
         console.log('req.body', req.body);
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderDeliverValidationMulti);
@@ -2123,7 +2245,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 orderStatus: allDelivered
                     ? enum_1.ORDER_STATUS.DELIVERED
                     : updatedOrder.status,
-                totalamountOfPackage: (_r = (_q = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _q === void 0 ? void 0 : _q.paymentCollectionRupees) !== null && _r !== void 0 ? _r : 0,
+                totalamountOfPackage: (_s = (_r = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _r === void 0 ? void 0 : _r.paymentCollectionRupees) !== null && _s !== void 0 ? _s : 0,
             },
         });
         const BileSchemaData = yield billing_Schema_1.default.findOne({
@@ -2152,7 +2274,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         console.log(dataofdeliveryboy, 'dataofdeliveryboy');
         const iscasondelivery = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId).cashOnDelivery;
         let chargeofDeliveryBoy = 0;
-        const ta = ((_s = BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.subOrderdata.find((data) => data.subOrderId == value.subOrderId)) === null || _s === void 0 ? void 0 : _s.pickupTime) || 0;
+        const ta = ((_t = BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.subOrderdata.find((data) => data.subOrderId == value.subOrderId)) === null || _t === void 0 ? void 0 : _t.pickupTime) || 0;
         console.log(ta, 'ta');
         const startTime = new Date(ta);
         const endTimeDate = new Date(value.deliverTimestamp);
@@ -2173,7 +2295,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 if (iscasondelivery) {
                     yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, {
                         $inc: {
-                            earning: (_u = (_t = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _t === void 0 ? void 0 : _t.paymentCollectionRupees) !== null && _u !== void 0 ? _u : 0,
+                            earning: (_v = (_u = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _u === void 0 ? void 0 : _u.paymentCollectionRupees) !== null && _v !== void 0 ? _v : 0,
                         },
                     });
                 }
@@ -2181,11 +2303,11 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             else if (BileSchemaData.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
                 // For distance-based charging
                 chargeofDeliveryBoy =
-                    ((_v = BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.subOrderdata.find((data) => data.subOrderId === value.subOrderId)) === null || _v === void 0 ? void 0 : _v.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
+                    ((_w = BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.subOrderdata.find((data) => data.subOrderId === value.subOrderId)) === null || _w === void 0 ? void 0 : _w.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
                 if (iscasondelivery) {
                     yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, {
                         $inc: {
-                            earning: (_x = (_w = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _w === void 0 ? void 0 : _w.paymentCollectionRupees) !== null && _x !== void 0 ? _x : 0,
+                            earning: (_y = (_x = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _x === void 0 ? void 0 : _x.paymentCollectionRupees) !== null && _y !== void 0 ? _y : 0,
                         },
                     });
                 }
@@ -2201,7 +2323,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 if (iscasondelivery) {
                     yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, {
                         $inc: {
-                            earning: (_z = (_y = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _y === void 0 ? void 0 : _y.paymentCollectionRupees) !== null && _z !== void 0 ? _z : 0,
+                            earning: (_0 = (_z = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _z === void 0 ? void 0 : _z.paymentCollectionRupees) !== null && _0 !== void 0 ? _0 : 0,
                         },
                     });
                 }
@@ -2209,11 +2331,11 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             else if (BileSchemaData.chargeMethod === enum_1.CHARGE_METHOD.DISTANCE) {
                 // For distance-based charging
                 chargeofDeliveryBoy =
-                    ((_0 = BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.subOrderdata.find((data) => data.subOrderId === value.subOrderId)) === null || _0 === void 0 ? void 0 : _0.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
+                    ((_1 = BileSchemaData === null || BileSchemaData === void 0 ? void 0 : BileSchemaData.subOrderdata.find((data) => data.subOrderId === value.subOrderId)) === null || _1 === void 0 ? void 0 : _1.distance) * (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.charge);
                 if (iscasondelivery) {
                     yield deliveryMan_schema_1.default.updateOne({ _id: dataofdeliveryboy._id }, {
                         $inc: {
-                            earning: (_2 = (_1 = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _1 === void 0 ? void 0 : _1.paymentCollectionRupees) !== null && _2 !== void 0 ? _2 : 0,
+                            earning: (_3 = (_2 = isArrived.deliveryDetails.find((data) => data.subOrderId === value.subOrderId)) === null || _2 === void 0 ? void 0 : _2.paymentCollectionRupees) !== null && _3 !== void 0 ? _3 : 0,
                         },
                     });
                 }
@@ -2242,8 +2364,8 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             $set: {
                 'subOrderdata.$.chargePer': chargeofDeliveryBoy,
                 'subOrderdata.$.isCashOnDelivery': iscasondelivery,
-                'subOrderdata.$.amountOfPackage': (_4 = (_3 = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId)) === null || _3 === void 0 ? void 0 : _3.paymentCollectionRupees) !== null && _4 !== void 0 ? _4 : 0,
-                totalamountOfPackage: (_6 = (_5 = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId)) === null || _5 === void 0 ? void 0 : _5.paymentCollectionRupees) !== null && _6 !== void 0 ? _6 : 0,
+                'subOrderdata.$.amountOfPackage': (_5 = (_4 = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId)) === null || _4 === void 0 ? void 0 : _4.paymentCollectionRupees) !== null && _5 !== void 0 ? _5 : 0,
+                totalamountOfPackage: (_7 = (_6 = isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId)) === null || _6 === void 0 ? void 0 : _6.paymentCollectionRupees) !== null && _7 !== void 0 ? _7 : 0,
             },
             $inc: {
                 totalCharge: chargeofDeliveryBoy,
@@ -2252,6 +2374,10 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         yield (0, common_1.updateoderdataNotification)({
             userId: oderdata.merchant,
             orderId: oderdata.orderId,
+        });
+        yield handlebilling({
+            merchant: oderdata.merchant.toString(),
+            orderId: oderdata.orderId.toString(),
         });
         return res.ok({
             message: (0, languageHelper_1.getLanguage)('en').orderUpdatedSuccessfully,
@@ -2473,7 +2599,7 @@ const getPaymentDataForDeliveryBoy = (req, res) => __awaiter(void 0, void 0, voi
 });
 exports.getPaymentDataForDeliveryBoy = getPaymentDataForDeliveryBoy;
 const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _7, _8, _9, _10, _11, _12;
+    var _8, _9, _10, _11, _12, _13;
     console.log(req.id, 'req.id');
     try {
         const { startDate, endDate, status, pageLimit = 10, pageCount = 1, } = req.query;
@@ -2758,15 +2884,15 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
         console.log(Nowdata, 'Nowdata');
         for (const item of Nowdata) {
-            (_8 = (_7 = item === null || item === void 0 ? void 0 : item.orderData) === null || _7 === void 0 ? void 0 : _7.deliveryDetails) === null || _8 === void 0 ? void 0 : _8.sort((a, b) => a.sortOrder - b.sortOrder);
+            (_9 = (_8 = item === null || item === void 0 ? void 0 : item.orderData) === null || _8 === void 0 ? void 0 : _8.deliveryDetails) === null || _9 === void 0 ? void 0 : _9.sort((a, b) => a.sortOrder - b.sortOrder);
         }
         for (const item of Nowdata) {
-            (_10 = (_9 = item === null || item === void 0 ? void 0 : item.orderData) === null || _9 === void 0 ? void 0 : _9.deliveryDetails) === null || _10 === void 0 ? void 0 : _10.forEach((detail, index) => {
+            (_11 = (_10 = item === null || item === void 0 ? void 0 : item.orderData) === null || _10 === void 0 ? void 0 : _10.deliveryDetails) === null || _11 === void 0 ? void 0 : _11.forEach((detail, index) => {
                 detail.index = index + 1;
             });
         }
         for (const item of Nowdata) {
-            (_12 = (_11 = item === null || item === void 0 ? void 0 : item.orderData) === null || _11 === void 0 ? void 0 : _11.deliveryDetails) === null || _12 === void 0 ? void 0 : _12.forEach((detail, index) => {
+            (_13 = (_12 = item === null || item === void 0 ? void 0 : item.orderData) === null || _12 === void 0 ? void 0 : _12.deliveryDetails) === null || _13 === void 0 ? void 0 : _13.forEach((detail, index) => {
                 var _a, _b, _c, _d;
                 if (detail.status == enum_1.ORDER_HISTORY.PICKED_UP) {
                     const nextOrder = (_b = (_a = item === null || item === void 0 ? void 0 : item.orderData) === null || _a === void 0 ? void 0 : _a.deliveryDetails[index + 1]) === null || _b === void 0 ? void 0 : _b.subOrderId;

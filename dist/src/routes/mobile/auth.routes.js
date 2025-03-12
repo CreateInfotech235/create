@@ -546,6 +546,7 @@ router.patch('/markAllNotificationsAsRead/:id', auth_controller_1.markAllNotific
 //  *         description: Something went wrong
 //  */
 router.delete('/deleteNotification/:id/:notificationId', auth_controller_1.deleteNotification);
+router.delete('/deleteAllNotifications/:id', auth_controller_1.deleteAllNotifications);
 // /**
 //  * @swagger
 //  * /mobile/auth/getUnreadNotificationCount/{id}:

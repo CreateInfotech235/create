@@ -35,6 +35,7 @@ import {
   sendOtp,
   verifyOtp,
   resetPassword,
+  deleteAllNotifications,
 } from '../../controller/mobile/auth.controller';
 import { getApproveSubscription } from '../../controller/deliveryBoy/auth.controller';
 import multer from 'multer';
@@ -613,6 +614,10 @@ router.patch('/markAllNotificationsAsRead/:id', markAllNotificationsAsRead);
 //  *         description: Something went wrong
 //  */
 router.delete('/deleteNotification/:id/:notificationId', deleteNotification);
+
+
+
+router.delete('/deleteAllNotifications/:id', deleteAllNotifications);
 
 // /**
 //  * @swagger
