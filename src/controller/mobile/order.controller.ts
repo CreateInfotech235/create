@@ -1601,27 +1601,15 @@ export const getAllRecentOrdersFromMerchant = async (
   res: Response,
 ) => {
   try {
-    const { startDate, endDate } = req.query;
-    console.log('startDate', startDate);
-    console.log('endDate', endDate);
-    let dateFilter = {};
-
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      start.setUTCHours(0, 0, 0, 0);
-      end.setUTCHours(23, 59, 59, 999);
-
-      dateFilter = {
-        dateTime: {
-          $gte: start,
-          $lte: end,
-        },
-      };
-    }
 
     const data = await orderSchemaMulti.aggregate([
+      {
+        $match: {
+          // 7 days ago
+          createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) },
+          merchant: new mongoose.Types.ObjectId(req.id),
+        },
+      },
       {
         $sort: {
           createdAt: -1,
@@ -1630,12 +1618,7 @@ export const getAllRecentOrdersFromMerchant = async (
       {
         $limit: 10,
       },
-      {
-        $match: {
-          merchant: new mongoose.Types.ObjectId(req.id),
-          ...dateFilter,
-        },
-      },
+      
       {
         $lookup: {
           from: 'orderAssign',

@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 const SupportTicket = new mongoose.Schema(
   {
- 
     userid: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'merchant',

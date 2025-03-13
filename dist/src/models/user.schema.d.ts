@@ -39,7 +39,6 @@ declare const Model: mongoose.Model<{
     reason: string;
     freeSubscription: boolean;
     isApproved: string;
-    socketId: string;
     isApprovedfasttime: boolean;
     firstName?: string;
     lastName?: string;
@@ -80,7 +79,6 @@ declare const Model: mongoose.Model<{
     reason: string;
     freeSubscription: boolean;
     isApproved: string;
-    socketId: string;
     isApprovedfasttime: boolean;
     firstName?: string;
     lastName?: string;
@@ -121,7 +119,6 @@ declare const Model: mongoose.Model<{
     reason: string;
     freeSubscription: boolean;
     isApproved: string;
-    socketId: string;
     isApprovedfasttime: boolean;
     firstName?: string;
     lastName?: string;
@@ -169,7 +166,6 @@ declare const Model: mongoose.Model<{
     reason: string;
     freeSubscription: boolean;
     isApproved: string;
-    socketId: string;
     isApprovedfasttime: boolean;
     firstName?: string;
     lastName?: string;
@@ -210,7 +206,6 @@ declare const Model: mongoose.Model<{
     reason: string;
     freeSubscription: boolean;
     isApproved: string;
-    socketId: string;
     isApprovedfasttime: boolean;
     firstName?: string;
     lastName?: string;
@@ -251,7 +246,6 @@ declare const Model: mongoose.Model<{
     reason: string;
     freeSubscription: boolean;
     isApproved: string;
-    socketId: string;
     isApprovedfasttime: boolean;
     firstName?: string;
     lastName?: string;

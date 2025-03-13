@@ -1265,23 +1265,14 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
 exports.getAllOrdersFromMerchantMulti = getAllOrdersFromMerchantMulti;
 const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { startDate, endDate } = req.query;
-        console.log('startDate', startDate);
-        console.log('endDate', endDate);
-        let dateFilter = {};
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            start.setUTCHours(0, 0, 0, 0);
-            end.setUTCHours(23, 59, 59, 999);
-            dateFilter = {
-                dateTime: {
-                    $gte: start,
-                    $lte: end,
-                },
-            };
-        }
         const data = yield orderMulti_schema_1.default.aggregate([
+            {
+                $match: {
+                    // 7 days ago
+                    createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) },
+                    merchant: new mongoose_1.default.Types.ObjectId(req.id),
+                },
+            },
             {
                 $sort: {
                     createdAt: -1,
@@ -1289,9 +1280,6 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
             },
             {
                 $limit: 10,
-            },
-            {
-                $match: Object.assign({ merchant: new mongoose_1.default.Types.ObjectId(req.id) }, dateFilter),
             },
             {
                 $lookup: {

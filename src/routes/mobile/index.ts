@@ -9,8 +9,8 @@ import billingRoutes from './billing.routes';
 const router = express.Router();
 
 router.use('/auth', authRoutes);
-router.use(mobileAuth);
 router.use('/subscription', subscriptionRoutes);
+router.use(mobileAuth);
 router.use('/billing', billingRoutes);
 router.use('/order', orderRoutes);
 router.use('/invoice', invoiceRoutes);

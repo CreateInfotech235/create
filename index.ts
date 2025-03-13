@@ -133,102 +133,13 @@ io.use((socket, next) => {
 
 // Handle socket connections
 io.on('connection', (socket) => {
-  console.log('New client connected', socket.id);
+  // Join user to their own room using userId
   socket.on('userdata', async (data) => {
+    socket.join(data.userId.toString());
     console.log('User connected:', data);
-    const user = await MerchantSchema.findOne({ _id: data.userId });
-    if (user) {
-      await MerchantSchema.updateOne(
-        { _id: data.userId },
-        { $set: { socketId: socket.id } },
-      );
-    }
   });
 
   socket.emit('welcome', { message: 'server is connected' });
-
-  // Emit welcome message with a custom event name
-
-  // Join user to their own room using userId
-  const userId = socket.handshake.query.userId;
-  if (userId) {
-    socket.join(userId.toString());
-  }
-
-  // Order tracking event
-  socket.on(
-    'orderTracking',
-    async (deliveryManId: string, lat: number, long: number) => {
-      if (!(long && lat)) {
-        return socket.emit('orderTracking', {
-          status: 400,
-          message: 'Lat Long Required',
-        });
-      }
-
-      const orderAssignData = await OrderAssigneeSchema.findOne({
-        deliveryBoy: deliveryManId,
-      });
-
-      const orderData = await OrderSchema.findOne({
-        orderId: orderAssignData.order,
-        status: {
-          $nin: [
-            ORDER_HISTORY.CREATED,
-            ORDER_HISTORY.ASSIGNED,
-            ORDER_HISTORY.CANCELLED,
-            ORDER_HISTORY.DELIVERED,
-          ],
-        },
-      });
-
-      if (orderData) {
-        io.to(orderAssignData.order.toString()).emit('orderTracking', {
-          lat,
-          long,
-        });
-
-        await DeliveryManSchema.updateOne(
-          { _id: deliveryManId },
-          {
-            $set: { 'location.coordinates': [long, lat] },
-          },
-        );
-      }
-    },
-  );
-
-  // Join a specific socket room (e.g., for order tracking)
-  socket.on('socketJoin', (orderId: number) => {
-    socket.join(orderId.toString());
-    console.log(`Client joined room: ${orderId}`);
-  });
-
-  // Leave a specific socket room
-  socket.on('socketLeave', (orderId: number) => {
-    socket.leave(orderId.toString());
-    console.log(`Client left room: ${orderId}`);
-  });
-
-  // Send a message to a specific ticket
-  socket.on('sendMessage', (ticketId, message) => {
-    io.to(ticketId).emit('newMessage', {
-      id: Math.random().toString(36).substr(2, 9),
-      message,
-      timestamp: new Date(),
-      sender: socket.id,
-    });
-  });
-
-  // Join ticket room
-  socket.on('joinTicket', (ticketId) => {
-    socket.join(ticketId);
-    console.log(`Client joined ticket: ${ticketId}`);
-  });
-
-  socket.on('deleteMessage', (ticketId, messageId) => {
-    io.to(ticketId).emit('messageDeleted', { messageId });
-  });
 
   // Handle errors
   socket.on('error', (error) => {

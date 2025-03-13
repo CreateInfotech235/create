@@ -25,7 +25,7 @@ const merchantSchema = new mongoose.Schema(
     merchantUserId: {
       type: String,
     },
-    
+
     // country: {
     //   type: String,
     //   unique: true,
@@ -102,12 +102,10 @@ const merchantSchema = new mongoose.Schema(
     },
     isApproved: { type: String, default: isApprovedStatus.PENDING },
     reason: { type: String, default: '' },
-    socketId: { type: String, default: '' },
     isApprovedfasttime: { type: Boolean, default: true },
     createdByAdmin: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false },
-
 );
 
 // const Model = mongoose.model('user', userSchema);

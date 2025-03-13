@@ -125,8 +125,8 @@ export const createNotification = async ({
 
     // Get user data to find socket ID
     const user = await merchantSchema.findOne({ _id: userId });
-    if (user && user.socketId) {
-      io.to(user.socketId).emit('notification', {
+    if (user) {
+      io.to(user._id.toString()).emit('notification', {
         _id: notification._id,
         title,
         message,
@@ -234,15 +234,15 @@ export const updateoderdataNotification = async ({
     ]);
 
     const user = await merchantSchema.findOne({ _id: userId });
-    if (user && user.socketId) {
+    if (user) {
       try {
-        io.to(user.socketId).emit('notificationoderdataupdate', {
+        io.to(user._id.toString()).emit('notificationoderdataupdate', {
           orderData: {
             ...orderData[0],
             // Make sure all required fields are included
           },
         });
-        console.log('Socket emit successful to:', user.socketId);
+        console.log('Socket emit successful to:', user._id.toString());
       } catch (error) {
         console.error('Socket emit error:', error);
       }

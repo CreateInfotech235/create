@@ -862,64 +862,52 @@ exports.getOrderCounts = getOrderCounts;
 const getOrderCountsbyDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const merchantID = req.params.id;
-        console.log('Merchant ID:', merchantID);
-        // Validate the incoming query parameters (startDate and endDate)
+        // Validate query params
         const validateRequest = (0, validateRequest_1.default)(req.query, adminSide_validation_1.orderCount);
         if (!validateRequest.isValid) {
             return res.status(400).json({ message: validateRequest.message });
         }
-        const { value } = validateRequest;
-        const { startDate, endDate } = value;
-        // Build the query for order counts dynamically based on dates
+        const { startDate, endDate } = validateRequest.value;
+        // Build date query
         const dateQuery = {};
-        if (startDate) {
+        if (startDate)
             dateQuery.$gte = new Date(startDate);
-        }
         if (endDate) {
-            // Convert endDate to the last moment of that day (23:59:59)
             const endOfDay = new Date(endDate);
-            endOfDay.setHours(23, 59, 59, 999); // Set to 23:59:59.999
+            endOfDay.setHours(23, 59, 59, 999);
             dateQuery.$lte = endOfDay;
         }
-        console.log('Date Query:', dateQuery);
-        // Prepare the query object for createdAt condition
-        const dateCondition = Object.keys(dateQuery).length > 0 ? { createdAt: dateQuery } : {};
-        const totalOrders = yield orderMulti_schema_1.default.find(Object.assign({ merchant: new mongoose_1.default.Types.ObjectId(merchantID) }, dateCondition));
-        const deliveryMandata = yield deliveryMan_schema_1.default.find(Object.assign(Object.assign({ merchantId: merchantID }, dateCondition), { trashed: false }));
-        const totalCancelledOrders = yield cancelOderbyDeliveryManSchema_1.default.countDocuments(Object.assign({ 
-            // deliveryBoy: { $in: deliveryMandata.map(man => man._id) },
-            merchantId: merchantID }, dateCondition));
-        const subOrderCount = totalOrders.reduce((acc, order) => {
-            return acc + order.deliveryDetails.length;
-        }, 0);
-        // Count orders based on various statuses
-        const orderCounts = yield Promise.all([
-            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'ASSIGNED', merchantID: merchantID }, dateCondition)),
-            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'ARRIVED', merchantID: merchantID }, dateCondition)),
-            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'PICKED_UP', merchantID: merchantID }, dateCondition)),
-            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DEPARTED', merchantID: merchantID }, dateCondition)),
-            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DELIVERED', merchantID: merchantID }, dateCondition)),
+        const dateCondition = Object.keys(dateQuery).length ? { createdAt: dateQuery } : {};
+        const merchantObjectId = new mongoose_1.default.Types.ObjectId(merchantID);
+        // Run queries in parallel
+        const [orders, deliveryMen, cancelledOrders, assignedOrders, arrivedOrders, pickedOrders, departedOrders, deliveredOrders] = yield Promise.all([
+            orderMulti_schema_1.default.find(Object.assign({ merchant: merchantObjectId }, dateCondition)),
+            deliveryMan_schema_1.default.countDocuments(Object.assign(Object.assign({ merchantId: merchantID }, dateCondition), { trashed: false })),
+            cancelOderbyDeliveryManSchema_1.default.countDocuments(Object.assign({ merchantId: merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'ASSIGNED', merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'ARRIVED', merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'PICKED_UP', merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DEPARTED', merchantID }, dateCondition)),
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DELIVERED', merchantID }, dateCondition))
         ]);
-        // Organize the results
-        const [assignedOrders, arrivedOrders, pickedOrders, departedOrders, deliveredOrders,] = orderCounts;
+        // Calculate sub-order count in one pass
+        const subOrderCount = orders.reduce((acc, order) => acc + order.deliveryDetails.length, 0);
         const data = {
-            totalOrders: totalOrders.length,
+            totalOrders: orders.length,
             totalSubOrders: subOrderCount,
             assignedOrders,
             arrivedOrders,
             pickedOrders,
             departedOrders,
             deliveredOrders,
-            cancelledOrders: totalCancelledOrders,
-            deliveryMan: deliveryMandata.length,
+            cancelledOrders,
+            deliveryMan: deliveryMen
         };
-        // Return the counts
-        res.status(200).json({ data });
+        return res.status(200).json({ data });
     }
     catch (error) {
-        // Handle any error that occurs during the process
         console.error(error);
-        res.status(500).json({ message: 'An error occurred.' });
+        return res.status(500).json({ message: 'An error occurred.' });
     }
 });
 exports.getOrderCountsbyDate = getOrderCountsbyDate;

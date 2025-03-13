@@ -111,11 +111,11 @@ const handlebilling = (_a) => __awaiter(void 0, [_a], void 0, function* ({ merch
         ]);
         console.log('billingData', billingData);
         const user = yield user_schema_1.default.findOne({ _id: merchantObjectId });
-        if (user && user.socketId && billingData.length > 0) {
+        if (user && billingData.length > 0) {
             try {
                 // Send just the first object instead of array
-                index_1.io.to(user.socketId).emit('billingDataupdate', billingData[0]);
-                console.log('Socket emit successful to:', user.socketId);
+                index_1.io.to(user._id.toString()).emit('billingDataupdate', billingData[0]);
+                console.log('Socket emit successful to:', user._id.toString());
             }
             catch (error) {
                 console.error('Socket emit error:', error);

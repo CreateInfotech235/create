@@ -24,15 +24,10 @@ const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const conn_1 = __importDefault(require("./src/db/conn"));
 const SwaggerDocs_1 = __importDefault(require("./src/docs/SwaggerDocs"));
-const enum_1 = require("./src/enum");
-const deliveryMan_schema_1 = __importDefault(require("./src/models/deliveryMan.schema"));
-const order_schema_1 = __importDefault(require("./src/models/order.schema"));
-const orderAssignee_schema_1 = __importDefault(require("./src/models/orderAssignee.schema"));
 const routes_1 = __importDefault(require("./src/routes"));
 const seeders_1 = __importDefault(require("./src/seeders"));
 const responseHandler_1 = __importDefault(require("./src/utils/responseHandler"));
 const webNavbar_schema_1 = __importDefault(require("./src/models/webNavbar.schema"));
-const user_schema_1 = __importDefault(require("./src/models/user.schema"));
 const path = require('path');
 const app = (0, express_1.default)();
 app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
@@ -128,80 +123,12 @@ io.use((socket, next) => {
 });
 // Handle socket connections
 io.on('connection', (socket) => {
-    console.log('New client connected', socket.id);
+    // Join user to their own room using userId
     socket.on('userdata', (data) => __awaiter(void 0, void 0, void 0, function* () {
+        socket.join(data.userId.toString());
         console.log('User connected:', data);
-        const user = yield user_schema_1.default.findOne({ _id: data.userId });
-        if (user) {
-            yield user_schema_1.default.updateOne({ _id: data.userId }, { $set: { socketId: socket.id } });
-        }
     }));
     socket.emit('welcome', { message: 'server is connected' });
-    // Emit welcome message with a custom event name
-    // Join user to their own room using userId
-    const userId = socket.handshake.query.userId;
-    if (userId) {
-        socket.join(userId.toString());
-    }
-    // Order tracking event
-    socket.on('orderTracking', (deliveryManId, lat, long) => __awaiter(void 0, void 0, void 0, function* () {
-        if (!(long && lat)) {
-            return socket.emit('orderTracking', {
-                status: 400,
-                message: 'Lat Long Required',
-            });
-        }
-        const orderAssignData = yield orderAssignee_schema_1.default.findOne({
-            deliveryBoy: deliveryManId,
-        });
-        const orderData = yield order_schema_1.default.findOne({
-            orderId: orderAssignData.order,
-            status: {
-                $nin: [
-                    enum_1.ORDER_HISTORY.CREATED,
-                    enum_1.ORDER_HISTORY.ASSIGNED,
-                    enum_1.ORDER_HISTORY.CANCELLED,
-                    enum_1.ORDER_HISTORY.DELIVERED,
-                ],
-            },
-        });
-        if (orderData) {
-            io.to(orderAssignData.order.toString()).emit('orderTracking', {
-                lat,
-                long,
-            });
-            yield deliveryMan_schema_1.default.updateOne({ _id: deliveryManId }, {
-                $set: { 'location.coordinates': [long, lat] },
-            });
-        }
-    }));
-    // Join a specific socket room (e.g., for order tracking)
-    socket.on('socketJoin', (orderId) => {
-        socket.join(orderId.toString());
-        console.log(`Client joined room: ${orderId}`);
-    });
-    // Leave a specific socket room
-    socket.on('socketLeave', (orderId) => {
-        socket.leave(orderId.toString());
-        console.log(`Client left room: ${orderId}`);
-    });
-    // Send a message to a specific ticket
-    socket.on('sendMessage', (ticketId, message) => {
-        io.to(ticketId).emit('newMessage', {
-            id: Math.random().toString(36).substr(2, 9),
-            message,
-            timestamp: new Date(),
-            sender: socket.id,
-        });
-    });
-    // Join ticket room
-    socket.on('joinTicket', (ticketId) => {
-        socket.join(ticketId);
-        console.log(`Client joined ticket: ${ticketId}`);
-    });
-    socket.on('deleteMessage', (ticketId, messageId) => {
-        io.to(ticketId).emit('messageDeleted', { messageId });
-    });
     // Handle errors
     socket.on('error', (error) => {
         console.error('Socket error:', error);

@@ -103,8 +103,8 @@ const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ 
         });
         // Get user data to find socket ID
         const user = yield user_schema_1.default.findOne({ _id: userId });
-        if (user && user.socketId) {
-            index_1.io.to(user.socketId).emit('notification', {
+        if (user) {
+            index_1.io.to(user._id.toString()).emit('notification', {
                 _id: notification._id,
                 title,
                 message,
@@ -205,12 +205,12 @@ const updateoderdataNotification = (_c) => __awaiter(void 0, [_c], void 0, funct
             },
         ]);
         const user = yield user_schema_1.default.findOne({ _id: userId });
-        if (user && user.socketId) {
+        if (user) {
             try {
-                index_1.io.to(user.socketId).emit('notificationoderdataupdate', {
+                index_1.io.to(user._id.toString()).emit('notificationoderdataupdate', {
                     orderData: Object.assign({}, orderData[0]),
                 });
-                console.log('Socket emit successful to:', user.socketId);
+                console.log('Socket emit successful to:', user._id.toString());
             }
             catch (error) {
                 console.error('Socket emit error:', error);

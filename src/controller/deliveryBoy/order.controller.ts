@@ -150,11 +150,11 @@ const handlebilling = async ({
     console.log('billingData', billingData);
 
     const user = await merchantSchema.findOne({ _id: merchantObjectId });
-    if (user && user.socketId && billingData.length > 0) {
+    if (user && billingData.length > 0) {
       try {
         // Send just the first object instead of array
-        io.to(user.socketId).emit('billingDataupdate', billingData[0]);
-        console.log('Socket emit successful to:', user.socketId);
+        io.to(user._id.toString()).emit('billingDataupdate', billingData[0]);
+        console.log('Socket emit successful to:', user._id.toString());
       } catch (error) {
         console.error('Socket emit error:', error);
         console.log('No billing data found:', {
