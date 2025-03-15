@@ -37,6 +37,7 @@ declare const Model: mongoose.Model<{
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
+    customerid?: string;
     ismerchantdeliveryboy?: boolean;
     senderId?: mongoose.Types.ObjectId;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
@@ -52,6 +53,7 @@ declare const Model: mongoose.Model<{
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
+    customerid?: string;
     ismerchantdeliveryboy?: boolean;
     senderId?: mongoose.Types.ObjectId;
 }> & {
@@ -67,6 +69,7 @@ declare const Model: mongoose.Model<{
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
+    customerid?: string;
     ismerchantdeliveryboy?: boolean;
     senderId?: mongoose.Types.ObjectId;
 } & {
@@ -89,6 +92,7 @@ declare const Model: mongoose.Model<{
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
+    customerid?: string;
     ismerchantdeliveryboy?: boolean;
     senderId?: mongoose.Types.ObjectId;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
@@ -104,6 +108,7 @@ declare const Model: mongoose.Model<{
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
+    customerid?: string;
     ismerchantdeliveryboy?: boolean;
     senderId?: mongoose.Types.ObjectId;
 }>> & mongoose.FlatRecord<{
@@ -119,6 +124,7 @@ declare const Model: mongoose.Model<{
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
+    customerid?: string;
     ismerchantdeliveryboy?: boolean;
     senderId?: mongoose.Types.ObjectId;
 }> & {

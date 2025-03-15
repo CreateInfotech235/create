@@ -42,7 +42,8 @@ const BillingSchema = new mongoose.Schema(
     chargeMethod: { type: String }, //ok
     isApproved: { type: Boolean, default: false }, //ok
     isPaid: { type: Boolean, default: false }, //ok
-    reason: { type: String },
+    reason: { type: String, default: '' },
+    approvedAmount: { type: Number, required: false, default: 0 },
   },
   { timestamps: true, versionKey: false },
 );

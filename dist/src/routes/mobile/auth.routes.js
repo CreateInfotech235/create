@@ -838,4 +838,5 @@ router.post('/forgot-password/reset-password', auth_controller_1.resetPassword);
  */
 router.get('/location/:merchantId', auth_controller_3.getDeliveryManLocation);
 router.get('/getApproveSubscription/:id', auth_controller_2.getApproveSubscription);
+router.post('/create-payment-intent', auth_controller_2.stripPayment);
 exports.default = router;

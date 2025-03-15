@@ -18,7 +18,7 @@ export const getApproveSubscription = async (
 ) => {
   try {
     const { id } = req.params;
-    console.log(id, 'id1234');
+    console.log(id, 'id123456');
 
     // Validate ID
     if (!isValidObjectId(id)) {
@@ -88,21 +88,29 @@ export const stripPayment = async (req: RequestParams, res: Response) => {
       merchant: merchantId,
     });
     // get last subcription expiry date
-    const lastsubcriptionexpirydate = getuserallsubcription.reduce((latest, current) => {
-      if (!latest || !latest.expiry) return current;
-      if (!current || !current.expiry) return latest;
-      return new Date(current.expiry) > new Date(latest.expiry) ? current : latest;
-    }, null);
+    const lastsubcriptionexpirydate = getuserallsubcription.reduce(
+      (latest, current) => {
+        if (!latest || !latest.expiry) return current;
+        if (!current || !current.expiry) return latest;
+        return new Date(current.expiry) > new Date(latest.expiry)
+          ? current
+          : latest;
+      },
+      null,
+    );
     console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
-
-
-
 
     // get day of lastsubcriptionexpirydate
     const subcriptiondata = await SubcriptionSchema.findById(planId);
-    const startDate = lastsubcriptionexpirydate ? new Date(lastsubcriptionexpirydate.expiry) > new Date() ? new Date(lastsubcriptionexpirydate.expiry) : new Date() : new Date();
+    const startDate = lastsubcriptionexpirydate
+      ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
+        ? new Date(lastsubcriptionexpirydate.expiry)
+        : new Date()
+      : new Date();
     //  add day of subcriptiondata to startDate
-    const expiry = new Date(startDate.getTime() + subcriptiondata.seconds * 1000);
+    const expiry = new Date(
+      startDate.getTime() + subcriptiondata.seconds * 1000,
+    );
     await subcriptionPurchaseSchema.create({
       subcriptionId: planId,
       merchant: merchantId,
@@ -125,7 +133,10 @@ export const stripPayment = async (req: RequestParams, res: Response) => {
     });
   }
 };
-export const switchSubscriptionPlan = async (req: RequestParams, res: Response) => {
+export const switchSubscriptionPlan = async (
+  req: RequestParams,
+  res: Response,
+) => {
   const { planId, merchantId } = req.body;
 
   try {
@@ -133,7 +144,7 @@ export const switchSubscriptionPlan = async (req: RequestParams, res: Response) 
     if (!planId || !merchantId) {
       return res.status(400).json({
         status: false,
-        message: 'Plan ID and Merchant ID are required'
+        message: 'Plan ID and Merchant ID are required',
       });
     }
 
@@ -141,15 +152,17 @@ export const switchSubscriptionPlan = async (req: RequestParams, res: Response) 
     const activeSubscriptions = await subcriptionPurchaseSchema.find({
       merchant: merchantId,
       status: 'APPROVED',
-      expiry: { $gt: new Date() }
+      expiry: { $gt: new Date() },
     });
 
     if (activeSubscriptions.length > 0) {
-      await Promise.all(activeSubscriptions.map(async (subscription) => {
-        await subcriptionPurchaseSchema.findByIdAndUpdate(subscription._id, {
-          status: 'EXPIRED'
-        });
-      }));
+      await Promise.all(
+        activeSubscriptions.map(async (subscription) => {
+          await subcriptionPurchaseSchema.findByIdAndUpdate(subscription._id, {
+            status: 'EXPIRED',
+          });
+        }),
+      );
     }
 
     // Get the new plan details
@@ -157,32 +170,33 @@ export const switchSubscriptionPlan = async (req: RequestParams, res: Response) 
     if (!newPlan) {
       return res.status(404).json({
         status: false,
-        message: 'Invalid plan ID'
+        message: 'Invalid plan ID',
       });
     }
 
     // Calculate new expiry date
     const planDetails = await SubcriptionSchema.findById(newPlan.subcriptionId);
     const startDate = new Date();
-    const newExpiry = new Date(startDate.getTime() + planDetails.seconds * 1000);
+    const newExpiry = new Date(
+      startDate.getTime() + planDetails.seconds * 1000,
+    );
 
     // Update the new subscription plan
     await subcriptionPurchaseSchema.findByIdAndUpdate(newPlan._id, {
       expiry: newExpiry,
       startDate: startDate,
-      status: 'APPROVED'
+      status: 'APPROVED',
     });
 
     return res.status(200).json({
       status: true,
-      message: 'Subscription plan switched successfully'
+      message: 'Subscription plan switched successfully',
     });
-
   } catch (error) {
     console.error('Error switching subscription plan:', error);
     return res.status(500).json({
       status: false,
-      message: 'Something went wrong while switching subscription plan'
+      message: 'Something went wrong while switching subscription plan',
     });
   }
 };

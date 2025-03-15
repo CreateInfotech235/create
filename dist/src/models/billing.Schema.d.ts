@@ -31,6 +31,7 @@ declare const Model: mongoose.Model<{
     merchantId: mongoose.Types.ObjectId;
     orderId: string;
     totalCharge: number;
+    reason: string;
     isApproved: boolean;
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
@@ -87,8 +88,8 @@ declare const Model: mongoose.Model<{
     totalamountOfPackage: number;
     chargeMethod?: string;
     charge?: number;
-    reason?: string;
     orderStatus?: string;
+    approvedAmount?: number;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -96,6 +97,7 @@ declare const Model: mongoose.Model<{
     merchantId: mongoose.Types.ObjectId;
     orderId: string;
     totalCharge: number;
+    reason: string;
     isApproved: boolean;
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
@@ -152,8 +154,8 @@ declare const Model: mongoose.Model<{
     totalamountOfPackage: number;
     chargeMethod?: string;
     charge?: number;
-    reason?: string;
     orderStatus?: string;
+    approvedAmount?: number;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -161,6 +163,7 @@ declare const Model: mongoose.Model<{
     merchantId: mongoose.Types.ObjectId;
     orderId: string;
     totalCharge: number;
+    reason: string;
     isApproved: boolean;
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
@@ -217,8 +220,8 @@ declare const Model: mongoose.Model<{
     totalamountOfPackage: number;
     chargeMethod?: string;
     charge?: number;
-    reason?: string;
     orderStatus?: string;
+    approvedAmount?: number;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -233,6 +236,7 @@ declare const Model: mongoose.Model<{
     merchantId: mongoose.Types.ObjectId;
     orderId: string;
     totalCharge: number;
+    reason: string;
     isApproved: boolean;
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
@@ -289,8 +293,8 @@ declare const Model: mongoose.Model<{
     totalamountOfPackage: number;
     chargeMethod?: string;
     charge?: number;
-    reason?: string;
     orderStatus?: string;
+    approvedAmount?: number;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -298,6 +302,7 @@ declare const Model: mongoose.Model<{
     merchantId: mongoose.Types.ObjectId;
     orderId: string;
     totalCharge: number;
+    reason: string;
     isApproved: boolean;
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
@@ -354,8 +359,8 @@ declare const Model: mongoose.Model<{
     totalamountOfPackage: number;
     chargeMethod?: string;
     charge?: number;
-    reason?: string;
     orderStatus?: string;
+    approvedAmount?: number;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
@@ -363,6 +368,7 @@ declare const Model: mongoose.Model<{
     merchantId: mongoose.Types.ObjectId;
     orderId: string;
     totalCharge: number;
+    reason: string;
     isApproved: boolean;
     deliveryBoyId: mongoose.Types.ObjectId;
     isPaid: boolean;
@@ -419,8 +425,8 @@ declare const Model: mongoose.Model<{
     totalamountOfPackage: number;
     chargeMethod?: string;
     charge?: number;
-    reason?: string;
     orderStatus?: string;
+    approvedAmount?: number;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

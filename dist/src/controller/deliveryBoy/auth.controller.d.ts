@@ -18,3 +18,4 @@ export declare const sendOtp: (req: RequestParams, res: Response) => Promise<voi
 export declare const verifyOtp: (req: RequestParams, res: Response) => Promise<void>;
 export declare const resetPassword: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getApproveSubscription: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const stripPayment: (req: RequestParams, res: Response) => Promise<void>;

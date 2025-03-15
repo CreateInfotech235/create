@@ -18,6 +18,10 @@ const NotificationSchema = new mongoose_1.default.Schema({
         type: String,
         required: false,
     },
+    customerid: {
+        type: String,
+        required: false,
+    },
     ismerchantdeliveryboy: {
         type: Boolean,
         required: false,

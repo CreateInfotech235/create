@@ -2952,8 +2952,13 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       message: `Your order ${isArrived.orderId} has been delivered`,
       deliveryBoyname:
         dataofdeliveryboy?.firstName + ' ' + dataofdeliveryboy?.lastName,
+
+      customerid: isArrived.deliveryDetails.find(
+        (data: any) => data.subOrderId == value.subOrderId,
+      ).customerId,
       ismerchantdeliveryboy: dataofdeliveryboy?.createdByMerchant,
       type: 'MERCHANT',
+
     });
 
     // console.log(dataofdeliveryboy, 'dataofdeliveryboy');

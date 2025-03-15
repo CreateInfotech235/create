@@ -1175,10 +1175,53 @@ const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, func
     try {
         const userId = req.params.id;
         // Get all notifications for the user
-        const notifications = yield notificatio_schema_1.default.find({ userId })
-            .sort({ createdAt: -1 })
-            .populate('orderId')
-            .populate('senderId');
+        const notifications = yield notificatio_schema_1.default.aggregate([
+            { $match: { userId: new mongoose_1.default.Types.ObjectId(userId) } },
+            {
+                $lookup: {
+                    from: 'customer',
+                    let: { customerId: { $toObjectId: "$customerid" } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$_id", "$$customerId"] }
+                            }
+                        }
+                    ],
+                    as: 'customer'
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $unwind: {
+                    path: '$customer',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    message: 1,
+                    subOrderId: 1,
+                    deliveryBoyname: 1,
+                    ismerchantdeliveryboy: 1,
+                    type: 1,
+                    orderId: 1,
+                    isRead: 1,
+                    createdAt: 1,
+                    customerName: {
+                        $concat: [
+                            '$customer.firstName',
+                            ' ',
+                            '$customer.lastName'
+                        ]
+                    }
+                }
+            }
+        ]);
         return res.status(200).json({
             message: 'Notifications retrieved successfully',
             data: notifications,

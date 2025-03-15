@@ -23,7 +23,7 @@ const stripe = new stripe_1.default('sk_test_51QWXp5FWojz9eoui3b20GWIoF6Yxged00O
 const getApproveSubscription = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        console.log(id, 'id1234');
+        console.log(id, 'id123456');
         // Validate ID
         if (!(0, mongoose_1.isValidObjectId)(id)) {
             return res.status(400).json({
@@ -84,12 +84,18 @@ const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 return current;
             if (!current || !current.expiry)
                 return latest;
-            return new Date(current.expiry) > new Date(latest.expiry) ? current : latest;
+            return new Date(current.expiry) > new Date(latest.expiry)
+                ? current
+                : latest;
         }, null);
         console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
         // get day of lastsubcriptionexpirydate
         const subcriptiondata = yield subcription_schema_1.default.findById(planId);
-        const startDate = lastsubcriptionexpirydate ? new Date(lastsubcriptionexpirydate.expiry) > new Date() ? new Date(lastsubcriptionexpirydate.expiry) : new Date() : new Date();
+        const startDate = lastsubcriptionexpirydate
+            ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
+                ? new Date(lastsubcriptionexpirydate.expiry)
+                : new Date()
+            : new Date();
         //  add day of subcriptiondata to startDate
         const expiry = new Date(startDate.getTime() + subcriptiondata.seconds * 1000);
         yield subcriptionPurchase_schema_1.default.create({
@@ -120,19 +126,19 @@ const switchSubscriptionPlan = (req, res) => __awaiter(void 0, void 0, void 0, f
         if (!planId || !merchantId) {
             return res.status(400).json({
                 status: false,
-                message: 'Plan ID and Merchant ID are required'
+                message: 'Plan ID and Merchant ID are required',
             });
         }
         // Find and expire all active subscriptions for the merchant
         const activeSubscriptions = yield subcriptionPurchase_schema_1.default.find({
             merchant: merchantId,
             status: 'APPROVED',
-            expiry: { $gt: new Date() }
+            expiry: { $gt: new Date() },
         });
         if (activeSubscriptions.length > 0) {
             yield Promise.all(activeSubscriptions.map((subscription) => __awaiter(void 0, void 0, void 0, function* () {
                 yield subcriptionPurchase_schema_1.default.findByIdAndUpdate(subscription._id, {
-                    status: 'EXPIRED'
+                    status: 'EXPIRED',
                 });
             })));
         }
@@ -141,7 +147,7 @@ const switchSubscriptionPlan = (req, res) => __awaiter(void 0, void 0, void 0, f
         if (!newPlan) {
             return res.status(404).json({
                 status: false,
-                message: 'Invalid plan ID'
+                message: 'Invalid plan ID',
             });
         }
         // Calculate new expiry date
@@ -152,18 +158,18 @@ const switchSubscriptionPlan = (req, res) => __awaiter(void 0, void 0, void 0, f
         yield subcriptionPurchase_schema_1.default.findByIdAndUpdate(newPlan._id, {
             expiry: newExpiry,
             startDate: startDate,
-            status: 'APPROVED'
+            status: 'APPROVED',
         });
         return res.status(200).json({
             status: true,
-            message: 'Subscription plan switched successfully'
+            message: 'Subscription plan switched successfully',
         });
     }
     catch (error) {
         console.error('Error switching subscription plan:', error);
         return res.status(500).json({
             status: false,
-            message: 'Something went wrong while switching subscription plan'
+            message: 'Something went wrong while switching subscription plan',
         });
     }
 });

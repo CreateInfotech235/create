@@ -39,7 +39,8 @@ const BillingSchema = new mongoose_1.default.Schema({
     chargeMethod: { type: String }, //ok
     isApproved: { type: Boolean, default: false }, //ok
     isPaid: { type: Boolean, default: false }, //ok
-    reason: { type: String },
+    reason: { type: String, default: '' },
+    approvedAmount: { type: Number, required: false, default: 0 },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('billing', BillingSchema, 'billing');
 exports.default = Model;

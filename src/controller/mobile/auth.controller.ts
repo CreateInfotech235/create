@@ -1446,7 +1446,6 @@ export const deleteSupportTicket = async (
     });
   }
 };
-
 export const getAllNotifications = async (
   req: RequestParams,
   res: Response,
@@ -1455,10 +1454,53 @@ export const getAllNotifications = async (
     const userId = req.params.id;
 
     // Get all notifications for the user
-    const notifications = await Notifications.find({ userId })
-      .sort({ createdAt: -1 })
-      .populate('orderId')
-      .populate('senderId');
+    const notifications = await Notifications.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: 'customer',
+          let: { customerId: { $toObjectId: "$customerid" } },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", "$$customerId"] }
+              }
+            }
+          ],
+          as: 'customer'
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $unwind: {
+          path: '$customer',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          message: 1,
+          subOrderId: 1,
+          deliveryBoyname: 1,
+          ismerchantdeliveryboy: 1,
+          type: 1,
+          orderId: 1,
+          isRead: 1,
+          createdAt: 1,
+          customerName: {
+            $concat: [
+              '$customer.firstName',
+              ' ',
+              '$customer.lastName'
+            ]
+          }
+        }
+      }
+    ]);
 
     return res.status(200).json({
       message: 'Notifications retrieved successfully',

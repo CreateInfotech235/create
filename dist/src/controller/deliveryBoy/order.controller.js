@@ -2266,6 +2266,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             title: isalloderdelever ? 'All Order Delivered' : 'Some Order Delivered',
             message: `Your order ${isArrived.orderId} has been delivered`,
             deliveryBoyname: (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.firstName) + ' ' + (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.lastName),
+            customerid: isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId).customerId,
             ismerchantdeliveryboy: dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.createdByMerchant,
             type: 'MERCHANT',
         });

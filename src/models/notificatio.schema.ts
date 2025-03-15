@@ -15,6 +15,10 @@ const NotificationSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    customerid: {
+      type: String,
+      required: false,
+    },
     ismerchantdeliveryboy: {
       type: Boolean,
       required: false,

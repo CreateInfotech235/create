@@ -27,6 +27,7 @@ const wallet_schema_1 = __importDefault(require("../models/wallet.schema"));
 const notificatio_schema_1 = __importDefault(require("../models/notificatio.schema"));
 const index_1 = require("../../index");
 const orderMulti_schema_1 = __importDefault(require("../models/orderMulti.schema"));
+const customer_schema_1 = __importDefault(require("../models/customer.schema"));
 const sendMailService = (to, subject, text) => __awaiter(void 0, void 0, void 0, function* () {
     const transporter = nodemailer_1.default.createTransport({
         service: 'gmail',
@@ -86,7 +87,7 @@ const uploadFile = (fileName, base64FormatImage, fileType) => {
     });
 };
 exports.uploadFile = uploadFile;
-const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ userId, subOrderId, title, message, deliveryBoyname, ismerchantdeliveryboy, type, orderId, senderId, adminId, }) {
+const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ userId, subOrderId, title, message, deliveryBoyname, ismerchantdeliveryboy, type, orderId, senderId, adminId, customerid, }) {
     try {
         const notification = yield notificatio_schema_1.default.create({
             userId,
@@ -100,7 +101,9 @@ const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ 
             senderId,
             isRead: false,
             adminId,
+            customerid,
         });
+        const customer = yield customer_schema_1.default.findOne({ _id: customerid });
         // Get user data to find socket ID
         const user = yield user_schema_1.default.findOne({ _id: userId });
         if (user) {
@@ -115,6 +118,7 @@ const createNotification = (_b) => __awaiter(void 0, [_b], void 0, function* ({ 
                 orderId,
                 isRead: false,
                 createdAt: notification.createdAt,
+                customerName: `${customer === null || customer === void 0 ? void 0 : customer.firstName} ${customer === null || customer === void 0 ? void 0 : customer.lastName}`,
             });
         }
         return notification;

@@ -15,7 +15,7 @@ import { encryptPasswordParams } from './types/expressTypes';
 import Notifications from '../models/notificatio.schema';
 import { io } from '../../index';
 import orderSchemaMulti from '../models/orderMulti.schema';
-
+import CustomerSchema from '../models/customer.schema';
 export const sendMailService = async (
   to: string,
   subject: string,
@@ -96,6 +96,7 @@ export const createNotification = async ({
   orderId,
   senderId,
   adminId,
+  customerid,
 }: {
   userId: mongoose.Types.ObjectId;
   subOrderId?: number[];
@@ -107,6 +108,7 @@ export const createNotification = async ({
   orderId?: number;
   senderId?: mongoose.Types.ObjectId;
   adminId?: mongoose.Types.ObjectId;
+  customerid?: string;
 }) => {
   try {
     const notification = await Notifications.create({
@@ -121,7 +123,12 @@ export const createNotification = async ({
       senderId,
       isRead: false,
       adminId,
+      customerid,
     });
+
+
+    const customer = await CustomerSchema.findOne({ _id: customerid });
+
 
     // Get user data to find socket ID
     const user = await merchantSchema.findOne({ _id: userId });
@@ -137,6 +144,7 @@ export const createNotification = async ({
         orderId,
         isRead: false,
         createdAt: notification.createdAt,
+        customerName: `${customer?.firstName} ${customer?.lastName}`,
       });
     }
 

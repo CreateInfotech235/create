@@ -54,7 +54,9 @@ export const getBilling = async (req: RequestParams, res: Response) => {
           _id: 1,
           deliveryBoyId: 1,
           merchantId: 1,
+          reason: 1,
           orderId: 1,
+          approvedAmount: 1,
           charge: 1,
           panaltyAmount: 1,
           interestAmount: 1,
@@ -121,13 +123,14 @@ export const BillingApprove = async (req: RequestParams, res: Response) => {
         balance: approvedAmount
       }
     });
+console.log(reason, "reason");
 
     // Approve billing
     await BillingSchema.findByIdAndUpdate(billingData._id, {
       $set: {
         isApproved: true,
-        reason,
-        approvedAmount
+        reason: reason || '',
+        approvedAmount: approvedAmount
       }
     });
 

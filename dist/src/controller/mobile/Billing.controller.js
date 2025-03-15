@@ -61,7 +61,9 @@ const getBilling = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     _id: 1,
                     deliveryBoyId: 1,
                     merchantId: 1,
+                    reason: 1,
                     orderId: 1,
+                    approvedAmount: 1,
                     charge: 1,
                     panaltyAmount: 1,
                     interestAmount: 1,
@@ -124,12 +126,13 @@ const BillingApprove = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 balance: approvedAmount
             }
         });
+        console.log(reason, "reason");
         // Approve billing
         yield billing_Schema_1.default.findByIdAndUpdate(billingData._id, {
             $set: {
                 isApproved: true,
-                reason,
-                approvedAmount
+                reason: reason || '',
+                approvedAmount: approvedAmount
             }
         });
         return res.ok({ message: 'Billing approved successfully', data: billingData });

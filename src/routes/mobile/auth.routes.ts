@@ -37,13 +37,15 @@ import {
   resetPassword,
   deleteAllNotifications,
 } from '../../controller/mobile/auth.controller';
-import { getApproveSubscription } from '../../controller/deliveryBoy/auth.controller';
+import { getApproveSubscription,stripPayment } from '../../controller/deliveryBoy/auth.controller';
 import multer from 'multer';
 import {
   deleteDeliveryMan,
   getDeliveryManLocation,
   moveToTrashDeliveryMan,
 } from '../../controller/deliveryBoy/auth.controller';
+
+
 
 const router = express.Router();
 
@@ -926,5 +928,9 @@ router.post('/forgot-password/reset-password', resetPassword);
 router.get('/location/:merchantId', getDeliveryManLocation);
 
 router.get('/getApproveSubscription/:id', getApproveSubscription);
+
+
+router.post('/create-payment-intent', stripPayment);
+
 
 export default router;
