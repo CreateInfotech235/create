@@ -479,14 +479,11 @@ export const orderUpdateMulti = async (req: RequestParams, res: Response) => {
       { $set: value },
       { new: true }, // Return the updated order object
     );
-    console.log(value, 'value');
-
     if (!updatedOrder) {
       return res.failureResponse({
         message: 'Failed to update order',
       });
     } else {
-      console.log(updatedOrder, 'updatedOrder');
       const deliveryMan = await deliveryManSchema.findById({
         _id: value.deliveryManId,
       });

@@ -344,14 +344,12 @@ const orderUpdateMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
         // Update fields in the order
         const updatedOrder = yield orderMulti_schema_1.default.findOneAndUpdate({ _id: orderId }, { $set: value }, { new: true });
-        console.log(value, 'value');
         if (!updatedOrder) {
             return res.failureResponse({
                 message: 'Failed to update order',
             });
         }
         else {
-            console.log(updatedOrder, 'updatedOrder');
             const deliveryMan = yield deliveryMan_schema_1.default.findById({
                 _id: value.deliveryManId,
             });
