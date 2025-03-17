@@ -2944,6 +2944,17 @@ const getMultiOrderById = (req, res) => __awaiter(void 0, void 0, void 0, functi
             {
                 $addFields: {
                     deliveryDetails: {
+                        $filter: {
+                            input: '$deliveryDetails',
+                            as: 'detail',
+                            cond: { $eq: ['$$detail.trashed', false] },
+                        },
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    deliveryDetails: {
                         $cond: {
                             if: { $isArray: '$deliveryDetails' },
                             then: {

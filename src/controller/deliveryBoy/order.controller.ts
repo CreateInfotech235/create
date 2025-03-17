@@ -3735,6 +3735,17 @@ export const getMultiOrderById = async (req: RequestParams, res: Response) => {
         {
           $addFields: {
             deliveryDetails: {
+              $filter: {
+                input: '$deliveryDetails',
+                as: 'detail',
+                cond: { $eq: ['$$detail.trashed', false] },
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            deliveryDetails: {
               $cond: {
                 if: { $isArray: '$deliveryDetails' },
                 then: {
