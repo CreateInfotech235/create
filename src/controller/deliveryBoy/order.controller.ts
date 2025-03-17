@@ -1024,8 +1024,6 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
       orderId: isCreated.orderId.toString(),
     });
 
-
-
     return res.ok({
       message: getLanguage('en').orderUpdatedSuccessfully,
     });
@@ -1571,7 +1569,6 @@ export const cancelMultiSubOrder = async (
       merchant: existingOrder.merchant.toString(),
       orderId: existingOrder.orderId.toString(),
     });
-
 
     return res.ok({
       message: getLanguage('en').orderCancelledSuccessfully,
@@ -2958,7 +2955,6 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       ).customerId,
       ismerchantdeliveryboy: dataofdeliveryboy?.createdByMerchant,
       type: 'MERCHANT',
-
     });
 
     // console.log(dataofdeliveryboy, 'dataofdeliveryboy');
@@ -3399,6 +3395,28 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         $unwind: {
           path: '$orderData',
           preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          'orderData.trashed': false,
+        },
+      },
+      {
+        $addFields: {
+          'orderData.deliveryDetails': {
+            $filter: {
+              input: '$orderData.deliveryDetails',
+              as: 'detail',
+              cond: { $eq: ['$$detail.trashed', false] },
+            },
+          },
+        },
+      },
+      {
+        // if orderData.deliveryDetails is empty, then return null
+        $match: {
+          'orderData.deliveryDetails': { $ne: [] },
         },
       },
       {

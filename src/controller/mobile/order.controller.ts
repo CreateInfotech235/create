@@ -1344,7 +1344,7 @@ export const getAllOrdersFromMerchant = async (
         $project: {
           _id: 1,
           orderId: 1,
-          
+
           parcelsCount: 1,
           customerName: '$deliveryDetails.name',
           cutomerEmail: '$deliveryDetails.email',
@@ -1410,7 +1410,7 @@ export const getAllOrdersFromMerchantMulti = async (
   res: Response,
 ) => {
   try {
-    const { startDate, endDate, getallcancelledorders = "false" } = req.query;
+    const { startDate, endDate, getallcancelledorders = 'false' } = req.query;
 
     let dateFilter = {};
 
@@ -1517,19 +1517,19 @@ export const getAllOrdersFromMerchantMulti = async (
                   $map: {
                     input: '$deliveryDetails',
                     as: 'detail',
-                    in: { $eq: ['$$detail.status', ORDER_HISTORY.CANCELLED] }
-                  }
-                }
+                    in: { $eq: ['$$detail.status', ORDER_HISTORY.CANCELLED] },
+                  },
+                },
               },
-              else: true
-            }
-          }
-        }
+              else: true,
+            },
+          },
+        },
       },
       {
         $match: {
-          hasCancelledDelivery: true
-        }
+          hasCancelledDelivery: true,
+        },
       },
       {
         $project: {
@@ -1587,7 +1587,7 @@ export const getAllOrdersFromMerchantMulti = async (
     ]);
 
     // console.log("data", data);
-    
+
     return res.ok({ data });
   } catch (error) {
     return res.failureResponse({
@@ -1601,7 +1601,6 @@ export const getAllRecentOrdersFromMerchant = async (
   res: Response,
 ) => {
   try {
-
     const data = await orderSchemaMulti.aggregate([
       {
         $match: {
@@ -1618,7 +1617,7 @@ export const getAllRecentOrdersFromMerchant = async (
       {
         $limit: 10,
       },
-      
+
       {
         $lookup: {
           from: 'orderAssign',
@@ -1907,11 +1906,15 @@ export const moveToTrashMulti = async (req: RequestParams, res: Response) => {
       return res.badRequest({ message: getLanguage('en').orderNotFound });
     }
 
-    const trash =trashed==undefined ? OrderData.trashed === true ? false : true : trashed;
+    const trash =
+      trashed == undefined
+        ? OrderData.trashed === true
+          ? false
+          : true
+        : trashed;
 
-
-    console.log("OrderData", OrderData);
-    console.log("trash", trash);
+    console.log('OrderData', OrderData);
+    console.log('trash', trash);
 
     // Update main order trashed status and all delivery details trashed status
     await orderSchemaMulti.findByIdAndUpdate(id, {
@@ -2000,6 +2003,23 @@ export const moveToTrashSubOrderMulti = async (
         message: getLanguage('en').somethingWentWrong,
       });
     }
+    // send notification to delivery man
+    if (trash) {
+      const oderAssign = await orderAssignSchema.findOne({
+        order: OrderData.orderId,
+      });
+
+      const deliveryMan = await deliveryManSchema.findById(
+        oderAssign?.deliveryBoy,
+      );
+      if (deliveryMan && deliveryMan?.deviceToken) {
+        sendNotificationinapp(
+          'Order Moved to Trash',
+          `Order ${OrderData.orderId} has been moved to trash`,
+          deliveryMan?.deviceToken,
+        );
+      }
+    }
 
     // Create notification
     await createNotification({
@@ -2027,9 +2047,10 @@ export const moveToTrashSubOrderMulti = async (
   }
 };
 
-
-
-export const moveToTrashMultiOrderarray = async (req: RequestParams, res: Response) => {
+export const moveToTrashMultiOrderarray = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const { orderIds } = req.body;
 
@@ -2044,14 +2065,18 @@ export const moveToTrashMultiOrderarray = async (req: RequestParams, res: Respon
     }
 
     for (const order of orders) {
-      const updatedOrder = await orderSchemaMulti.findByIdAndUpdate(order._id, {
-        trashed: true,
-        'deliveryDetails.$[].trashed': true,
-      },{new: true});
-      console.log("updatedOrder", updatedOrder);
+      const updatedOrder = await orderSchemaMulti.findByIdAndUpdate(
+        order._id,
+        {
+          trashed: true,
+          'deliveryDetails.$[].trashed': true,
+        },
+        { new: true },
+      );
+      console.log('updatedOrder', updatedOrder);
     }
 
-    return res.ok({ message: getLanguage('en').orderMoveToTrashMulti });  
+    return res.ok({ message: getLanguage('en').orderMoveToTrashMulti });
   } catch (error) {
     console.error('Error moving orders to trash:', error);
     return res.failureResponse({
@@ -2059,7 +2084,6 @@ export const moveToTrashMultiOrderarray = async (req: RequestParams, res: Respon
     });
   }
 };
-
 
 export const sendNotificationToDeliveryMan = async (
   req: RequestParams,
@@ -2094,33 +2118,39 @@ export const sendNotificationToDeliveryMan = async (
   }
 };
 
-
-
 export const reassignOrder = async (req: RequestParams, res: Response) => {
   try {
-    const { merchantId , orderId} = req.query;
+    const { merchantId, orderId } = req.query;
 
     if (!merchantId || !orderId) {
       return res.badRequest({ message: getLanguage('en').invalidOrder });
     }
 
-    const order = await orderSchemaMulti.findOne({ merchant: new mongoose.Types.ObjectId(merchantId),orderId: Number(orderId) });
+    const order = await orderSchemaMulti.findOne({
+      merchant: new mongoose.Types.ObjectId(merchantId),
+      orderId: Number(orderId),
+    });
 
     if (!order) {
       return res.badRequest({ message: getLanguage('en').orderNotFound });
     }
 
     if (order.isReassign) {
-      return res.badRequest({ message: getLanguage('en').orderAlreadyReassigned });
+      return res.badRequest({
+        message: getLanguage('en').orderAlreadyReassigned,
+      });
     }
-    
-    await orderSchemaMulti.updateOne({ _id: order._id }, { $set: { isReassign: true } });
 
-    return res.ok({ message: getLanguage('en').orderReassigned });    
+    await orderSchemaMulti.updateOne(
+      { _id: order._id },
+      { $set: { isReassign: true } },
+    );
+
+    return res.ok({ message: getLanguage('en').orderReassigned });
   } catch (error) {
     console.error('Error reassigning order:', error);
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });
   }
-}
+};
