@@ -1613,12 +1613,15 @@ const moveToTrashSubOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0,
         }
         // send notification to delivery man
         if (trash) {
-            const oderAssign = yield orderAssignee_schema_2.default.findOne({
+            console.log(OrderData.orderId);
+            const oderAssign = yield orderAssigneeMulti_schema_1.default.findOne({
                 order: OrderData.orderId,
             });
-            const deliveryMan = yield deliveryMan_schema_1.default.findById(oderAssign === null || oderAssign === void 0 ? void 0 : oderAssign.deliveryBoy);
-            if (deliveryMan && (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.deviceToken)) {
-                (0, Notificationinapp_1.sendNotificationinapp)('Order Moved to Trash', `Order ${OrderData.orderId} has been moved to trash`, deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.deviceToken);
+            if (oderAssign) {
+                const deliveryMan = yield deliveryMan_schema_1.default.findById(oderAssign === null || oderAssign === void 0 ? void 0 : oderAssign.deliveryBoy);
+                if (deliveryMan && (deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.deviceToken)) {
+                    (0, Notificationinapp_1.sendNotificationinapp)('Order Cancel By Merchant', `Order ${OrderData.orderId} has been Cancel By Merchant`, deliveryMan === null || deliveryMan === void 0 ? void 0 : deliveryMan.deviceToken);
+                }
             }
         }
         // Create notification

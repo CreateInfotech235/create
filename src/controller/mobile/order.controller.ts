@@ -2005,19 +2005,22 @@ export const moveToTrashSubOrderMulti = async (
     }
     // send notification to delivery man
     if (trash) {
-      const oderAssign = await orderAssignSchema.findOne({
+      console.log(OrderData.orderId);
+
+      const oderAssign = await OrderAssigneeSchemaMulti.findOne({
         order: OrderData.orderId,
       });
-
-      const deliveryMan = await deliveryManSchema.findById(
-        oderAssign?.deliveryBoy,
-      );
-      if (deliveryMan && deliveryMan?.deviceToken) {
-        sendNotificationinapp(
-          'Order Moved to Trash',
-          `Order ${OrderData.orderId} has been moved to trash`,
-          deliveryMan?.deviceToken,
+      if (oderAssign) {
+        const deliveryMan = await deliveryManSchema.findById(
+          oderAssign?.deliveryBoy,
         );
+        if (deliveryMan && deliveryMan?.deviceToken) {
+          sendNotificationinapp(
+            'Order Cancel By Merchant',
+            `Order ${OrderData.orderId} has been Cancel By Merchant`,
+            deliveryMan?.deviceToken,
+          );
+        }
       }
     }
 
@@ -2028,9 +2031,8 @@ export const moveToTrashSubOrderMulti = async (
       title: trash
         ? 'Sub Order Moved to Trash'
         : 'Sub Order Restored from Trash',
-      message: `Sub Order ${subOrderId} ${
-        trash ? 'moved to trash' : 'restored from trash'
-      }`,
+      message: `Sub Order ${subOrderId} ${trash ? 'moved to trash' : 'restored from trash'
+        }`,
       type: 'MERCHANT',
     });
 
