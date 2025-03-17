@@ -3398,11 +3398,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        $match: {
-          'orderData.trashed': false,
-        },
-      },
-      {
         $addFields: {
           'orderData.deliveryDetails': {
             $filter: {

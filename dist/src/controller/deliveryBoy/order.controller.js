@@ -2632,11 +2632,6 @@ const getMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             },
             {
-                $match: {
-                    'orderData.trashed': false,
-                },
-            },
-            {
                 $addFields: {
                     'orderData.deliveryDetails': {
                         $filter: {

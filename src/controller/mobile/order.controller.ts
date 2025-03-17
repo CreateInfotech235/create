@@ -2031,8 +2031,9 @@ export const moveToTrashSubOrderMulti = async (
       title: trash
         ? 'Sub Order Moved to Trash'
         : 'Sub Order Restored from Trash',
-      message: `Sub Order ${subOrderId} ${trash ? 'moved to trash' : 'restored from trash'
-        }`,
+      message: `Sub Order ${subOrderId} ${
+        trash ? 'moved to trash' : 'restored from trash'
+      }`,
       type: 'MERCHANT',
     });
 
