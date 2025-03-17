@@ -943,7 +943,12 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        arrayFilters: [{ 'elem.status': ORDER_HISTORY.ASSIGNED }], // Filter to only update ASSIGNED sub-orders
+        arrayFilters: [
+          {
+            'elem.status': ORDER_HISTORY.ASSIGNED,
+            'elem.trashed': { $ne: true }, // Only update if not trashed
+          },
+        ],
         new: true,
       },
     );
@@ -1383,9 +1388,9 @@ export const cancelMultiSubOrder = async (
     console.log(nowdata, 'nowdata');
 
     // Check if all sub-orders are cancelled
-    const allCancelled = nowdata.deliveryDetails.every(
-      (item: any) => item.status === ORDER_HISTORY.CANCELLED,
-    );
+    const allCancelled = nowdata.deliveryDetails
+      .filter((item: any) => item.trashed === false)
+      .every((item: any) => item.status === ORDER_HISTORY.CANCELLED);
     console.log(allCancelled, 'allCancelled');
     const updateData = {
       deliveryDetails: nowdata.deliveryDetails,
@@ -1728,12 +1733,14 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
     });
     console.log(isCreated.deliveryDetails, 'isCreated.deliveryDetails');
 
-    const isalloderdeparted = neworderdata.deliveryDetails.every(
-      (item: any) =>
-        item.status == ORDER_HISTORY.DEPARTED ||
-        item.status == ORDER_HISTORY.DELIVERED ||
-        item.status == ORDER_HISTORY.CANCELLED,
-    );
+    const isalloderdeparted = neworderdata.deliveryDetails
+      .filter((item: any) => item.trashed === false)
+      .every(
+        (item: any) =>
+          item.status == ORDER_HISTORY.DEPARTED ||
+          item.status == ORDER_HISTORY.DELIVERED ||
+          item.status == ORDER_HISTORY.CANCELLED,
+      );
 
     console.log(isalloderdeparted, 'isalloderdeparted');
     const isupdated = await orderSchemaMulti.findOneAndUpdate(
@@ -2058,12 +2065,14 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       (detail: any) => !newSubOrderIds.includes(detail.subOrderId),
     );
 
-    const allPickedUp = remainingDeliveryDetails.every(
-      (detail: any) =>
-        detail.status !== ORDER_HISTORY.ASSIGNED &&
-        detail.status !== ORDER_HISTORY.UNASSIGNED &&
-        detail.status !== ORDER_HISTORY.ARRIVED,
-    );
+    const allPickedUp = remainingDeliveryDetails
+      .filter((item: any) => item.trashed === false)
+      .every(
+        (detail: any) =>
+          detail.status !== ORDER_HISTORY.ASSIGNED &&
+          detail.status !== ORDER_HISTORY.UNASSIGNED &&
+          detail.status !== ORDER_HISTORY.ARRIVED,
+      );
 
     const nowdata = allDeliveryDetails.map((data: any) => {
       if (optimizedRoute.includes(data.subOrderId)) {
@@ -2870,12 +2879,14 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       orderId: value.orderId,
     });
 
-    const allDelivered = updatedOrder.deliveryDetails.every(
-      (detail: any) =>
-        detail.status === ORDER_HISTORY.DELIVERED ||
-        detail.status === ORDER_HISTORY.CANCELLED ||
-        detail.status === ORDER_HISTORY.UNASSIGNED,
-    );
+    const allDelivered = updatedOrder.deliveryDetails
+      .filter((item: any) => item.trashed === false)
+      .every(
+        (detail: any) =>
+          detail.status === ORDER_HISTORY.DELIVERED ||
+          detail.status === ORDER_HISTORY.CANCELLED ||
+          detail.status === ORDER_HISTORY.UNASSIGNED,
+      );
 
     if (allDelivered) {
       await orderSchemaMulti.updateOne(

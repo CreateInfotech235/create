@@ -220,6 +220,9 @@ export const newOrderUpdateMulti = Joi.object({
         postCode: Joi.string()
           .regex(/^[A-Za-z0-9\s-]+$/)
           .required(),
+        reason: Joi.string().allow('').allow('-'),
+        pickupsignature: Joi.string().allow('').allow('-'),
+        deliverysignature: Joi.string().allow('').allow('-'),
         distance: Joi.number().allow(''),
         duration: Joi.string().allow(''),
         description: Joi.string().allow('').allow('-'),

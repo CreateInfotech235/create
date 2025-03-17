@@ -466,6 +466,7 @@ export const orderUpdateMulti = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
+    console.log(value, 'value');
 
     // Check if the order exists
     const existingOrder = await orderSchemaMulti.findOne({ _id: orderId });

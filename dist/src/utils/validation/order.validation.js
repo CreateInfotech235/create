@@ -204,6 +204,9 @@ exports.newOrderUpdateMulti = joi_1.default.object({
         postCode: joi_1.default.string()
             .regex(/^[A-Za-z0-9\s-]+$/)
             .required(),
+        reason: joi_1.default.string().allow('').allow('-'),
+        pickupsignature: joi_1.default.string().allow('').allow('-'),
+        deliverysignature: joi_1.default.string().allow('').allow('-'),
         distance: joi_1.default.number().allow(''),
         duration: joi_1.default.string().allow(''),
         description: joi_1.default.string().allow('').allow('-'),

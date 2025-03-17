@@ -337,6 +337,7 @@ const orderUpdateMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        console.log(value, 'value');
         // Check if the order exists
         const existingOrder = yield orderMulti_schema_1.default.findOne({ _id: orderId });
         if (!existingOrder) {

@@ -785,7 +785,12 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 'deliveryDetails.$[elem].status': enum_1.ORDER_HISTORY.ARRIVED, // Update all elements to ARRIVED
             },
         }, {
-            arrayFilters: [{ 'elem.status': enum_1.ORDER_HISTORY.ASSIGNED }], // Filter to only update ASSIGNED sub-orders
+            arrayFilters: [
+                {
+                    'elem.status': enum_1.ORDER_HISTORY.ASSIGNED,
+                    'elem.trashed': { $ne: true }, // Only update if not trashed
+                },
+            ],
             new: true,
         });
         for (const item of isCreated.deliveryDetails) {
@@ -1137,7 +1142,9 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
         }
         console.log(nowdata, 'nowdata');
         // Check if all sub-orders are cancelled
-        const allCancelled = nowdata.deliveryDetails.every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED);
+        const allCancelled = nowdata.deliveryDetails
+            .filter((item) => item.trashed === false)
+            .every((item) => item.status === enum_1.ORDER_HISTORY.CANCELLED);
         console.log(allCancelled, 'allCancelled');
         const updateData = Object.assign({ deliveryDetails: nowdata.deliveryDetails }, (allCancelled && { status: enum_1.ORDER_HISTORY.CANCELLED }));
         const newoder = yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: updateData }, { new: true });
@@ -1403,7 +1410,9 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             deliveryBoy: value.deliveryManId,
         });
         console.log(isCreated.deliveryDetails, 'isCreated.deliveryDetails');
-        const isalloderdeparted = neworderdata.deliveryDetails.every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED ||
+        const isalloderdeparted = neworderdata.deliveryDetails
+            .filter((item) => item.trashed === false)
+            .every((item) => item.status == enum_1.ORDER_HISTORY.DEPARTED ||
             item.status == enum_1.ORDER_HISTORY.DELIVERED ||
             item.status == enum_1.ORDER_HISTORY.CANCELLED);
         console.log(isalloderdeparted, 'isalloderdeparted');
@@ -1640,7 +1649,9 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorOrderPickedUp });
         }
         const remainingDeliveryDetails = allDeliveryDetails.filter((detail) => !newSubOrderIds.includes(detail.subOrderId));
-        const allPickedUp = remainingDeliveryDetails.every((detail) => detail.status !== enum_1.ORDER_HISTORY.ASSIGNED &&
+        const allPickedUp = remainingDeliveryDetails
+            .filter((item) => item.trashed === false)
+            .every((detail) => detail.status !== enum_1.ORDER_HISTORY.ASSIGNED &&
             detail.status !== enum_1.ORDER_HISTORY.UNASSIGNED &&
             detail.status !== enum_1.ORDER_HISTORY.ARRIVED);
         const nowdata = allDeliveryDetails.map((data) => {
@@ -2214,7 +2225,9 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const updatedOrder = yield orderMulti_schema_1.default.findOne({
             orderId: value.orderId,
         });
-        const allDelivered = updatedOrder.deliveryDetails.every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED ||
+        const allDelivered = updatedOrder.deliveryDetails
+            .filter((item) => item.trashed === false)
+            .every((detail) => detail.status === enum_1.ORDER_HISTORY.DELIVERED ||
             detail.status === enum_1.ORDER_HISTORY.CANCELLED ||
             detail.status === enum_1.ORDER_HISTORY.UNASSIGNED);
         if (allDelivered) {

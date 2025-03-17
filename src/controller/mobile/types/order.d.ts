@@ -160,7 +160,10 @@ interface OrderUpdateTypeMulti {
     cashOnDelivery: boolean;
     orderTimestamp: number;
     address: string;
+    pickupsignature: string;
+    deliverysignature: string;
     // countryCode: string;
+    reason: string;
     mobileNumber: string;
     email?: string;
     name: string;
