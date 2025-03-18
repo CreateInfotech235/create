@@ -824,8 +824,8 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                         chargeMethod: deliveryBoydata.chargeMethod,
                         amountOfPackage: item.paymentCollectionRupees,
                         orderStatus: enum_1.ORDER_HISTORY.ARRIVED,
-                        pickupAddress: isCreated.pickupDetails.address,
-                        deliveryAddress: item.address,
+                        pickupAddress: isCreated.pickupDetails.address.replace(isCreated.pickupDetails.postCode, '') + " " + "(" + isCreated.pickupDetails.postCode + ")",
+                        deliveryAddress: item.address.replace(item.postCode, '') + " " + "(" + item.postCode + ")",
                     });
                 }
                 catch (error) {

@@ -991,8 +991,8 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
             chargeMethod: deliveryBoydata.chargeMethod,
             amountOfPackage: item.paymentCollectionRupees,
             orderStatus: ORDER_HISTORY.ARRIVED,
-            pickupAddress: isCreated.pickupDetails.address,
-            deliveryAddress: item.address,
+            pickupAddress: isCreated.pickupDetails.address.replace(isCreated.pickupDetails.postCode,'')+ " "+"("+ isCreated.pickupDetails.postCode+")",
+            deliveryAddress: item.address.replace(item.postCode,'')+ " "+"("+ item.postCode+")",
           });
         } catch (error) {
           console.log(error, 'error');
