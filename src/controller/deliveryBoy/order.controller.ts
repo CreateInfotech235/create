@@ -991,8 +991,21 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
             chargeMethod: deliveryBoydata.chargeMethod,
             amountOfPackage: item.paymentCollectionRupees,
             orderStatus: ORDER_HISTORY.ARRIVED,
-            pickupAddress: isCreated.pickupDetails.address.replace(isCreated.pickupDetails.postCode,'')+ " "+"("+ isCreated.pickupDetails.postCode+")",
-            deliveryAddress: item.address.replace(item.postCode,'')+ " "+"("+ item.postCode+")",
+            pickupAddress:
+              isCreated.pickupDetails.address.replace(
+                isCreated.pickupDetails.postCode,
+                '',
+              ) +
+              ' ' +
+              '(' +
+              isCreated.pickupDetails.postCode +
+              ')',
+            deliveryAddress:
+              item.address.replace(item.postCode, '') +
+              ' ' +
+              '(' +
+              item.postCode +
+              ')',
           });
         } catch (error) {
           console.log(error, 'error');
@@ -3393,7 +3406,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                 $lte: new Date(endDate),
               },
             }),
-          // ...(status && { 'orderData.status': status }),
         },
       },
       {
@@ -3422,9 +3434,36 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
         },
       },
       {
-        // if orderData.deliveryDetails is empty, then return null
         $match: {
           'orderData.deliveryDetails': { $ne: [] },
+        },
+      },
+      {
+        $addFields: {
+          'orderData.pickupDetails.address': {
+            $concat: [
+              {
+                $trim: {
+                  input: {
+                    $substr: [
+                      '$orderData.pickupDetails.address',
+                      0,
+                      {
+                        $indexOfBytes: [
+                          '$orderData.pickupDetails.address',
+                          '$orderData.pickupDetails.postCode',
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
+              ' ',
+              '(',
+              '$orderData.pickupDetails.postCode',
+              ')',
+            ],
+          },
         },
       },
       {
@@ -3446,70 +3485,65 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                       '$$detail',
                       {
                         sortOrder: {
-                          $add: [
-                            {
-                              $switch: {
-                                branches: [
-                                  {
-                                    case: {
-                                      $eq: [
-                                        '$$detail.status',
-                                        ORDER_HISTORY.DEPARTED,
-                                      ],
-                                    },
-                                    then: 1,
-                                  },
-                                  {
-                                    case: {
-                                      $eq: [
-                                        '$$detail.status',
-                                        ORDER_HISTORY.PICKED_UP,
-                                      ],
-                                    },
-                                    then: 2,
-                                  },
-                                  {
-                                    case: {
-                                      $eq: [
-                                        '$$detail.status',
-                                        ORDER_HISTORY.ARRIVED,
-                                      ],
-                                    },
-                                    then: 3,
-                                  },
-
-                                  {
-                                    case: {
-                                      $eq: [
-                                        '$$detail.status',
-                                        ORDER_HISTORY.ASSIGNED,
-                                      ],
-                                    },
-                                    then: 4,
-                                  },
-                                  {
-                                    case: {
-                                      $eq: [
-                                        '$$detail.status',
-                                        ORDER_HISTORY.DELIVERED,
-                                      ],
-                                    },
-                                    then: 5,
-                                  },
-                                  {
-                                    case: {
-                                      $eq: [
-                                        '$$detail.status',
-                                        ORDER_HISTORY.CANCELLED,
-                                      ],
-                                    },
-                                    then: 6,
-                                  },
-                                ],
-                                default: 5,
+                          $switch: {
+                            branches: [
+                              {
+                                case: {
+                                  $eq: [
+                                    '$$detail.status',
+                                    ORDER_HISTORY.DEPARTED,
+                                  ],
+                                },
+                                then: 1,
                               },
-                            },
-                          ],
+                              {
+                                case: {
+                                  $eq: [
+                                    '$$detail.status',
+                                    ORDER_HISTORY.PICKED_UP,
+                                  ],
+                                },
+                                then: 2,
+                              },
+                              {
+                                case: {
+                                  $eq: [
+                                    '$$detail.status',
+                                    ORDER_HISTORY.ARRIVED,
+                                  ],
+                                },
+                                then: 3,
+                              },
+                              {
+                                case: {
+                                  $eq: [
+                                    '$$detail.status',
+                                    ORDER_HISTORY.ASSIGNED,
+                                  ],
+                                },
+                                then: 4,
+                              },
+                              {
+                                case: {
+                                  $eq: [
+                                    '$$detail.status',
+                                    ORDER_HISTORY.DELIVERED,
+                                  ],
+                                },
+                                then: 5,
+                              },
+                              {
+                                case: {
+                                  $eq: [
+                                    '$$detail.status',
+                                    ORDER_HISTORY.CANCELLED,
+                                  ],
+                                },
+                                then: 6,
+                              },
+                            ],
+                            default: 5,
+                          },
                         },
                         distance: {
                           $cond: {
@@ -3523,9 +3557,6 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                             else: 0,
                           },
                         },
-                        // paymentCollectionRupees: {
-                        //   $toString: '$$detail.paymentCollectionRupees'
-                        // }
                       },
                     ],
                   },
@@ -3605,7 +3636,7 @@ export const getMultiOrder = async (req: RequestParams, res: Response) => {
                                       1609.34,
                                     ],
                                   },
-                                  2, // rounding to 2 decimal places
+                                  2,
                                 ],
                               },
                             },
