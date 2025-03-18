@@ -1579,6 +1579,9 @@ export const getAllOrdersFromMerchantMulti = async (
           trashed: {
             $ifNull: ['$trashed', false],
           },
+          trashedtime: {
+            $ifNull: ['$trashedtime', null],
+          },
           showOrderNumber: 1,
         },
       },
@@ -1724,6 +1727,9 @@ export const getAllRecentOrdersFromMerchant = async (
           dateTime: 1,
           trashed: {
             $ifNull: ['$trashed', false],
+          },
+          trashedtime: {
+            $ifNull: ['$trashedtime', null],
           },
           showOrderNumber: 1,
           paymentCollectionRupees: 1,
@@ -1915,10 +1921,20 @@ export const moveToTrashMulti = async (req: RequestParams, res: Response) => {
     console.log('trash', trash);
 
     // Update main order trashed status and all delivery details trashed status
-    await orderSchemaMulti.findByIdAndUpdate(id, {
-      trashed: trash,
-      'deliveryDetails.$[].trashed': trash,
-    });
+
+    if (trash) {
+      await orderSchemaMulti.findByIdAndUpdate(id, {
+        trashed: trash,
+        'deliveryDetails.$[].trashed': trash,
+        trashedtime: new Date(),
+      });
+    } else {
+      await orderSchemaMulti.findByIdAndUpdate(id, {
+        trashed: trash,
+        'deliveryDetails.$[].trashed': trash,
+        trashedtime: null,
+      });
+    }
 
     await createNotification({
       userId: OrderData.merchant,
@@ -1992,6 +2008,7 @@ export const moveToTrashSubOrderMulti = async (
       {
         $set: {
           'deliveryDetails.$.trashed': trash,
+          trashedtime: trash ? new Date() : null,
         },
       },
     );

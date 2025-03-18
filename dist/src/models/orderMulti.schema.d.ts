@@ -136,6 +136,7 @@ declare const Model: mongoose.Model<{
     dayChargeNumber: number;
     distance: number;
     route: any[];
+    trashedtime: NativeDate;
     isReassign: boolean;
     description?: string;
     country?: mongoose.Types.ObjectId;
@@ -289,6 +290,7 @@ declare const Model: mongoose.Model<{
     dayChargeNumber: number;
     distance: number;
     route: any[];
+    trashedtime: NativeDate;
     isReassign: boolean;
     description?: string;
     country?: mongoose.Types.ObjectId;
@@ -442,6 +444,7 @@ declare const Model: mongoose.Model<{
     dayChargeNumber: number;
     distance: number;
     route: any[];
+    trashedtime: NativeDate;
     isReassign: boolean;
     description?: string;
     country?: mongoose.Types.ObjectId;
@@ -602,6 +605,7 @@ declare const Model: mongoose.Model<{
     dayChargeNumber: number;
     distance: number;
     route: any[];
+    trashedtime: NativeDate;
     isReassign: boolean;
     description?: string;
     country?: mongoose.Types.ObjectId;
@@ -755,6 +759,7 @@ declare const Model: mongoose.Model<{
     dayChargeNumber: number;
     distance: number;
     route: any[];
+    trashedtime: NativeDate;
     isReassign: boolean;
     description?: string;
     country?: mongoose.Types.ObjectId;
@@ -908,6 +913,7 @@ declare const Model: mongoose.Model<{
     dayChargeNumber: number;
     distance: number;
     route: any[];
+    trashedtime: NativeDate;
     isReassign: boolean;
     description?: string;
     country?: mongoose.Types.ObjectId;

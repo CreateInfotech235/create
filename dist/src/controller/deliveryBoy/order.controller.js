@@ -793,6 +793,7 @@ const arriveOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             ],
             new: true,
         });
+        console.log(orderData, 'orderData');
         for (const item of isCreated.deliveryDetails) {
             yield orderHistory_schema_1.default.create({
                 message: `Your order ${item.subOrderId} has been arrived`,

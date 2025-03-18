@@ -1248,6 +1248,9 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                     trashed: {
                         $ifNull: ['$trashed', false],
                     },
+                    trashedtime: {
+                        $ifNull: ['$trashedtime', null],
+                    },
                     showOrderNumber: 1,
                 },
             },
@@ -1388,6 +1391,9 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                     dateTime: 1,
                     trashed: {
                         $ifNull: ['$trashed', false],
+                    },
+                    trashedtime: {
+                        $ifNull: ['$trashedtime', null],
                     },
                     showOrderNumber: 1,
                     paymentCollectionRupees: 1,
@@ -1549,10 +1555,20 @@ const moveToTrashMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         console.log('OrderData', OrderData);
         console.log('trash', trash);
         // Update main order trashed status and all delivery details trashed status
-        yield orderMulti_schema_1.default.findByIdAndUpdate(id, {
-            trashed: trash,
-            'deliveryDetails.$[].trashed': trash,
-        });
+        if (trash) {
+            yield orderMulti_schema_1.default.findByIdAndUpdate(id, {
+                trashed: trash,
+                'deliveryDetails.$[].trashed': trash,
+                trashedtime: new Date(),
+            });
+        }
+        else {
+            yield orderMulti_schema_1.default.findByIdAndUpdate(id, {
+                trashed: trash,
+                'deliveryDetails.$[].trashed': trash,
+                trashedtime: null,
+            });
+        }
         yield (0, common_1.createNotification)({
             userId: OrderData.merchant,
             orderId: OrderData.orderId,
@@ -1603,6 +1619,7 @@ const moveToTrashSubOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0,
         }, {
             $set: {
                 'deliveryDetails.$.trashed': trash,
+                trashedtime: trash ? new Date() : null,
             },
         });
         if (updateResult.modifiedCount === 0) {

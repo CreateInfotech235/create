@@ -186,6 +186,7 @@ const OrderSchema = new mongoose.Schema(
     duration: { type: String },
     pickupExpress: { type: Boolean },
     cashCollection: { type: Number },
+    trashedtime: { type: Date, default: null },
     isCustomer: { type: Boolean, default: false },
     route: { type: Array, default: [] },
     isReassign: { type: Boolean, default: false },

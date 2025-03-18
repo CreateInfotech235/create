@@ -952,6 +952,8 @@ export const arriveOrderMulti = async (req: RequestParams, res: Response) => {
         new: true,
       },
     );
+    console.log(orderData, 'orderData');
+
     for (const item of isCreated.deliveryDetails) {
       await OrderHistorySchema.create({
         message: `Your order ${item.subOrderId} has been arrived`,
