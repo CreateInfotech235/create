@@ -1125,7 +1125,7 @@ const addDeliveryMan = (req, res) => __awaiter(void 0, void 0, void 0, function*
             });
         }
         value.password = yield (0, common_2.encryptPassword)({ password: value.password });
-        const data = yield deliveryMan_schema_1.default.create(Object.assign(Object.assign({}, value), { createdByAdmin: true, isVerified: true }));
+        const data = yield deliveryMan_schema_1.default.create(Object.assign(Object.assign({}, value), { createdByAdmin: true, isVerified: true, merchantId: req.id }));
         if (((_a = value === null || value === void 0 ? void 0 : value.documents) === null || _a === void 0 ? void 0 : _a.length) > 0) {
             const documentNames = yield Promise.all(value.documents.map((i, j) => __awaiter(void 0, void 0, void 0, function* () {
                 const document = i.image.split(',');

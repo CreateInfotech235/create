@@ -2,6 +2,7 @@ import { Response } from 'express';
 import mongoose, { FilterQuery } from 'mongoose';
 import {
   ADMIN_ORDER_LOCATIONS,
+  CHARGE_METHOD,
   ORDER_HISTORY,
   ORDER_LIST,
   ORDER_REQUEST,
@@ -1251,7 +1252,6 @@ export const getUserWithdrawHistory = async (
     });
   }
 };
-
 export const addDeliveryMan = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
@@ -1259,14 +1259,28 @@ export const addDeliveryMan = async (req: RequestParams, res: Response) => {
       lastName: string;
       email: string;
       password: string;
-      contactNumber: number;
-      countryCode: string;
+      contactNumber: string; // Changed to string to match deliveryMan.schema
+      // countryCode: string; // Removed as per context
       address: string;
+      postCode: string; // Added postCode to match deliveryMan.schema
       documents: {
         documentId: string;
         image: string;
         documentNumber: string;
       }[];
+      // Removed merchantId as per follow-up instructions
+      chargeMethod?: CHARGE_METHOD; // Added chargeMethod to match deliveryMan.schema
+      charge?: number; // Added charge to match deliveryMan.schema
+      image?: string; // Added image to match deliveryMan.schema
+      trashed?: boolean; // Added trashed to match deliveryMan.schema
+      location: {
+        latitude: number;
+        longitude: number;
+      };
+      defaultLocation: {
+        latitude: number;
+        longitude: number;
+      };
     }>(req.body, deliveryManSignUpValidation);
 
     if (!validateRequest.isValid) {
@@ -1288,6 +1302,7 @@ export const addDeliveryMan = async (req: RequestParams, res: Response) => {
       ...value,
       createdByAdmin: true,
       isVerified: true,
+      merchantId: req.id,
     });
 
     if (value?.documents?.length > 0) {

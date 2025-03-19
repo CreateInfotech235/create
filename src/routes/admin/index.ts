@@ -1,3 +1,4 @@
+import { Request, Response } from 'express';
 import express from 'express';
 import adminAuth from '../../middleware/admin.auth';
 import authRoutes from './auth.routes';
@@ -14,11 +15,14 @@ import userRoutes from './user.routes';
 import vehicleRoutes from './vehicle.routes';
 import getPaymentData from './getPaymentData.routes';
 
-
 const router = express.Router();
 
 router.use('/auth', authRoutes);
 router.use(adminAuth);
+router.post('/authenticate', adminAuth, (req: Request, res: Response) => {
+  const admin = { message: 'Admin Authenticated', status: true };
+  res.send(admin);
+});
 router.use('/users', userRoutes);
 router.use('/orders', orderRoutes);
 router.use('/vehicle', vehicleRoutes);
