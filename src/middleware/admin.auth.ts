@@ -18,7 +18,6 @@ export default async (
     }
 
     const token = bearerToken.split(' ');
-
     const data = verify(token[1], process.env.ACCESS_SECRET_KEY) as JwtPayload;
 
     if (!data) {
