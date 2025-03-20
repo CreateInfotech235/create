@@ -33,6 +33,7 @@ export declare const getLanguage: (lang: language) => {
     invoiceUpdatedSuccessfully: string;
     invoiceDeletedSuccessfully: string;
     invoiceDataFetchedSuccessfully: string;
+    merchantIdRequired: string;
     invalidCountry: string;
     subcriptionExpired: string;
     subcriptionPending: string;

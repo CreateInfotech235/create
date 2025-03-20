@@ -32,6 +32,7 @@ declare const messages: {
     invoiceUpdatedSuccessfully: string;
     invoiceDeletedSuccessfully: string;
     invoiceDataFetchedSuccessfully: string;
+    merchantIdRequired: string;
     invalidCountry: string;
     subcriptionExpired: string;
     subcriptionPending: string;

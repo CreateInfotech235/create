@@ -351,45 +351,18 @@ exports.updateCustomer = updateCustomer;
 const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const merchantId = yield req.query.merchantId;
-        // const { currentPage = 1, itemsPerPage = 10, searchQuery } = req.query;
-        console.log(merchantId);
-        if (merchantId === undefined) {
-            console.log(merchantId, 'merchantId');
-        }
-        // console.log(currentPage, itemsPerPage, searchQuery);
         var query = {
             merchantId: new mongoose_1.default.Types.ObjectId(merchantId),
-            // ...(searchQuery
-            //   ? {
-            //       $or: [
-            //         { firstName: { $regex: searchQuery, $options: 'i' } },
-            //         { lastName: { $regex: searchQuery, $options: 'i' } },
-            //         { email: { $regex: searchQuery, $options: 'i' } },
-            //         { NHS_Number: { $regex: searchQuery, $options: 'i' } },
-            //         { address: { $regex: searchQuery, $options: 'i' } },
-            //         { postCode: { $regex: searchQuery, $options: 'i' } },
-            //         { mobileNumber: { $regex: searchQuery, $options: 'i' } },
-            //         { showCustomerNumber: { $regex: searchQuery, $options: 'i' } },
-            //       ],
-            //     }
-            //   : {}),
         };
-        console.log(query, 'query');
         const data = yield customer_schema_1.default.aggregate([
             {
                 $match: query,
             },
             {
                 $sort: {
-                    showCustomerNumber: -1, // Sort by createdAt in descending order
+                    showCustomerNumber: -1,
                 },
             },
-            // {
-            //   $skip: currentPage * itemsPerPage,
-            // },
-            // {
-            //   $limit: itemsPerPage,
-            // },
             {
                 $lookup: {
                     from: 'country',
@@ -443,8 +416,6 @@ const getCustomers = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         ]);
-        const totell = yield customer_schema_1.default.countDocuments(query);
-        // console.log(data);
         return res.ok({ data: data === null ? [] : data });
     }
     catch (error) {

@@ -33,6 +33,7 @@ declare const _default: {
         invoiceUpdatedSuccessfully: string;
         invoiceDeletedSuccessfully: string;
         invoiceDataFetchedSuccessfully: string;
+        merchantIdRequired: string;
         invalidCountry: string;
         subcriptionExpired: string;
         subcriptionPending: string;

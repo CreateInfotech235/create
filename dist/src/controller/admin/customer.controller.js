@@ -18,6 +18,7 @@ const languageHelper_1 = require("../../language/languageHelper");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
 const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const addCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -51,72 +52,83 @@ const addCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.addCustomer = addCustomer;
 const getAllCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.query.existss);
-        const customers = yield customer_schema_1.default.aggregate([
+        const merchantId = yield req.query.merchantId;
+        if (!merchantId) {
+            return res.badRequest({
+                message: (0, languageHelper_1.getLanguage)('en').merchantIdRequired,
+            });
+        }
+        var query = {
+            merchantId: new mongoose_1.default.Types.ObjectId(merchantId),
+        };
+        const data = yield customer_schema_1.default.aggregate([
+            {
+                $match: query,
+            },
             {
                 $sort: {
-                    createdAt: -1,
+                    showCustomerNumber: -1,
                 },
             },
             {
                 $lookup: {
-                    from: 'merchants',
-                    localField: 'merchantId',
+                    from: 'country',
+                    localField: 'country',
                     foreignField: '_id',
-                    as: 'merchantDetails',
+                    as: 'countryData',
                 },
             },
             {
                 $unwind: {
-                    path: '$merchantDetails',
-                    preserveNullAndEmptyArrays: true, // This ensures merchantDetails is included even if null
+                    path: '$countryData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'city',
+                    localField: 'city',
+                    foreignField: '_id',
+                    as: 'cityData',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$cityData',
+                    preserveNullAndEmptyArrays: true,
                 },
             },
             {
                 $project: {
-                    showCustomerNumber: 1,
-                    firstName: '$firstName',
-                    lastName: '$lastName',
-                    address: 1,
-                    email: 1,
-                    postCode: 1,
-                    country: 1,
-                    city: 1,
-                    createdByAdmin: 1,
-                    mobileNumber: 1,
+                    _id: 1,
+                    cityId: '$cityData._id',
+                    city: '$city',
+                    country: '$country',
+                    countryName: '$countryData.countryName',
+                    address: '$address',
+                    firstName: { $ifNull: ['$firstName', ''] },
+                    lastName: { $ifNull: ['$lastName', ''] },
+                    email: '$email',
+                    mobileNumber: '$mobileNumber',
+                    postCode: '$postCode',
+                    location: '$location',
+                    NHS_Number: '$NHS_Number',
+                    createdDate: '$createdAt',
                     customerId: 1,
-                    location: 1,
-                    merchant: {
-                        $ifNull: [
-                            {
-                                $concat: [
-                                    { $ifNull: ['$merchantDetails.firstName', ''] },
-                                    { $ifNull: ['$merchantDetails.lastName', ''] },
-                                ],
-                            },
-                            '-',
-                        ],
+                    merchantId: 1,
+                    showCustomerNumber: '$showCustomerNumber',
+                    trashed: {
+                        $ifNull: ['$trashed', false],
                     },
                 },
             },
-            {
-                $match: (() => {
-                    if (req.query.existss === 'true') {
-                        return { createdByAdmin: true };
-                    }
-                    if (req.query.existss === 'false') {
-                        return { createdByAdmin: false };
-                    }
-                    return {};
-                })(),
-            },
         ]);
-        // console.log('🚀 ~ getAllCustomer ~ customers:', customers);
-        res.status(200).json({ data: customers });
+        return res.ok({ data: data === null ? [] : data });
     }
     catch (error) {
-        console.log('🚀 ~ getAllCustomer ~ error:', error);
-        res.status(500).json({ message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong });
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
     }
 });
 exports.getAllCustomer = getAllCustomer;

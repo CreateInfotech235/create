@@ -452,30 +452,9 @@ export const updateCustomer = async (req: RequestParams, res: Response) => {
 export const getCustomers = async (req: RequestParams, res: Response) => {
   try {
     const merchantId = await req.query.merchantId;
-    // const { currentPage = 1, itemsPerPage = 10, searchQuery } = req.query;
-    console.log(merchantId);
-    if (merchantId === undefined) {
-      console.log(merchantId, 'merchantId');
-    }
-    // console.log(currentPage, itemsPerPage, searchQuery);
     var query = {
       merchantId: new mongoose.Types.ObjectId(merchantId as string),
-      // ...(searchQuery
-      //   ? {
-      //       $or: [
-      //         { firstName: { $regex: searchQuery, $options: 'i' } },
-      //         { lastName: { $regex: searchQuery, $options: 'i' } },
-      //         { email: { $regex: searchQuery, $options: 'i' } },
-      //         { NHS_Number: { $regex: searchQuery, $options: 'i' } },
-      //         { address: { $regex: searchQuery, $options: 'i' } },
-      //         { postCode: { $regex: searchQuery, $options: 'i' } },
-      //         { mobileNumber: { $regex: searchQuery, $options: 'i' } },
-      //         { showCustomerNumber: { $regex: searchQuery, $options: 'i' } },
-      //       ],
-      //     }
-      //   : {}),
     };
-    console.log(query, 'query');
 
     const data = await customerSchema.aggregate([
       {
@@ -483,15 +462,9 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
       },
       {
         $sort: {
-          showCustomerNumber: -1, // Sort by createdAt in descending order
+          showCustomerNumber: -1, 
         },
       },
-      // {
-      //   $skip: currentPage * itemsPerPage,
-      // },
-      // {
-      //   $limit: itemsPerPage,
-      // },
       {
         $lookup: {
           from: 'country',
@@ -546,8 +519,6 @@ export const getCustomers = async (req: RequestParams, res: Response) => {
         },
       },
     ]);
-    const totell = await customerSchema.countDocuments(query);
-    // console.log(data);
     return res.ok({ data: data === null ? [] : data });
   } catch (error) {
     return res.failureResponse({

@@ -34,6 +34,7 @@ const messages = {
     invoiceUpdatedSuccessfully: 'Invoice updated successfully',
     invoiceDeletedSuccessfully: 'Invoice deleted successfully',
     invoiceDataFetchedSuccessfully: 'Invoice data fetched successfully',
+    merchantIdRequired: 'Merchant ID is required',
     invalidCountry: 'Country or city not found',
     subcriptionExpired: 'Your subcription is expired',
     subcriptionPending: 'Your subcription is not approved yet',
