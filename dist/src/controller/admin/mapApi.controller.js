@@ -48,7 +48,7 @@ exports.mapApiCreate = mapApiCreate;
 // Get all map keys
 const getAllmapApi = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const mapKeys = yield mapApi_schema_1.default.find({});
+        const mapKeys = yield mapApi_schema_1.default.find({ status: true });
         if (!mapKeys) {
             return res.status(404).json({ error: "No map key found" });
         }

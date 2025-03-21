@@ -38,6 +38,7 @@ const paymentGet_schema_1 = __importDefault(require("../../models/paymentGet.sch
 const axios_1 = __importDefault(require("axios"));
 const index_1 = require("../../../index");
 const user_schema_1 = __importDefault(require("../../models/user.schema"));
+const mapApi_schema_1 = __importDefault(require("../../models/mapApi.schema"));
 const handlebilling = (_a) => __awaiter(void 0, [_a], void 0, function* ({ merchant, orderId, }) {
     try {
         const merchantObjectId = new mongoose_1.default.Types.ObjectId(merchant);
@@ -1603,7 +1604,9 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').invalidSubOrderId });
         }
         // return;
-        const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
+        const mapKeys = yield mapApi_schema_1.default.findOne({ status: true });
+        const apiKey = mapKeys.mapKey;
+        // const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
         const optimizedRoute = [];
         let currentLocation = pickupLocation;
         // get all pikupoder oder id and all id of pikup

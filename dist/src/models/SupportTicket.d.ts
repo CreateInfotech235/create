@@ -36,14 +36,17 @@ declare const Model: mongoose.Model<{
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }> & {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }>;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
@@ -58,14 +61,17 @@ declare const Model: mongoose.Model<{
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }> & {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }>;
 }> & {
@@ -80,14 +86,17 @@ declare const Model: mongoose.Model<{
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }> & {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }>;
 } & {
@@ -109,14 +118,17 @@ declare const Model: mongoose.Model<{
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }> & {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }>;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
@@ -131,14 +143,17 @@ declare const Model: mongoose.Model<{
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }> & {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }>;
 }>> & mongoose.FlatRecord<{
@@ -153,14 +168,17 @@ declare const Model: mongoose.Model<{
     messages: mongoose.Types.DocumentArray<{
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }> & {
         text: string;
         sender: "merchant" | "admin";
+        isRead: boolean;
         timestamp: NativeDate;
     }>;
 }> & {

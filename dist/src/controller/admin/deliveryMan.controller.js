@@ -422,7 +422,6 @@ exports.getDeliveryManProfileById = getDeliveryManProfileById;
 const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.query, adminSide_validation_1.deliveryManListValidation);
-        console.log(req.id, 'req.query');
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
@@ -438,18 +437,14 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (value.createdByMerchant) {
             Query.createdByMerchant = value.createdByMerchant;
         }
-        if (value.searchValue) {
-            Query.name = { $regex: new RegExp(value.searchValue, 'i') };
-        }
-        console.log(Query, 'Query');
         const data = yield deliveryMan_schema_1.default.aggregate([
+            {
+                $match: Query,
+            },
             {
                 $sort: {
                     createdAt: -1,
                 },
-            },
-            {
-                $match: Query,
             },
             {
                 $lookup: {
@@ -544,14 +539,16 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                     },
                 },
             },
-            ...(0, common_1.getMongoCommonPagination)({
-                pageCount: value.pageCount,
-                pageLimit: value.pageLimit,
-            }),
         ]);
-        return res.ok({ data: data[0] });
+        // Adjust totalDataCount to reflect the actual count of the returned data
+        const newData = {
+            totalDataCount: data.length,
+            data: data,
+        };
+        return res.ok({ data: newData });
     }
     catch (error) {
+        console.log(error, 'error');
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });

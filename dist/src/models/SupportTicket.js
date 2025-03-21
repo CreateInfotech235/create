@@ -32,6 +32,7 @@ const SupportTicket = new mongoose_1.default.Schema({
         {
             text: { type: String, required: true },
             sender: { type: String, enum: ['merchant', 'admin'], required: true }, // 'merchant' or 'admin'
+            isRead: { type: Boolean, default: false },
             timestamp: { type: Date, default: Date.now },
         },
     ],

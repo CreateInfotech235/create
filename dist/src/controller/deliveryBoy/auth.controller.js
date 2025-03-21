@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.stripPayment = exports.getApproveSubscription = exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.moveToTrashDeliveryMan = exports.updateDeliveryManProfile = exports.deleteDeliveryMan = exports.getDeliveryManLocation = exports.getDeliveryManProfile = exports.updateLocation = exports.getDeliveryBoysForMerchant = exports.updateDeliveryManStatus = exports.updateDeliveryManProfileAndPassword = exports.signUp = exports.verifyPassword = void 0;
+exports.getMapApi = exports.stripPayment = exports.getApproveSubscription = exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.moveToTrashDeliveryMan = exports.updateDeliveryManProfile = exports.deleteDeliveryMan = exports.getDeliveryManLocation = exports.getDeliveryManProfile = exports.updateLocation = exports.getDeliveryBoysForMerchant = exports.updateDeliveryManStatus = exports.updateDeliveryManProfileAndPassword = exports.signUp = exports.verifyPassword = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -54,6 +54,7 @@ const subcriptionPurchase_schema_1 = __importDefault(require("../../models/subcr
 const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const stripe_1 = __importDefault(require("stripe"));
 const subcription_schema_1 = __importDefault(require("../../models/subcription.schema"));
+const mapApi_schema_1 = __importDefault(require("../../models/mapApi.schema"));
 const stripe = new stripe_1.default('sk_test_51QWXp5FWojz9eoui3b20GWIoF6Yxged00OdF74C7SSSqnpYie13SsJWAm6ev4AvSaA8lLl3JjZJWvRxqeIB9wihP00AaiXdZKs');
 const verifyPassword = (_a) => __awaiter(void 0, [_a], void 0, function* ({ password, hash, }) {
     return bcrypt_1.default.compare(password, hash);
@@ -189,7 +190,8 @@ const updateDeliveryManProfileAndPassword = (req, res) => __awaiter(void 0, void
         }
         if (updateData === null || updateData === void 0 ? void 0 : updateData.address) {
             try {
-                const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
+                const mapKeys = yield mapApi_schema_1.default.findOne({ status: true });
+                const apiKey = mapKeys.mapKey;
                 const response = yield fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(updateData.address)}&key=${apiKey}`);
                 const data = yield response.json();
                 if (data.results && data.results.length > 0) {
@@ -839,3 +841,28 @@ const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.stripPayment = stripPayment;
+// export const getMapApi = async (req: RequestParams, res: Response) => { 
+//   try {
+//     const mapApi = await MapApi.findOne({status:true});
+//      res.status(200).json({mapApi});
+//   } catch (error:any) {
+//      res.status(500).json({error:error.message});
+//   }
+// }
+const getMapApi = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const mapApi = yield mapApi_schema_1.default.findOne({ status: true });
+        return res.status(200).json({
+            status: true,
+            data: mapApi,
+        });
+    }
+    catch (error) {
+        console.error('Error in getMapApi:', error.message);
+        return res.status(500).json({
+            status: false,
+            message: 'Something went wrong while fetching map api.',
+        });
+    }
+});
+exports.getMapApi = getMapApi;

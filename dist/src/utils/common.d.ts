@@ -52,8 +52,8 @@ export declare const createNotification: ({ userId, subOrderId, title, message, 
     type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
     message: string;
     title: string;
-    userId: Types.ObjectId;
     isRead: boolean;
+    userId: Types.ObjectId;
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
@@ -68,8 +68,8 @@ export declare const createNotification: ({ userId, subOrderId, title, message, 
     type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
     message: string;
     title: string;
-    userId: Types.ObjectId;
     isRead: boolean;
+    userId: Types.ObjectId;
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;

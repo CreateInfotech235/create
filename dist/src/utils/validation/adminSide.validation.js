@@ -35,9 +35,6 @@ exports.adminSignInValidation = joi_1.default.object({
 exports.deliveryManListValidation = joi_1.default.object({
     createdByAdmin: joi_1.default.boolean(),
     createdByMerchant: joi_1.default.boolean(),
-    pageCount: joi_1.default.number().required(),
-    pageLimit: joi_1.default.number().required(),
-    searchValue: joi_1.default.string(),
     isVerified: joi_1.default.boolean().required(),
 });
 exports.paginationValidation = joi_1.default.object({
@@ -58,7 +55,7 @@ exports.manageSubscriptionValidation = joi_1.default.object({
     discount: joi_1.default.number(),
     features: joi_1.default.array().items(joi_1.default.string()),
     days: joi_1.default.number(),
-    subscriptionId: joi_1.default.string().regex(/^[0-9a-fA-F]{24}$/),
+    subscriptionId: joi_1.default.string().regex(/^[0-9a-fA-F]{24}$/).allow(""),
 });
 exports.subscription = joi_1.default.object({
     id: joi_1.default.string().required().messages({

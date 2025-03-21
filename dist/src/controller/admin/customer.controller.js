@@ -102,24 +102,22 @@ const getAllCustomer = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 $project: {
                     _id: 1,
                     cityId: '$cityData._id',
+                    countryName: '$countryData.countryName',
                     city: '$city',
                     country: '$country',
-                    countryName: '$countryData.countryName',
                     address: '$address',
+                    postCode: '$postCode',
                     firstName: { $ifNull: ['$firstName', ''] },
                     lastName: { $ifNull: ['$lastName', ''] },
                     email: '$email',
                     mobileNumber: '$mobileNumber',
-                    postCode: '$postCode',
                     location: '$location',
                     NHS_Number: '$NHS_Number',
                     createdDate: '$createdAt',
                     customerId: 1,
                     merchantId: 1,
                     showCustomerNumber: '$showCustomerNumber',
-                    trashed: {
-                        $ifNull: ['$trashed', false],
-                    },
+                    trashed: 1
                 },
             },
         ]);

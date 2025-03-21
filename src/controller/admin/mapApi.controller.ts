@@ -43,7 +43,7 @@ export const mapApiCreate = async (req: RequestParams, res: Response) => {
 // Get all map keys
 export const getAllmapApi = async (req: RequestParams, res: Response) => {
   try {
-    const mapKeys = await MapApi.find({});
+    const mapKeys = await MapApi.find({status:true});
     if (!mapKeys) {
       return res.status(404).json({ error: "No map key found" });
     }

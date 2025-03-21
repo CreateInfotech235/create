@@ -490,18 +490,15 @@ export const getDeliveryManProfileById = async (
     });
   }
 };
-
 export const getDeliveryMans = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<
       {
         createdByAdmin?: boolean;
         createdByMerchant?: boolean;
-        searchValue?: string;
         isVerified?: boolean;
       } & IPagination
     >(req.query, deliveryManListValidation);
-    console.log(req.id, 'req.query');
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
@@ -523,19 +520,14 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
       Query.createdByMerchant = value.createdByMerchant;
     }
 
-    if (value.searchValue) {
-      Query.name = { $regex: new RegExp(value.searchValue, 'i') };
-    }
-    console.log(Query, 'Query');
-
     const data = await deliveryManSchema.aggregate([
+      {
+        $match: Query,
+      },
       {
         $sort: {
           createdAt: -1,
         },
-      },
-      {
-        $match: Query,
       },
       {
         $lookup: {
@@ -630,14 +622,16 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
           },
         },
       },
-      ...getMongoCommonPagination({
-        pageCount: value.pageCount,
-        pageLimit: value.pageLimit,
-      }),
     ]);
+    // Adjust totalDataCount to reflect the actual count of the returned data
+    const newData = {
+      totalDataCount: data.length,
+      data: data,
+    };
 
-    return res.ok({ data: data[0] });
+    return res.ok({ data: newData });
   } catch (error) {
+    console.log(error, 'error');
     return res.failureResponse({
       message: getLanguage('en').somethingWentWrong,
     });

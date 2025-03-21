@@ -32,8 +32,8 @@ declare const Model: mongoose.Model<{
     type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
     message: string;
     title: string;
-    userId: mongoose.Types.ObjectId;
     isRead: boolean;
+    userId: mongoose.Types.ObjectId;
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
@@ -48,8 +48,8 @@ declare const Model: mongoose.Model<{
     type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
     message: string;
     title: string;
-    userId: mongoose.Types.ObjectId;
     isRead: boolean;
+    userId: mongoose.Types.ObjectId;
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
@@ -64,8 +64,8 @@ declare const Model: mongoose.Model<{
     type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
     message: string;
     title: string;
-    userId: mongoose.Types.ObjectId;
     isRead: boolean;
+    userId: mongoose.Types.ObjectId;
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
@@ -87,8 +87,8 @@ declare const Model: mongoose.Model<{
     type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
     message: string;
     title: string;
-    userId: mongoose.Types.ObjectId;
     isRead: boolean;
+    userId: mongoose.Types.ObjectId;
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
@@ -103,8 +103,8 @@ declare const Model: mongoose.Model<{
     type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
     message: string;
     title: string;
-    userId: mongoose.Types.ObjectId;
     isRead: boolean;
+    userId: mongoose.Types.ObjectId;
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;
@@ -119,8 +119,8 @@ declare const Model: mongoose.Model<{
     type: "ADMIN" | "MERCHANT" | "DELIVERYMAN";
     message: string;
     title: string;
-    userId: mongoose.Types.ObjectId;
     isRead: boolean;
+    userId: mongoose.Types.ObjectId;
     orderId?: number;
     subOrderId?: number[];
     deliveryBoyname?: string;

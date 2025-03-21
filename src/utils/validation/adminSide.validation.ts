@@ -41,9 +41,6 @@ export const adminSignInValidation = Joi.object({
 export const deliveryManListValidation = Joi.object({
   createdByAdmin: Joi.boolean(),
   createdByMerchant: Joi.boolean(),
-  pageCount: Joi.number().required(),
-  pageLimit: Joi.number().required(),
-  searchValue: Joi.string(),
   isVerified: Joi.boolean().required(),
 });
 
@@ -67,7 +64,7 @@ export const manageSubscriptionValidation = Joi.object({
   discount: Joi.number(),
   features: Joi.array().items(Joi.string()),
   days: Joi.number(),
-  subscriptionId: Joi.string().regex(/^[0-9a-fA-F]{24}$/),
+  subscriptionId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).allow(""),
 });
 export const subscription = Joi.object({
   id: Joi.string().required().messages({

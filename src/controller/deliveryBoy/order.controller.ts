@@ -68,6 +68,7 @@ import paymentGetSchema from '../../models/paymentGet.schema';
 import axios from 'axios';
 import { io } from '../../../index';
 import merchantSchema from '../../models/user.schema';
+import MapApi from '../../models/mapApi.schema';
 
 const handlebilling = async ({
   merchant,
@@ -2001,7 +2002,10 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
     }
     // return;
 
-    const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
+    const mapKeys = await MapApi.findOne({status:true});
+    const apiKey = mapKeys.mapKey;
+
+    // const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
     const optimizedRoute: any = [];
     let currentLocation = pickupLocation;
 

@@ -37,7 +37,7 @@ import {
   resetPassword,
   deleteAllNotifications,
 } from '../../controller/mobile/auth.controller';
-import { getApproveSubscription,stripPayment } from '../../controller/deliveryBoy/auth.controller';
+import { getApproveSubscription,getMapApi,stripPayment } from '../../controller/deliveryBoy/auth.controller';
 import multer from 'multer';
 import {
   deleteDeliveryMan,
@@ -932,5 +932,6 @@ router.get('/getApproveSubscription/:id', getApproveSubscription);
 
 router.post('/create-payment-intent', stripPayment);
 
+router.get('/getMapApi', getMapApi);
 
 export default router;

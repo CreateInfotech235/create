@@ -33,7 +33,7 @@ import subcriptionPurchaseSchema from '../../models/subcriptionPurchase.schema';
 import merchantSchema from '../../models/user.schema';
 import Stripe from 'stripe';
 import SubcriptionSchema from '../../models/subcription.schema';
-
+import MapApi from '../../models/mapApi.schema';
 const stripe = new Stripe(
   'sk_test_51QWXp5FWojz9eoui3b20GWIoF6Yxged00OdF74C7SSSqnpYie13SsJWAm6ev4AvSaA8lLl3JjZJWvRxqeIB9wihP00AaiXdZKs',
 );
@@ -258,7 +258,9 @@ export const updateDeliveryManProfileAndPassword = async (
 
     if (updateData?.address) {
       try {
-        const apiKey = 'AIzaSyDB4WPFybdVL_23rMMOAcqIEsPaSsb-jzo';
+
+        const mapKeys = await MapApi.findOne({status:true});
+        const apiKey = mapKeys.mapKey;
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
             updateData.address,
@@ -1039,6 +1041,36 @@ export const stripPayment = async (req: RequestParams, res: Response) => {
 
     res.status(500).send({
       message: 'Something went wrong while processing the payment.',
+    });
+  }
+};
+
+// export const getMapApi = async (req: RequestParams, res: Response) => { 
+//   try {
+//     const mapApi = await MapApi.findOne({status:true});
+//      res.status(200).json({mapApi});
+//   } catch (error:any) {
+//      res.status(500).json({error:error.message});
+//   }
+// }
+
+
+
+export const getMapApi = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const mapApi = await MapApi.findOne({status:true});
+    return res.status(200).json({
+      status: true,
+      data:mapApi,
+    });
+  } catch (error: any) {
+    console.error('Error in getMapApi:', error.message);
+    return res.status(500).json({
+      status: false,
+      message: 'Something went wrong while fetching map api.',
     });
   }
 };
