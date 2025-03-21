@@ -35,6 +35,7 @@ import {
   orderLocationValidation,
   orderWiseDeliveryManValidation,
   paginationValidation,
+  paginationValidation2,
   userWalletListValidation,
   verificationStatusValidation,
 } from '../../utils/validation/adminSide.validation';
@@ -211,22 +212,28 @@ export const getDeliveryManLocations = async (
   res: Response,
 ) => {
   try {
-    const validateRequest = validateParamsWithJoi<IPagination>(
+    const validateRequest = validateParamsWithJoi<IPagination2>(
       req.query,
-      paginationValidation,
+      paginationValidation2,
     );
 
     if (!validateRequest.isValid) {
       return res.badRequest({ message: validateRequest.message });
     }
+    
+
 
     const { value } = validateRequest;
 
+    const Query: FilterQuery<IPagination> = {};
+    if (value.merchantId) {
+      Query.merchantId = new mongoose.Types.ObjectId(value.merchantId);
+    }
+    
+
     const data = await deliveryManSchema.aggregate([
       {
-        $match: {
-          isCustomer: false,
-        },
+        $match: Query,
       },
       {
         $lookup: {
@@ -288,14 +295,10 @@ export const getDeliveryManLocations = async (
           // city: '$cityData.cityName',
         },
       },
-      ...getMongoCommonPagination({
-        pageCount: value.pageCount,
-        pageLimit: value.pageLimit,
-      }),
     ]);
 
     return res.ok({
-      data: data[0],
+      data: data,
     });
   } catch (error) {
     return res.failureResponse({
@@ -497,6 +500,7 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
         createdByAdmin?: boolean;
         createdByMerchant?: boolean;
         isVerified?: boolean;
+        merchantId?: string;
       } & IPagination
     >(req.query, deliveryManListValidation);
 
@@ -518,6 +522,10 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
 
     if (value.createdByMerchant) {
       Query.createdByMerchant = value.createdByMerchant;
+    }
+
+    if (value.merchantId) {
+      Query.merchantId = new mongoose.Types.ObjectId(value.merchantId);
     }
 
     const data = await deliveryManSchema.aggregate([
@@ -552,7 +560,7 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
           pipeline: [
             {
               $project: {
-                _id: 0,
+                merchantId: '$_id',
                 firstName: 1,
                 lastName: 1,
               },
@@ -581,6 +589,7 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
               else: 'Unknown Merchant',
             },
           },
+          merchantId: '$merchantData.merchantId',
         },
       },
       {
@@ -601,6 +610,7 @@ export const getDeliveryMans = async (req: RequestParams, res: Response) => {
         $project: {
           firstName: 1,
           lastName: 1,
+          merchantId: 1,
           countryCode: 1,
           merchantName: 1,
           contactNumber: 1,

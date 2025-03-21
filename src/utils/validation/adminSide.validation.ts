@@ -42,11 +42,17 @@ export const deliveryManListValidation = Joi.object({
   createdByAdmin: Joi.boolean(),
   createdByMerchant: Joi.boolean(),
   isVerified: Joi.boolean().required(),
+  merchantId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).allow(""),
 });
 
 export const paginationValidation = Joi.object({
-  pageCount: Joi.number().required(),
-  pageLimit: Joi.number().required(),
+  pageCount: Joi.number().allow(""),
+  pageLimit: Joi.number().allow(""),
+});
+export const paginationValidation2 = Joi.object({
+  pageCount: Joi.number().allow(""),
+  pageLimit: Joi.number().allow(""),
+  merchantId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).allow(""),
 });
 export const paginationValidationOp = Joi.object({
   pageCount: Joi.number().optional(),

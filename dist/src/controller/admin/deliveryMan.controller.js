@@ -163,16 +163,18 @@ const getDeliveryManDocuments = (req, res) => __awaiter(void 0, void 0, void 0, 
 exports.getDeliveryManDocuments = getDeliveryManDocuments;
 const getDeliveryManLocations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const validateRequest = (0, validateRequest_1.default)(req.query, adminSide_validation_1.paginationValidation);
+        const validateRequest = (0, validateRequest_1.default)(req.query, adminSide_validation_1.paginationValidation2);
         if (!validateRequest.isValid) {
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        const Query = {};
+        if (value.merchantId) {
+            Query.merchantId = new mongoose_1.default.Types.ObjectId(value.merchantId);
+        }
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
-                $match: {
-                    isCustomer: false,
-                },
+                $match: Query,
             },
             {
                 $lookup: {
@@ -234,13 +236,9 @@ const getDeliveryManLocations = (req, res) => __awaiter(void 0, void 0, void 0, 
                     // city: '$cityData.cityName',
                 },
             },
-            ...(0, common_1.getMongoCommonPagination)({
-                pageCount: value.pageCount,
-                pageLimit: value.pageLimit,
-            }),
         ]);
         return res.ok({
-            data: data[0],
+            data: data,
         });
     }
     catch (error) {
@@ -437,6 +435,9 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (value.createdByMerchant) {
             Query.createdByMerchant = value.createdByMerchant;
         }
+        if (value.merchantId) {
+            Query.merchantId = new mongoose_1.default.Types.ObjectId(value.merchantId);
+        }
         const data = yield deliveryMan_schema_1.default.aggregate([
             {
                 $match: Query,
@@ -469,7 +470,7 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                     pipeline: [
                         {
                             $project: {
-                                _id: 0,
+                                merchantId: '$_id',
                                 firstName: 1,
                                 lastName: 1,
                             },
@@ -498,6 +499,7 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                             else: 'Unknown Merchant',
                         },
                     },
+                    merchantId: '$merchantData.merchantId',
                 },
             },
             {
@@ -518,6 +520,7 @@ const getDeliveryMans = (req, res) => __awaiter(void 0, void 0, void 0, function
                 $project: {
                     firstName: 1,
                     lastName: 1,
+                    merchantId: 1,
                     countryCode: 1,
                     merchantName: 1,
                     contactNumber: 1,

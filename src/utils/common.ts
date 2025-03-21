@@ -126,9 +126,7 @@ export const createNotification = async ({
       customerid,
     });
 
-
     const customer = await CustomerSchema.findOne({ _id: customerid });
-
 
     // Get user data to find socket ID
     const user = await merchantSchema.findOne({ _id: userId });
