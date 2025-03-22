@@ -31,10 +31,9 @@ export const sendNotificationinapp = async (
       token,
     };
 
-    const response = await admin.messaging().send(message);
+    await admin.messaging().send(message);
     return { message: 'Notification sent successfully' }; // Removed 'response' from the return object
   } catch (error) {
     console.error('Error sending notification:', error);
-    throw new Error('Failed to send notification');
   }
 };
