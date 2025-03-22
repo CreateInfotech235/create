@@ -1,17 +1,23 @@
 import { Request, Response } from 'express';
 import admin from 'firebase-admin';
-import fs from 'fs';
 
-const serviceAccount = fs.existsSync('/etc/secrets/create-courier-Not.json') 
-  ? require('/etc/secrets/create-courier-Not.json') 
-  : require("../../../create-courier-Not.json");
+// Ensure the environment variable is set
+const serviceAccount = require('fs').existsSync(
+  '/etc/secrets/create-courier-Not.json',
+)
+  ? require('/etc/secrets/create-courier-Not.json')
+  : require('../../../create-courier-Not.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://create-courier-2e918.firebaseio.com',
 });
 
-export const sendNotificationinapp = async (title: string, body: string, token: string) => {
+export const sendNotificationinapp = async (
+  title: string,
+  body: string,
+  token: string,
+) => {
   try {
     if (!title || !body || !token) {
       throw new Error('Title, body, and token are required.');
