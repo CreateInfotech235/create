@@ -1259,7 +1259,6 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                 },
             },
         ]);
-        console.log('data', data);
         return res.ok({ data });
     }
     catch (error) {

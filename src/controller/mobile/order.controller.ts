@@ -1591,7 +1591,6 @@ export const getAllOrdersFromMerchantMulti = async (
       },
     ]);
 
-    console.log('data', data);
 
     return res.ok({ data });
   } catch (error) {
