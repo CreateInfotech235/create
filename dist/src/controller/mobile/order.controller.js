@@ -1163,6 +1163,8 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                                 _id: 1,
                                 firstName: 1,
                                 lastName: 1,
+                                email: 1,
+                                contactNumber: 1,
                             },
                         },
                     ],
@@ -1227,6 +1229,8 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                             '$deliveryManData.lastName',
                         ],
                     },
+                    deliveryManEmail: '$deliveryManData.email',
+                    deliveryManMobileNumber: '$deliveryManData.contactNumber',
                     deliveryManId: '$deliveryManData._id',
                     pickupDate: {
                         $dateToString: {
@@ -1255,7 +1259,7 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                 },
             },
         ]);
-        // console.log("data", data);
+        console.log('data', data);
         return res.ok({ data });
     }
     catch (error) {
@@ -1267,25 +1271,22 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
 exports.getAllOrdersFromMerchantMulti = getAllOrdersFromMerchantMulti;
 const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const { getallcancelledorders = 'false' } = req.query;
         const data = yield orderMulti_schema_1.default.aggregate([
-            {
-                $match: {
-                    // 7 days ago
-                    createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) },
-                    merchant: new mongoose_1.default.Types.ObjectId(req.id),
-                },
-            },
             {
                 $sort: {
                     createdAt: -1,
                 },
             },
             {
-                $limit: 10,
+                $match: {
+                    createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) },
+                    'pickupDetails.merchantId': new mongoose_1.default.Types.ObjectId(req.params.id),
+                },
             },
             {
                 $lookup: {
-                    from: 'orderAssign',
+                    from: 'orderAssigneeMulti',
                     localField: 'orderId',
                     foreignField: 'order',
                     as: 'orderAssignData',
@@ -1306,31 +1307,19 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                 },
             },
             {
-                $lookup: {
-                    from: 'users',
-                    localField: 'merchant',
-                    foreignField: '_id',
-                    as: 'userData',
-                    pipeline: [
-                        {
-                            $project: {
-                                _id: 0,
-                                name: 1,
-                            },
-                        },
-                    ],
+                $addFields: {
+                    deliveryBoy: '$orderAssignData.deliveryBoy',
                 },
             },
             {
-                $unwind: {
-                    path: '$userData',
-                    preserveNullAndEmptyArrays: true,
+                $project: {
+                    orderAssignData: 0,
                 },
             },
             {
                 $lookup: {
                     from: 'deliveryMan',
-                    localField: 'orderAssignData.deliveryBoy',
+                    localField: 'deliveryBoy',
                     foreignField: '_id',
                     as: 'deliveryManData',
                     pipeline: [
@@ -1339,6 +1328,8 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                                 _id: 1,
                                 firstName: 1,
                                 lastName: 1,
+                                email: 1,
+                                contactNumber: 1,
                             },
                         },
                     ],
@@ -1351,12 +1342,54 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                 },
             },
             {
+                $addFields: {
+                    hasCancelledDelivery: {
+                        $cond: {
+                            if: { $eq: [getallcancelledorders, 'true'] },
+                            then: {
+                                $anyElementTrue: {
+                                    $map: {
+                                        input: '$deliveryDetails',
+                                        as: 'detail',
+                                        in: { $eq: ['$$detail.status', enum_1.ORDER_HISTORY.CANCELLED] },
+                                    },
+                                },
+                            },
+                            else: true,
+                        },
+                    },
+                },
+            },
+            {
+                $match: {
+                    hasCancelledDelivery: true,
+                },
+            },
+            {
+                $limit: 10,
+            },
+            {
                 $project: {
                     _id: 1,
                     orderId: 1,
-                    customerName: { $arrayElemAt: ['$deliveryDetails.name', 0] },
+                    isReassign: {
+                        $ifNull: ['$isReassign', false],
+                    },
+                    customerId: 1,
                     pickupAddress: '$pickupDetails',
-                    deliveryAddress: '$deliveryDetails',
+                    deliveryAddress: {
+                        $cond: {
+                            if: { $eq: [getallcancelledorders, 'true'] },
+                            then: {
+                                $filter: {
+                                    input: '$deliveryDetails',
+                                    as: 'detail',
+                                    cond: { $eq: ['$$detail.status', enum_1.ORDER_HISTORY.CANCELLED] },
+                                },
+                            },
+                            else: '$deliveryDetails',
+                        },
+                    },
                     deliveryMan: {
                         $concat: [
                             '$deliveryManData.firstName',
@@ -1364,6 +1397,8 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                             '$deliveryManData.lastName',
                         ],
                     },
+                    deliveryManEmail: '$deliveryManData.email',
+                    deliveryManMobileNumber: '$deliveryManData.contactNumber',
                     deliveryManId: '$deliveryManData._id',
                     pickupDate: {
                         $dateToString: {
@@ -1372,12 +1407,6 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                         },
                     },
                     merchantId: '$pickupDetails.merchantId',
-                    deliveryDate: {
-                        $dateToString: {
-                            format: '%d-%m-%Y , %H:%M',
-                            date: { $arrayElemAt: ['$deliveryDetails.orderTimestamp', 0] },
-                        },
-                    },
                     createdDate: {
                         $dateToString: {
                             format: '%d-%m-%Y , %H:%M',
@@ -1386,7 +1415,6 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                     },
                     pickupRequest: '$pickupDetails.request',
                     postCode: '$pickupDetails.postCode',
-                    cashOnDelivery: 1,
                     status: 1,
                     dateTime: 1,
                     trashed: {
@@ -1396,7 +1424,6 @@ const getAllRecentOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, v
                         $ifNull: ['$trashedtime', null],
                     },
                     showOrderNumber: 1,
-                    paymentCollectionRupees: 1,
                 },
             },
         ]);

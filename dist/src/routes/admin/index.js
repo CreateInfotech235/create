@@ -18,6 +18,7 @@ const subscription_routes_1 = __importDefault(require("./subscription.routes"));
 const user_routes_1 = __importDefault(require("./user.routes"));
 const vehicle_routes_1 = __importDefault(require("./vehicle.routes"));
 const getPaymentData_routes_1 = __importDefault(require("./getPaymentData.routes"));
+const Billing_routes_1 = __importDefault(require("./Billing.routes"));
 const router = express_1.default.Router();
 router.use('/auth', auth_routes_1.default);
 router.post('/authenticate', admin_auth_1.default, (req, res) => {
@@ -25,6 +26,7 @@ router.post('/authenticate', admin_auth_1.default, (req, res) => {
     res.send(admin);
 });
 router.use(admin_auth_1.default);
+router.use('/billing', Billing_routes_1.default);
 router.use('/users', user_routes_1.default);
 router.use('/orders', order_routes_1.default);
 router.use('/vehicle', vehicle_routes_1.default);

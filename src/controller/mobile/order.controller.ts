@@ -1494,6 +1494,8 @@ export const getAllOrdersFromMerchantMulti = async (
                 _id: 1,
                 firstName: 1,
                 lastName: 1,
+                email: 1,
+                contactNumber: 1,
               },
             },
           ],
@@ -1558,6 +1560,8 @@ export const getAllOrdersFromMerchantMulti = async (
               '$deliveryManData.lastName',
             ],
           },
+          deliveryManEmail: '$deliveryManData.email',
+          deliveryManMobileNumber: '$deliveryManData.contactNumber',
           deliveryManId: '$deliveryManData._id',
           pickupDate: {
             $dateToString: {
@@ -1587,7 +1591,7 @@ export const getAllOrdersFromMerchantMulti = async (
       },
     ]);
 
-    // console.log("data", data);
+    console.log('data', data);
 
     return res.ok({ data });
   } catch (error) {
@@ -1602,26 +1606,24 @@ export const getAllRecentOrdersFromMerchant = async (
   res: Response,
 ) => {
   try {
+    const { getallcancelledorders = 'false' } = req.query;
     const data = await orderSchemaMulti.aggregate([
-      {
-        $match: {
-          // 7 days ago
-          createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) },
-          merchant: new mongoose.Types.ObjectId(req.id),
-        },
-      },
       {
         $sort: {
           createdAt: -1,
         },
       },
       {
-        $limit: 10,
+        $match: {
+          createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) },
+          'pickupDetails.merchantId': new mongoose.Types.ObjectId(
+            req.params.id,
+          ),
+        },
       },
-
       {
         $lookup: {
-          from: 'orderAssign',
+          from: 'orderAssigneeMulti',
           localField: 'orderId',
           foreignField: 'order',
           as: 'orderAssignData',
@@ -1642,31 +1644,19 @@ export const getAllRecentOrdersFromMerchant = async (
         },
       },
       {
-        $lookup: {
-          from: 'users',
-          localField: 'merchant',
-          foreignField: '_id',
-          as: 'userData',
-          pipeline: [
-            {
-              $project: {
-                _id: 0,
-                name: 1,
-              },
-            },
-          ],
+        $addFields: {
+          deliveryBoy: '$orderAssignData.deliveryBoy',
         },
       },
       {
-        $unwind: {
-          path: '$userData',
-          preserveNullAndEmptyArrays: true,
+        $project: {
+          orderAssignData: 0,
         },
       },
       {
         $lookup: {
           from: 'deliveryMan',
-          localField: 'orderAssignData.deliveryBoy',
+          localField: 'deliveryBoy',
           foreignField: '_id',
           as: 'deliveryManData',
           pipeline: [
@@ -1675,6 +1665,8 @@ export const getAllRecentOrdersFromMerchant = async (
                 _id: 1,
                 firstName: 1,
                 lastName: 1,
+                email: 1,
+                contactNumber: 1,
               },
             },
           ],
@@ -1687,12 +1679,54 @@ export const getAllRecentOrdersFromMerchant = async (
         },
       },
       {
+        $addFields: {
+          hasCancelledDelivery: {
+            $cond: {
+              if: { $eq: [getallcancelledorders, 'true'] },
+              then: {
+                $anyElementTrue: {
+                  $map: {
+                    input: '$deliveryDetails',
+                    as: 'detail',
+                    in: { $eq: ['$$detail.status', ORDER_HISTORY.CANCELLED] },
+                  },
+                },
+              },
+              else: true,
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          hasCancelledDelivery: true,
+        },
+      },
+      {
+        $limit: 10,
+      },
+      {
         $project: {
           _id: 1,
           orderId: 1,
-          customerName: { $arrayElemAt: ['$deliveryDetails.name', 0] },
+          isReassign: {
+            $ifNull: ['$isReassign', false],
+          },
+          customerId: 1,
           pickupAddress: '$pickupDetails',
-          deliveryAddress: '$deliveryDetails',
+          deliveryAddress: {
+            $cond: {
+              if: { $eq: [getallcancelledorders, 'true'] },
+              then: {
+                $filter: {
+                  input: '$deliveryDetails',
+                  as: 'detail',
+                  cond: { $eq: ['$$detail.status', ORDER_HISTORY.CANCELLED] },
+                },
+              },
+              else: '$deliveryDetails',
+            },
+          },
           deliveryMan: {
             $concat: [
               '$deliveryManData.firstName',
@@ -1700,6 +1734,8 @@ export const getAllRecentOrdersFromMerchant = async (
               '$deliveryManData.lastName',
             ],
           },
+          deliveryManEmail: '$deliveryManData.email',
+          deliveryManMobileNumber: '$deliveryManData.contactNumber',
           deliveryManId: '$deliveryManData._id',
           pickupDate: {
             $dateToString: {
@@ -1708,12 +1744,6 @@ export const getAllRecentOrdersFromMerchant = async (
             },
           },
           merchantId: '$pickupDetails.merchantId',
-          deliveryDate: {
-            $dateToString: {
-              format: '%d-%m-%Y , %H:%M',
-              date: { $arrayElemAt: ['$deliveryDetails.orderTimestamp', 0] },
-            },
-          },
           createdDate: {
             $dateToString: {
               format: '%d-%m-%Y , %H:%M',
@@ -1722,7 +1752,6 @@ export const getAllRecentOrdersFromMerchant = async (
           },
           pickupRequest: '$pickupDetails.request',
           postCode: '$pickupDetails.postCode',
-          cashOnDelivery: 1,
           status: 1,
           dateTime: 1,
           trashed: {
@@ -1732,7 +1761,6 @@ export const getAllRecentOrdersFromMerchant = async (
             $ifNull: ['$trashedtime', null],
           },
           showOrderNumber: 1,
-          paymentCollectionRupees: 1,
         },
       },
     ]);

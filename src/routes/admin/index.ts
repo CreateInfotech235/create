@@ -14,6 +14,7 @@ import subscriptionRoutes from './subscription.routes';
 import userRoutes from './user.routes';
 import vehicleRoutes from './vehicle.routes';
 import getPaymentData from './getPaymentData.routes';
+import billingRoutes from './Billing.routes';
 
 const router = express.Router();
 
@@ -23,6 +24,7 @@ router.post('/authenticate', adminAuth, (req: Request, res: Response) => {
   res.send(admin);
 });
 router.use(adminAuth);
+router.use('/billing', billingRoutes);
 router.use('/users', userRoutes);
 router.use('/orders', orderRoutes);
 router.use('/vehicle', vehicleRoutes);
