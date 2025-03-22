@@ -14,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNotificationinapp = void 0;
 const firebase_admin_1 = __importDefault(require("firebase-admin"));
-// Ensure the environment variable is set
-const serviceAccount = require('fs').existsSync('/etc/secrets/create-courier-Not.json')
+const fs_1 = __importDefault(require("fs"));
+const serviceAccount = fs_1.default.existsSync('/etc/secrets/create-courier-Not.json')
     ? require('/etc/secrets/create-courier-Not.json')
-    : require('../../../create-courier-Not.json');
+    : require("../../../create-courier-Not.json");
 firebase_admin_1.default.initializeApp({
     credential: firebase_admin_1.default.credential.cert(serviceAccount),
     databaseURL: 'https://create-courier-2e918.firebaseio.com',

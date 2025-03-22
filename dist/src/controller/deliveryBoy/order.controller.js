@@ -1730,7 +1730,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
             const distance = ((_p = optimizedRoute.find((data) => data.subOrderId === elem)) === null || _p === void 0 ? void 0 : _p.distance) || 0;
             const duration = ((_q = optimizedRoute.find((data) => data.subOrderId === elem)) === null || _q === void 0 ? void 0 : _q.duration) || 0;
             if (distance) {
-                yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId, 'deliveryDetails.subOrderId': elem }, { $set: { 'deliveryDetails.$.distance': distance / 1609.34 } });
+                yield orderMulti_schema_1.default.findOneAndUpdate({ orderId: value.orderId, 'deliveryDetails.subOrderId': elem }, { $set: { 'deliveryDetails.$.distance': distance / 1609.34, 'deliveryDetails.$.duration': duration / 60 } });
             }
         }
         yield paymentGet_schema_1.default.findOneAndUpdate({ orderId: value.orderId }, { $set: { statusOfOrder: 'PICKED_UP' } }, { new: true });

@@ -2180,7 +2180,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
       if (distance) {
         await orderSchemaMulti.findOneAndUpdate(
           { orderId: value.orderId, 'deliveryDetails.subOrderId': elem },
-          { $set: { 'deliveryDetails.$.distance': distance / 1609.34 } },
+          { $set: { 'deliveryDetails.$.distance': distance / 1609.34 ,'deliveryDetails.$.duration': duration/60} },
         );
       }
     }

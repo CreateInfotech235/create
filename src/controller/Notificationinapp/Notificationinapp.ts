@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import admin from 'firebase-admin';
+import fs from 'fs';
 
-// Ensure the environment variable is set
-const serviceAccount = require('fs').existsSync('/etc/secrets/create-courier-Not.json') 
+const serviceAccount = fs.existsSync('/etc/secrets/create-courier-Not.json') 
   ? require('/etc/secrets/create-courier-Not.json') 
-  : require('../../../create-courier-Not.json');
+  : require("../../../create-courier-Not.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
