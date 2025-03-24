@@ -1032,7 +1032,6 @@ const cancelMultiOrder = (req, res) => __awaiter(void 0, void 0, void 0, functio
         }, {
             $set: {
                 'deliveryDetails.$.status': enum_1.ORDER_HISTORY.UNASSIGNED,
-                'deliveryDetails.$.time.end': Date.now(),
             },
         });
         console.log('Third');
@@ -1408,7 +1407,7 @@ const departOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
         }, {
             $set: {
                 'deliveryDetails.$.status': enum_1.ORDER_HISTORY.DEPARTED, // Update all elements
-                'deliveryDetails.$.time.start': Date.now(), // Update all elements' time.start
+                // 'deliveryDetails.$.time.start': Date.now(), // Update all elements' time.start
             },
         }, { new: true });
         yield orderHistory_schema_1.default.create({
@@ -1718,6 +1717,7 @@ const pickUpOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 'pickupDetails.orderTimestamp': value.pickupTimestamp,
                 'deliveryDetails.$[elem].status': enum_1.ORDER_HISTORY.PICKED_UP,
                 'deliveryDetails.$[elem].pickupsignature': imgurl,
+                'deliveryDetails.$[elem].time.start': value.pickupTimestamp,
                 route: optimizedRoute,
             },
         }, {
@@ -2069,7 +2069,6 @@ const deliverOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     'deliveryDetails.deliveryBoySignature': value.deliveryManSignature,
                     'deliveryDetails.orderTimestamp': value.deliverTimestamp,
                     status: enum_1.ORDER_HISTORY.DELIVERED,
-                    'time.end': endTime, // Use dot notation to set only the 'end' field
                 },
             }, { new: true }),
         ]);

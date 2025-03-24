@@ -1245,7 +1245,6 @@ export const cancelMultiOrder = async (req: RequestParams, res: Response) => {
       {
         $set: {
           'deliveryDetails.$.status': ORDER_HISTORY.UNASSIGNED,
-          'deliveryDetails.$.time.end': Date.now(),
         },
       },
     );
@@ -1733,7 +1732,7 @@ export const departOrderMulti = async (req: RequestParams, res: Response) => {
       {
         $set: {
           'deliveryDetails.$.status': ORDER_HISTORY.DEPARTED, // Update all elements
-          'deliveryDetails.$.time.start': Date.now(), // Update all elements' time.start
+          // 'deliveryDetails.$.time.start': Date.now(), // Update all elements' time.start
         },
       },
       { new: true },
@@ -2158,6 +2157,7 @@ export const pickUpOrderMulti = async (req: RequestParams, res: Response) => {
           'pickupDetails.orderTimestamp': value.pickupTimestamp,
           'deliveryDetails.$[elem].status': ORDER_HISTORY.PICKED_UP,
           'deliveryDetails.$[elem].pickupsignature': imgurl,
+          'deliveryDetails.$[elem].time.start': value.pickupTimestamp,
           route: optimizedRoute,
         },
       },
@@ -2637,7 +2637,6 @@ export const deliverOrder = async (req: RequestParams, res: Response) => {
             'deliveryDetails.deliveryBoySignature': value.deliveryManSignature,
             'deliveryDetails.orderTimestamp': value.deliverTimestamp,
             status: ORDER_HISTORY.DELIVERED,
-            'time.end': endTime, // Use dot notation to set only the 'end' field
           },
         },
         { new: true },
