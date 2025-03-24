@@ -1183,7 +1183,7 @@ const cancelMultiSubOrder = (req, res) => __awaiter(void 0, void 0, void 0, func
                     subOrderId: allsuborderidofcancelled,
                     deliveryBoyname: dataofdeliveryboy.firstName + ' ' + dataofdeliveryboy.lastName,
                     ismerchantdeliveryboy: dataofdeliveryboy.createdByMerchant,
-                    title: ` ${isallodercancelled ? 'All' : 'Some'}   Order Cancelled`,
+                    title: `Order Cancelled`,
                     message: `Order ${value.orderId} has been cancelled by deliveryman`,
                     type: 'MERCHANT',
                 });
@@ -2287,7 +2287,7 @@ const deliverOrderMulti = (req, res) => __awaiter(void 0, void 0, void 0, functi
             userId: isArrived.merchant,
             orderId: isArrived.orderId,
             subOrderId: [value.subOrderId],
-            title: isalloderdelever ? 'All Order Delivered' : 'Some Order Delivered',
+            title: isalloderdelever ? 'Order Completed' : 'Order Delivered',
             message: `Your order ${isArrived.orderId} has been delivered`,
             deliveryBoyname: (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.firstName) + ' ' + (dataofdeliveryboy === null || dataofdeliveryboy === void 0 ? void 0 : dataofdeliveryboy.lastName),
             customerid: isArrived.deliveryDetails.find((data) => data.subOrderId == value.subOrderId).customerId,

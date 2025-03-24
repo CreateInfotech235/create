@@ -1447,7 +1447,7 @@ export const cancelMultiSubOrder = async (
           deliveryBoyname:
             dataofdeliveryboy.firstName + ' ' + dataofdeliveryboy.lastName,
           ismerchantdeliveryboy: dataofdeliveryboy.createdByMerchant,
-          title: ` ${isallodercancelled ? 'All' : 'Some'}   Order Cancelled`,
+          title: `Order Cancelled`,
           message: `Order ${value.orderId} has been cancelled by deliveryman`,
           type: 'MERCHANT',
         });
@@ -2974,7 +2974,7 @@ export const deliverOrderMulti = async (req: RequestParams, res: Response) => {
       userId: isArrived.merchant,
       orderId: isArrived.orderId,
       subOrderId: [value.subOrderId],
-      title: isalloderdelever ? 'All Order Delivered' : 'Some Order Delivered',
+      title: isalloderdelever ? 'Order Completed' : 'Order Delivered',
       message: `Your order ${isArrived.orderId} has been delivered`,
       deliveryBoyname:
         dataofdeliveryboy?.firstName + ' ' + dataofdeliveryboy?.lastName,
