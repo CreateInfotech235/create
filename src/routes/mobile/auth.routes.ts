@@ -36,6 +36,7 @@ import {
   verifyOtp,
   resetPassword,
   deleteAllNotifications,
+  updateMessageRead,
 } from '../../controller/mobile/auth.controller';
 import { getApproveSubscription,getMapApi,stripPayment } from '../../controller/deliveryBoy/auth.controller';
 import multer from 'multer';
@@ -765,6 +766,12 @@ router.get('/support-tickets/:id/messages', getMessagesByTicketId);
  *         description: Something went wrong
  */
 router.post('/support-tickets/:id/messages', addMessageToTicket);
+
+
+router.patch('/support-tickets/:supportTicketId/messages/:messageId', updateMessageRead);
+
+
+
 
 /**
  * @swagger

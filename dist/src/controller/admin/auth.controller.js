@@ -587,17 +587,16 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
             return res.status(404).json({ message: 'Ticket not found' });
         }
         // Add the new message
-        ticket.messages.push({ text, sender });
+        ticket.messages.push({ text, sender, isRead: false });
         yield ticket.save();
         // Emit the new message to the ticket room
-        index_1.io.to(req.params.id).emit('newMessage', { text, sender });
-        yield (0, common_1.createNotification)({
-            userId: ticket.userid,
-            // orderId: ticket.orderId,
-            title: 'New Message From Admin',
-            message: `New message from ${sender} for support ticket`,
-            type: 'ADMIN',
-        });
+        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender });
+        // await createNotification({
+        //   userId: ticket.userid,
+        //   title: 'New Message From Admin',
+        //   message: `New message from ${sender} for support ticket`,
+        //   type: 'ADMIN',
+        // });
         res.json(ticket.messages);
     }
     catch (error) {

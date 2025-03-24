@@ -18,7 +18,7 @@ import loadSeeders from './src/seeders';
 import responseHandler from './src/utils/responseHandler';
 import WebNavbar from './src/models/webNavbar.schema';
 import MerchantSchema from './src/models/user.schema';
-const path = require('path');
+import path from 'path';
 
 const app = express();
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -87,6 +87,10 @@ app.get('/favicon.ico', async function (req, res) {
 
   const base64Image = menu?.favicon?.img; // Add full base64 string here
 
+  if (!base64Image) {
+    return res.status(404).send('Favicon not found');
+  }
+
   const imgBuffer = Buffer.from(base64Image.split(',')[1], 'base64'); // Split and decode
   const arrayoftype = [
     'png',
@@ -103,6 +107,10 @@ app.get('/favicon.ico', async function (req, res) {
   ];
 
   const imageType = arrayoftype.find((type) => base64Image.includes(type));
+  if (!imageType) {
+    return res.status(400).send('Invalid image type');
+  }
+
   res.writeHead(200, {
     'Content-Type': `image/${imageType}`,
     'Content-Length': imgBuffer.length,
@@ -135,8 +143,18 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   // Join user to their own room using userId
   socket.on('userdata', async (data) => {
+    if (!data.userId) {
+      return socket.emit('error', { message: 'User ID is required' });
+    }
     socket.join(data.userId.toString());
     console.log('User connected:', data);
+  });
+
+  socket.on('SupportTicketconnect', async (data) => {
+    if (!data?.conectid) {
+      return socket.emit('error', { message: 'Connection ID is required' });
+    }
+    socket.join(data.conectid.toString());
   });
 
   socket.emit('welcome', { message: 'server is connected' });

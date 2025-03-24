@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteAllNotifications = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.signIn = exports.activateFreeSubcription = exports.signUp = void 0;
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.updateMessageRead = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteAllNotifications = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.signIn = exports.activateFreeSubcription = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -1493,6 +1493,27 @@ const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.getMessagesByTicketId = getMessagesByTicketId;
+const updateMessageRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { supportTicketId, messageId } = req.params;
+        const ticket = yield SupportTicket_1.default.findById(supportTicketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        const message = ticket.messages.find(msg => msg._id.toString() === messageId.toString());
+        if (!message) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        message.isRead = true;
+        yield ticket.save();
+        index_1.io.to(supportTicketId).emit('messageRead', { messageId: message._id, isRead: message.isRead });
+        res.status(200).json({ message: 'Message read status updated' });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to update message read status' });
+    }
+});
+exports.updateMessageRead = updateMessageRead;
 // Add a new message to a specific ticket
 const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -1508,7 +1529,7 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
         ticket.messages.push({ text, sender });
         yield ticket.save();
         // Emit the new message to the ticket room
-        index_1.io.to(req.params.id).emit('newMessage', { text, sender });
+        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender });
         res.json(ticket.messages);
     }
     catch (error) {

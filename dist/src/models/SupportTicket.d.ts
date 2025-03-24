@@ -38,16 +38,19 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }>;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
@@ -63,16 +66,19 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }>;
 }> & {
     createdAt: NativeDate;
@@ -88,16 +94,19 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }>;
 } & {
     _id: mongoose.Types.ObjectId;
@@ -120,16 +129,19 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }>;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -145,16 +157,19 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }>;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -170,16 +185,19 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        _id?: mongoose.Types.ObjectId;
     }>;
 }> & {
     _id: mongoose.Types.ObjectId;

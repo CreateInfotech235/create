@@ -28,9 +28,9 @@ const routes_1 = __importDefault(require("./src/routes"));
 const seeders_1 = __importDefault(require("./src/seeders"));
 const responseHandler_1 = __importDefault(require("./src/utils/responseHandler"));
 const webNavbar_schema_1 = __importDefault(require("./src/models/webNavbar.schema"));
-const path = require('path');
+const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
-app.use('/uploads', express_1.default.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, 'uploads')));
 // Load environment variables
 (0, dotenv_1.config)({ path: `.env.development.local` });
 // Set up server
@@ -79,6 +79,9 @@ app.get('/favicon.ico', function (req, res) {
         var _a;
         const menu = yield webNavbar_schema_1.default.findOne({});
         const base64Image = (_a = menu === null || menu === void 0 ? void 0 : menu.favicon) === null || _a === void 0 ? void 0 : _a.img; // Add full base64 string here
+        if (!base64Image) {
+            return res.status(404).send('Favicon not found');
+        }
         const imgBuffer = Buffer.from(base64Image.split(',')[1], 'base64'); // Split and decode
         const arrayoftype = [
             'png',
@@ -94,6 +97,9 @@ app.get('/favicon.ico', function (req, res) {
             'avif',
         ];
         const imageType = arrayoftype.find((type) => base64Image.includes(type));
+        if (!imageType) {
+            return res.status(400).send('Invalid image type');
+        }
         res.writeHead(200, {
             'Content-Type': `image/${imageType}`,
             'Content-Length': imgBuffer.length,
@@ -125,8 +131,17 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
     // Join user to their own room using userId
     socket.on('userdata', (data) => __awaiter(void 0, void 0, void 0, function* () {
+        if (!data.userId) {
+            return socket.emit('error', { message: 'User ID is required' });
+        }
         socket.join(data.userId.toString());
         console.log('User connected:', data);
+    }));
+    socket.on('SupportTicketconnect', (data) => __awaiter(void 0, void 0, void 0, function* () {
+        if (!(data === null || data === void 0 ? void 0 : data.conectid)) {
+            return socket.emit('error', { message: 'Connection ID is required' });
+        }
+        socket.join(data.conectid.toString());
     }));
     socket.emit('welcome', { message: 'server is connected' });
     // Handle errors

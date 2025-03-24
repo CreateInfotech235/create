@@ -30,6 +30,7 @@ const SupportTicket = new mongoose_1.default.Schema({
     },
     messages: [
         {
+            _id: { type: mongoose_1.default.Schema.Types.ObjectId, auto: true },
             text: { type: String, required: true },
             sender: { type: String, enum: ['merchant', 'admin'], required: true }, // 'merchant' or 'admin'
             isRead: { type: Boolean, default: false },

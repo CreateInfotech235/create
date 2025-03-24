@@ -1801,6 +1801,29 @@ export const getMessagesByTicketId = async (
   }
 };
 
+
+export const updateMessageRead = async (req: RequestParams, res: Response) => {
+  try {
+    const { supportTicketId, messageId } = req.params;
+    const ticket = await SupportTicket.findById(supportTicketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    const message = ticket.messages.find(msg => msg._id.toString() === messageId.toString());
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+    message.isRead = true;
+    await ticket.save();
+    io.to(supportTicketId).emit('messageRead', { messageId: message._id, isRead: message.isRead });
+    res.status(200).json({ message: 'Message read status updated' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update message read status' });
+  }
+};
+
+
+
 // Add a new message to a specific ticket
 export const addMessageToTicket = async (req: RequestParams, res: Response) => {
   try {
@@ -1819,7 +1842,7 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
     await ticket.save();
 
     // Emit the new message to the ticket room
-    io.to(req.params.id).emit('newMessage', { text, sender });
+    io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender });
 
     res.json(ticket.messages);
   } catch (error) {

@@ -708,19 +708,18 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
     }
 
     // Add the new message
-    ticket.messages.push({ text, sender });
+    ticket.messages.push({ text, sender, isRead: false });
     await ticket.save();
 
     // Emit the new message to the ticket room
-    io.to(req.params.id).emit('newMessage', { text, sender });
+    io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender });
 
-    await createNotification({
-      userId: ticket.userid,
-      // orderId: ticket.orderId,
-      title: 'New Message From Admin',
-      message: `New message from ${sender} for support ticket`,
-      type: 'ADMIN',
-    });
+    // await createNotification({
+    //   userId: ticket.userid,
+    //   title: 'New Message From Admin',
+    //   message: `New message from ${sender} for support ticket`,
+    //   type: 'ADMIN',
+    // });
     res.json(ticket.messages);
   } catch (error) {
     res.status(500).json({ message: 'Failed to add message' });
