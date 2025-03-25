@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.updateMessageRead = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteAllNotifications = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.signIn = exports.activateFreeSubcription = exports.signUp = void 0;
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.Messageread = exports.MessageDelete = exports.Messageupdate = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteAllNotifications = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.signIn = exports.activateFreeSubcription = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -237,15 +237,19 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const isCustomer = value.personType === enum_1.PERSON_TYPE.CUSTOMER;
         if (isCustomer) {
             userExist = yield user_schema_1.default.findOne({ email: value.email }).lean();
-            if (userExist.isApproved != "APPROVED") {
-                if (userExist.isApproved == "REJECTED") {
+            if (userExist.isApproved != 'APPROVED') {
+                if (userExist.isApproved == 'REJECTED') {
                     return res.badRequest({
-                        message: userExist.reason ? userExist.reason : (0, languageHelper_1.getLanguage)('en').userNotApproved,
+                        message: userExist.reason
+                            ? userExist.reason
+                            : (0, languageHelper_1.getLanguage)('en').userNotApproved,
                     });
                 }
-                if (userExist.isApproved == "PENDING") {
+                if (userExist.isApproved == 'PENDING') {
                     return res.badRequest({
-                        message: userExist.reason ? userExist.reason : (0, languageHelper_1.getLanguage)('en').userNotApprovedYet,
+                        message: userExist.reason
+                            ? userExist.reason
+                            : (0, languageHelper_1.getLanguage)('en').userNotApprovedYet,
                     });
                 }
             }
@@ -269,9 +273,14 @@ const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                             message: (0, languageHelper_1.getLanguage)('en').errorSubcriptionAlreadyExist,
                         });
                     }
-                    const data = yield subcription_schema_1.default.findOne({ amount: 0, isActive: true });
+                    const data = yield subcription_schema_1.default.findOne({
+                        amount: 0,
+                        isActive: true,
+                    });
                     if (!data) {
-                        return res.badRequest({ message: (0, languageHelper_1.getLanguage)('en').errorDataNotFound });
+                        return res.badRequest({
+                            message: (0, languageHelper_1.getLanguage)('en').errorDataNotFound,
+                        });
                     }
                     yield Promise.all([
                         subcriptionPurchase_schema_1.default.create({
@@ -747,7 +756,7 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
             { name: 'departed', status: 'DEPARTED' },
             { name: 'delivered', status: 'DELIVERED' },
             { name: 'unassigned', status: 'CANCELLED' },
-            { name: 'cancelled', status: 'CANCELLED' }
+            { name: 'cancelled', status: 'CANCELLED' },
         ];
         const counts = {};
         // Get counts for each status using aggregation
@@ -766,14 +775,16 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
                             $filter: {
                                 input: '$deliveryDetails',
                                 as: 'detail',
-                                cond: status ? {
-                                    $and: [
-                                        { $eq: ['$$detail.status', status] },
-                                        { $eq: ['$$detail.trashed', false] },
-                                    ],
-                                } : {
-                                    $eq: ['$$detail.trashed', false]
-                                },
+                                cond: status
+                                    ? {
+                                        $and: [
+                                            { $eq: ['$$detail.status', status] },
+                                            { $eq: ['$$detail.trashed', false] },
+                                        ],
+                                    }
+                                    : {
+                                        $eq: ['$$detail.trashed', false],
+                                    },
                             },
                         },
                     },
@@ -794,7 +805,7 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
             counts[`${name}Orders`] = result;
         }
         // Get other counts
-        const [mainTotalOrders, totalTrashed, totalCustomers, cancelledOrders, deliveryManCount] = yield Promise.all([
+        const [mainTotalOrders, totalTrashed, totalCustomers, cancelledOrders, deliveryManCount,] = yield Promise.all([
             orderMulti_schema_1.default.countDocuments({
                 merchant: merchantID,
                 trashed: false,
@@ -841,7 +852,7 @@ const getOrderCounts = (req, res) => __awaiter(void 0, void 0, void 0, function*
             }),
             deliveryMan_schema_1.default.countDocuments({
                 merchantId: merchantID,
-            })
+            }),
         ]);
         const totalCounts = Object.assign({ toteltrashed: totalTrashed, totelcustomer: totalCustomers, maintotelOrders: mainTotalOrders, 
             // cancelledOrders,
@@ -877,10 +888,12 @@ const getOrderCountsbyDate = (req, res) => __awaiter(void 0, void 0, void 0, fun
             endOfDay.setHours(23, 59, 59, 999);
             dateQuery.$lte = endOfDay;
         }
-        const dateCondition = Object.keys(dateQuery).length ? { createdAt: dateQuery } : {};
+        const dateCondition = Object.keys(dateQuery).length
+            ? { createdAt: dateQuery }
+            : {};
         const merchantObjectId = new mongoose_1.default.Types.ObjectId(merchantID);
         // Run queries in parallel
-        const [orders, deliveryMen, cancelledOrders, assignedOrders, arrivedOrders, pickedOrders, departedOrders, deliveredOrders] = yield Promise.all([
+        const [orders, deliveryMen, cancelledOrders, assignedOrders, arrivedOrders, pickedOrders, departedOrders, deliveredOrders,] = yield Promise.all([
             orderMulti_schema_1.default.find(Object.assign({ merchant: merchantObjectId }, dateCondition)),
             deliveryMan_schema_1.default.countDocuments(Object.assign(Object.assign({ merchantId: merchantID }, dateCondition), { trashed: false })),
             cancelOderbyDeliveryManSchema_1.default.countDocuments(Object.assign({ merchantId: merchantID }, dateCondition)),
@@ -888,7 +901,7 @@ const getOrderCountsbyDate = (req, res) => __awaiter(void 0, void 0, void 0, fun
             orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'ARRIVED', merchantID }, dateCondition)),
             orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'PICKED_UP', merchantID }, dateCondition)),
             orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DEPARTED', merchantID }, dateCondition)),
-            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DELIVERED', merchantID }, dateCondition))
+            orderHistory_schema_2.default.countDocuments(Object.assign({ status: 'DELIVERED', merchantID }, dateCondition)),
         ]);
         // Calculate sub-order count in one pass
         const subOrderCount = orders.reduce((acc, order) => acc + order.deliveryDetails.length, 0);
@@ -901,7 +914,7 @@ const getOrderCountsbyDate = (req, res) => __awaiter(void 0, void 0, void 0, fun
             departedOrders,
             deliveredOrders,
             cancelledOrders,
-            deliveryMan: deliveryMen
+            deliveryMan: deliveryMen,
         };
         return res.status(200).json({ data });
     }
@@ -1180,25 +1193,25 @@ const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, func
             {
                 $lookup: {
                     from: 'customer',
-                    let: { customerId: { $toObjectId: "$customerid" } },
+                    let: { customerId: { $toObjectId: '$customerid' } },
                     pipeline: [
                         {
                             $match: {
-                                $expr: { $eq: ["$_id", "$$customerId"] }
-                            }
-                        }
+                                $expr: { $eq: ['$_id', '$$customerId'] },
+                            },
+                        },
                     ],
-                    as: 'customer'
-                }
+                    as: 'customer',
+                },
             },
             {
-                $sort: { createdAt: -1 }
+                $sort: { createdAt: -1 },
             },
             {
                 $unwind: {
                     path: '$customer',
-                    preserveNullAndEmptyArrays: true
-                }
+                    preserveNullAndEmptyArrays: true,
+                },
             },
             {
                 $project: {
@@ -1213,14 +1226,10 @@ const getAllNotifications = (req, res) => __awaiter(void 0, void 0, void 0, func
                     isRead: 1,
                     createdAt: 1,
                     customerName: {
-                        $concat: [
-                            '$customer.firstName',
-                            ' ',
-                            '$customer.lastName'
-                        ]
-                    }
-                }
-            }
+                        $concat: ['$customer.firstName', ' ', '$customer.lastName'],
+                    },
+                },
+            },
         ]);
         return res.status(200).json({
             message: 'Notifications retrieved successfully',
@@ -1493,27 +1502,86 @@ const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.getMessagesByTicketId = getMessagesByTicketId;
-const updateMessageRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const Messageupdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { supportTicketId, messageId } = req.params;
+        const { nowmessage } = req.body;
+        console.log(supportTicketId, messageId, 'supportTicketId, messageId');
         const ticket = yield SupportTicket_1.default.findById(supportTicketId);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
-        const message = ticket.messages.find(msg => msg._id.toString() === messageId.toString());
-        if (!message) {
+        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId.toString());
+        if (messageIndex === -1) {
             return res.status(404).json({ message: 'Message not found' });
         }
-        message.isRead = true;
+        // Update the message text
+        ticket.messages[messageIndex].text = nowmessage;
         yield ticket.save();
-        index_1.io.to(supportTicketId).emit('messageRead', { messageId: message._id, isRead: message.isRead });
-        res.status(200).json({ message: 'Message read status updated' });
+        index_1.io.to(supportTicketId).emit('messageRead', {
+            ticketId: supportTicketId,
+            update: ticket,
+        });
+        res.status(200).json({ message: 'Message updated successfully' });
     }
     catch (error) {
-        res.status(500).json({ message: 'Failed to update message read status' });
+        console.log(error, 'error');
+        res.status(500).json({ message: 'Failed to update message' });
     }
 });
-exports.updateMessageRead = updateMessageRead;
+exports.Messageupdate = Messageupdate;
+const MessageDelete = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { supportTicketId, messageId } = req.params;
+        console.log(supportTicketId, messageId, 'supportTicketId, messageId');
+        const ticket = yield SupportTicket_1.default.findById(supportTicketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId.toString());
+        if (messageIndex === -1) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        // Update the message text
+        ticket.messages.splice(messageIndex, 1);
+        yield ticket.save();
+        index_1.io.to(supportTicketId).emit('messageDelete', {
+            ticketId: supportTicketId,
+            update: ticket,
+        });
+        res.status(200).json({ message: 'Message updated successfully' });
+    }
+    catch (error) {
+        console.log(error, 'error');
+        res.status(500).json({ message: 'Failed to update message' });
+    }
+});
+exports.MessageDelete = MessageDelete;
+const Messageread = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { supportTicketId } = req.params;
+        const ticket = yield SupportTicket_1.default.findById(supportTicketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        // Only set isRead for admin messages
+        ticket.messages.forEach((msg) => {
+            if (msg.sender === 'admin') {
+                msg.isRead = true;
+            }
+        });
+        yield ticket.save();
+        index_1.io.to(supportTicketId).emit('messageRead', {
+            ticketId: supportTicketId,
+            update: ticket,
+        });
+        res.status(200).json({ message: 'Message read successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to read message' });
+    }
+});
+exports.Messageread = Messageread;
 // Add a new message to a specific ticket
 const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -1529,7 +1597,11 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
         ticket.messages.push({ text, sender });
         yield ticket.save();
         // Emit the new message to the ticket room
-        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender });
+        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', {
+            text,
+            sender,
+            ticketId: req.params.id,
+        });
         res.json(ticket.messages);
     }
     catch (error) {

@@ -22,6 +22,9 @@ import {
   sendOtp,
   verifyOtp,
   resetPassword,
+  Messageupdate,
+  Messageread,
+  MessageDelete,
 } from '../../controller/admin/auth.controller';
 import adminAuth from '../../middleware/admin.auth';
 import {
@@ -522,6 +525,13 @@ router.get('/support-tickets/:id/messages', getMessagesByTicketId);
  *         description: Something went wrong
  */
 router.post('/support-tickets/:id/messages', addMessageToTicket);
+
+router.patch('/support-tickets/:supportTicketId/messages/:messageId', Messageupdate);
+
+
+router.patch('/support-tickets/:supportTicketId/messages', Messageread);
+
+router.delete('/support-tickets/:supportTicketId/messages/:messageId', MessageDelete);
 
 /**
  * @swagger

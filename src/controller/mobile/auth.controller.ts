@@ -49,7 +49,6 @@ import orderMulti from '../../models/orderMulti.schema';
 import CustomerSchema from '../../models/customer.schema';
 import cancelOderbyDeliveryManSchema from '../../models/cancelOderbyDeliveryManSchema';
 
-
 import {
   orderCount,
   paginationValidation,
@@ -194,12 +193,7 @@ export const signUp = async (req: RequestParams, res: Response) => {
   }
 };
 
-
-
-const activateFreeSubcription = async (
-  req: RequestParams,
-  res: Response,
-) => {
+const activateFreeSubcription = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
       userId: string;
@@ -290,8 +284,7 @@ const activateFreeSubcription = async (
     });
   }
 };
-export { activateFreeSubcription }
-
+export { activateFreeSubcription };
 
 export const signIn = async (req: RequestParams, res: Response) => {
   try {
@@ -313,18 +306,21 @@ export const signIn = async (req: RequestParams, res: Response) => {
 
     if (isCustomer) {
       userExist = await merchantSchema.findOne({ email: value.email }).lean();
-      if (userExist.isApproved != "APPROVED") {
-        if (userExist.isApproved == "REJECTED") {
+      if (userExist.isApproved != 'APPROVED') {
+        if (userExist.isApproved == 'REJECTED') {
           return res.badRequest({
-            message: userExist.reason ? userExist.reason : getLanguage('en').userNotApproved,
+            message: userExist.reason
+              ? userExist.reason
+              : getLanguage('en').userNotApproved,
           });
         }
-        if (userExist.isApproved == "PENDING") {
+        if (userExist.isApproved == 'PENDING') {
           return res.badRequest({
-            message: userExist.reason ? userExist.reason : getLanguage('en').userNotApprovedYet,
+            message: userExist.reason
+              ? userExist.reason
+              : getLanguage('en').userNotApprovedYet,
           });
         }
-
       } else {
         if (userExist.isApprovedfasttime) {
           // get free subcription
@@ -352,11 +348,15 @@ export const signIn = async (req: RequestParams, res: Response) => {
             });
           }
 
-
-          const data = await subcriptionSchema.findOne({ amount: 0, isActive: true });
+          const data = await subcriptionSchema.findOne({
+            amount: 0,
+            isActive: true,
+          });
 
           if (!data) {
-            return res.badRequest({ message: getLanguage('en').errorDataNotFound });
+            return res.badRequest({
+              message: getLanguage('en').errorDataNotFound,
+            });
           }
 
           await Promise.all([
@@ -380,7 +380,6 @@ export const signIn = async (req: RequestParams, res: Response) => {
               },
             ),
           ]);
-
         }
       }
     } else {
@@ -398,7 +397,7 @@ export const signIn = async (req: RequestParams, res: Response) => {
     if (value.deviceToken) {
       await deliveryManSchema.updateOne(
         { _id: userExist._id },
-        { deviceToken: value.deviceToken }
+        { deviceToken: value.deviceToken },
       );
     }
 
@@ -935,7 +934,7 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       { name: 'departed', status: 'DEPARTED' },
       { name: 'delivered', status: 'DELIVERED' },
       { name: 'unassigned', status: 'CANCELLED' },
-      { name: 'cancelled', status: 'CANCELLED' }
+      { name: 'cancelled', status: 'CANCELLED' },
     ];
 
     const counts: any = {};
@@ -956,14 +955,16 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
                 $filter: {
                   input: '$deliveryDetails',
                   as: 'detail',
-                  cond: status ? {
-                    $and: [
-                      { $eq: ['$$detail.status', status] },
-                      { $eq: ['$$detail.trashed', false] },
-                    ],
-                  } : {
-                    $eq: ['$$detail.trashed', false]
-                  },
+                  cond: status
+                    ? {
+                        $and: [
+                          { $eq: ['$$detail.status', status] },
+                          { $eq: ['$$detail.trashed', false] },
+                        ],
+                      }
+                    : {
+                        $eq: ['$$detail.trashed', false],
+                      },
                 },
               },
             },
@@ -991,7 +992,7 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       totalTrashed,
       totalCustomers,
       cancelledOrders,
-      deliveryManCount
+      deliveryManCount,
     ] = await Promise.all([
       orderMulti.countDocuments({
         merchant: merchantID,
@@ -1039,7 +1040,7 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       }),
       deliveryManSchema.countDocuments({
         merchantId: merchantID,
-      })
+      }),
     ]);
 
     const totalCounts = {
@@ -1048,7 +1049,7 @@ export const getOrderCounts = async (req: RequestParams, res: Response) => {
       maintotelOrders: mainTotalOrders,
       // cancelledOrders,
       deliveryMan: deliveryManCount,
-      ...counts
+      ...counts,
     };
 
     return res.ok({
@@ -1091,7 +1092,9 @@ export const getOrderCountsbyDate = async (
       dateQuery.$lte = endOfDay;
     }
 
-    const dateCondition = Object.keys(dateQuery).length ? { createdAt: dateQuery } : {};
+    const dateCondition = Object.keys(dateQuery).length
+      ? { createdAt: dateQuery }
+      : {};
     const merchantObjectId = new mongoose.Types.ObjectId(merchantID);
 
     // Run queries in parallel
@@ -1103,23 +1106,52 @@ export const getOrderCountsbyDate = async (
       arrivedOrders,
       pickedOrders,
       departedOrders,
-      deliveredOrders
+      deliveredOrders,
     ] = await Promise.all([
       orderMulti.find({ merchant: merchantObjectId, ...dateCondition }),
-      deliveryManSchema.countDocuments({ merchantId: merchantID, ...dateCondition, trashed: false }),
-      cancelOderbyDeliveryManSchema.countDocuments({ merchantId: merchantID, ...dateCondition }),
-      orderHistorySchema.countDocuments({ status: 'ASSIGNED', merchantID, ...dateCondition }),
-      orderHistorySchema.countDocuments({ status: 'ARRIVED', merchantID, ...dateCondition }),
-      orderHistorySchema.countDocuments({ status: 'PICKED_UP', merchantID, ...dateCondition }),
-      orderHistorySchema.countDocuments({ status: 'DEPARTED', merchantID, ...dateCondition }),
-      orderHistorySchema.countDocuments({ status: 'DELIVERED', merchantID, ...dateCondition })
+      deliveryManSchema.countDocuments({
+        merchantId: merchantID,
+        ...dateCondition,
+        trashed: false,
+      }),
+      cancelOderbyDeliveryManSchema.countDocuments({
+        merchantId: merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'ASSIGNED',
+        merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'ARRIVED',
+        merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'PICKED_UP',
+        merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'DEPARTED',
+        merchantID,
+        ...dateCondition,
+      }),
+      orderHistorySchema.countDocuments({
+        status: 'DELIVERED',
+        merchantID,
+        ...dateCondition,
+      }),
     ]);
 
     // Calculate sub-order count in one pass
-    const subOrderCount = orders.reduce((acc, order) => acc + order.deliveryDetails.length, 0);
+    const subOrderCount = orders.reduce(
+      (acc, order) => acc + order.deliveryDetails.length,
+      0,
+    );
 
     const data = {
-      
       totalOrders: orders.length,
       totalSubOrders: subOrderCount,
       assignedOrders,
@@ -1128,11 +1160,10 @@ export const getOrderCountsbyDate = async (
       departedOrders,
       deliveredOrders,
       cancelledOrders,
-      deliveryMan: deliveryMen
+      deliveryMan: deliveryMen,
     };
 
     return res.status(200).json({ data });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'An error occurred.' });
@@ -1459,25 +1490,25 @@ export const getAllNotifications = async (
       {
         $lookup: {
           from: 'customer',
-          let: { customerId: { $toObjectId: "$customerid" } },
+          let: { customerId: { $toObjectId: '$customerid' } },
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ["$_id", "$$customerId"] }
-              }
-            }
+                $expr: { $eq: ['$_id', '$$customerId'] },
+              },
+            },
           ],
-          as: 'customer'
-        }
+          as: 'customer',
+        },
       },
       {
-        $sort: { createdAt: -1 }
+        $sort: { createdAt: -1 },
       },
       {
         $unwind: {
           path: '$customer',
-          preserveNullAndEmptyArrays: true
-        }
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $project: {
@@ -1492,14 +1523,10 @@ export const getAllNotifications = async (
           isRead: 1,
           createdAt: 1,
           customerName: {
-            $concat: [
-              '$customer.firstName',
-              ' ',
-              '$customer.lastName'
-            ]
-          }
-        }
-      }
+            $concat: ['$customer.firstName', ' ', '$customer.lastName'],
+          },
+        },
+      },
     ]);
 
     return res.status(200).json({
@@ -1594,11 +1621,10 @@ export const deleteNotification = async (req: RequestParams, res: Response) => {
   }
 };
 
-
-
-
-
-export const deleteAllNotifications = async (req: RequestParams, res: Response) => {
+export const deleteAllNotifications = async (
+  req: RequestParams,
+  res: Response,
+) => {
   try {
     const { notificationIds } = req.body;
     const userId = req.params.id;
@@ -1625,7 +1651,6 @@ export const deleteAllNotifications = async (req: RequestParams, res: Response) 
     });
   }
 };
-
 
 export const getUnreadNotificationCount = async (
   req: RequestParams,
@@ -1801,28 +1826,94 @@ export const getMessagesByTicketId = async (
   }
 };
 
-
-export const updateMessageRead = async (req: RequestParams, res: Response) => {
+export const Messageupdate = async (req: RequestParams, res: Response) => {
   try {
     const { supportTicketId, messageId } = req.params;
+    const { nowmessage } = req.body;
+    console.log(supportTicketId, messageId, 'supportTicketId, messageId');
     const ticket = await SupportTicket.findById(supportTicketId);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
-    const message = ticket.messages.find(msg => msg._id.toString() === messageId.toString());
-    if (!message) {
+    const messageIndex = ticket.messages.findIndex(
+      (msg) => msg._id.toString() === messageId.toString(),
+    );
+    if (messageIndex === -1) {
       return res.status(404).json({ message: 'Message not found' });
     }
-    message.isRead = true;
+
+    // Update the message text
+    ticket.messages[messageIndex].text = nowmessage;
     await ticket.save();
-    io.to(supportTicketId).emit('messageRead', { messageId: message._id, isRead: message.isRead });
-    res.status(200).json({ message: 'Message read status updated' });
+
+    io.to(supportTicketId).emit('messageRead', {
+      ticketId: supportTicketId,
+      update: ticket,
+    });
+    res.status(200).json({ message: 'Message updated successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to update message read status' });
+    console.log(error, 'error');
+    res.status(500).json({ message: 'Failed to update message' });
   }
 };
 
 
+
+export const MessageDelete = async (req: RequestParams, res: Response) => {
+  try {
+    const { supportTicketId, messageId } = req.params;
+    console.log(supportTicketId, messageId, 'supportTicketId, messageId');
+    const ticket = await SupportTicket.findById(supportTicketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    const messageIndex = ticket.messages.findIndex(
+      (msg) => msg._id.toString() === messageId.toString(),
+    );
+    if (messageIndex === -1) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    // Update the message text
+    ticket.messages.splice(messageIndex, 1);
+    await ticket.save();
+
+    io.to(supportTicketId).emit('messageDelete', {
+      ticketId: supportTicketId,
+      update: ticket,
+    });
+    res.status(200).json({ message: 'Message updated successfully' });
+  } catch (error) {
+    console.log(error, 'error');
+    res.status(500).json({ message: 'Failed to update message' });
+  }
+};
+
+export const Messageread = async (req: RequestParams, res: Response) => {
+  try {
+    const { supportTicketId } = req.params;
+    const ticket = await SupportTicket.findById(supportTicketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Only set isRead for admin messages
+    ticket.messages.forEach((msg) => {
+      if (msg.sender === 'admin') {
+        msg.isRead = true;
+      }
+    });
+
+    await ticket.save();
+    io.to(supportTicketId).emit('messageRead', {
+      ticketId: supportTicketId,
+      update: ticket,
+    });
+    res.status(200).json({ message: 'Message read successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to read message' });
+  }
+};
 
 // Add a new message to a specific ticket
 export const addMessageToTicket = async (req: RequestParams, res: Response) => {
@@ -1842,7 +1933,11 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
     await ticket.save();
 
     // Emit the new message to the ticket room
-    io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender });
+    io.to(req.params.id).emit('SupportTicketssendMessage', {
+      text,
+      sender,
+      ticketId: req.params.id,
+    });
 
     res.json(ticket.messages);
   } catch (error) {

@@ -36,7 +36,9 @@ import {
   verifyOtp,
   resetPassword,
   deleteAllNotifications,
-  updateMessageRead,
+  Messageupdate,
+  Messageread,
+  MessageDelete,
 } from '../../controller/mobile/auth.controller';
 import { getApproveSubscription,getMapApi,stripPayment } from '../../controller/deliveryBoy/auth.controller';
 import multer from 'multer';
@@ -768,8 +770,12 @@ router.get('/support-tickets/:id/messages', getMessagesByTicketId);
 router.post('/support-tickets/:id/messages', addMessageToTicket);
 
 
-router.patch('/support-tickets/:supportTicketId/messages/:messageId', updateMessageRead);
+router.patch('/support-tickets/:supportTicketId/messages/:messageId', Messageupdate);
 
+
+router.patch('/support-tickets/:supportTicketId/messages', Messageread);
+
+router.delete('/support-tickets/:supportTicketId/messages/:messageId', MessageDelete);
 
 
 

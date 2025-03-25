@@ -685,7 +685,9 @@ router.get('/support-tickets/:id/messages', auth_controller_1.getMessagesByTicke
  *         description: Something went wrong
  */
 router.post('/support-tickets/:id/messages', auth_controller_1.addMessageToTicket);
-router.patch('/support-tickets/:supportTicketId/messages/:messageId', auth_controller_1.updateMessageRead);
+router.patch('/support-tickets/:supportTicketId/messages/:messageId', auth_controller_1.Messageupdate);
+router.patch('/support-tickets/:supportTicketId/messages', auth_controller_1.Messageread);
+router.delete('/support-tickets/:supportTicketId/messages/:messageId', auth_controller_1.MessageDelete);
 /**
  * @swagger
  * /mobile/auth/support-tickets/:ticketId/messages/:messageId:

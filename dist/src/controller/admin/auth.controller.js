@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getMessagesByTicketId = exports.getAllTickets = exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.MessageDelete = exports.Messageread = exports.Messageupdate = exports.getMessagesByTicketId = exports.getAllTickets = exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -573,6 +573,86 @@ const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.getMessagesByTicketId = getMessagesByTicketId;
+const Messageupdate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { supportTicketId, messageId } = req.params;
+        const { nowmessage } = req.body;
+        console.log(supportTicketId, messageId, 'supportTicketId, messageId');
+        const ticket = yield SupportTicket_1.default.findById(supportTicketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId.toString());
+        if (messageIndex === -1) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        // Update the message text
+        ticket.messages[messageIndex].text = nowmessage;
+        yield ticket.save();
+        index_1.io.to(supportTicketId).emit('messageRead', {
+            ticketId: supportTicketId,
+            update: ticket,
+        });
+        res.status(200).json({ message: 'Message updated successfully' });
+    }
+    catch (error) {
+        console.log(error, 'error');
+        res.status(500).json({ message: 'Failed to update message' });
+    }
+});
+exports.Messageupdate = Messageupdate;
+const Messageread = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { supportTicketId } = req.params;
+        const ticket = yield SupportTicket_1.default.findById(supportTicketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        // Only set isRead for admin messages
+        ticket.messages.forEach((msg) => {
+            if (msg.sender === 'merchant') {
+                msg.isRead = true;
+            }
+        });
+        yield ticket.save();
+        index_1.io.to(supportTicketId).emit('messageRead', {
+            ticketId: supportTicketId,
+            update: ticket,
+        });
+        res.status(200).json({ message: 'Message read successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Failed to read message' });
+    }
+});
+exports.Messageread = Messageread;
+const MessageDelete = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { supportTicketId, messageId } = req.params;
+        console.log(supportTicketId, messageId, 'supportTicketId, messageId');
+        const ticket = yield SupportTicket_1.default.findById(supportTicketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId.toString());
+        if (messageIndex === -1) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        // Update the message text
+        ticket.messages.splice(messageIndex, 1);
+        yield ticket.save();
+        index_1.io.to(supportTicketId).emit('messageDelete', {
+            ticketId: supportTicketId,
+            update: ticket,
+        });
+        res.status(200).json({ message: 'Message updated successfully' });
+    }
+    catch (error) {
+        console.log(error, 'error');
+        res.status(500).json({ message: 'Failed to update message' });
+    }
+});
+exports.MessageDelete = MessageDelete;
 // Add a new message to a specific ticket
 const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -590,7 +670,7 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
         ticket.messages.push({ text, sender, isRead: false });
         yield ticket.save();
         // Emit the new message to the ticket room
-        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender });
+        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender, ticketId: req.params.id });
         // await createNotification({
         //   userId: ticket.userid,
         //   title: 'New Message From Admin',

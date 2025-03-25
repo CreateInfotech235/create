@@ -693,6 +693,97 @@ export const getMessagesByTicketId = async (
   }
 };
 
+
+
+export const Messageupdate = async (req: RequestParams, res: Response) => {
+  try {
+    const { supportTicketId, messageId } = req.params;
+    const { nowmessage } = req.body;
+    console.log(supportTicketId, messageId, 'supportTicketId, messageId');
+    const ticket = await SupportTicket.findById(supportTicketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    const messageIndex = ticket.messages.findIndex(
+      (msg) => msg._id.toString() === messageId.toString(),
+    );
+    if (messageIndex === -1) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    // Update the message text
+    ticket.messages[messageIndex].text = nowmessage;
+    await ticket.save();
+    io.to(supportTicketId).emit('messageRead', {
+      ticketId: supportTicketId,
+      update: ticket,
+    });
+    res.status(200).json({ message: 'Message updated successfully' });
+  } catch (error) {
+    console.log(error, 'error');
+    res.status(500).json({ message: 'Failed to update message' });
+  }
+};
+
+export const Messageread = async (req: RequestParams, res: Response) => {
+  try {
+    const { supportTicketId } = req.params;
+    const ticket = await SupportTicket.findById(supportTicketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // Only set isRead for admin messages
+    ticket.messages.forEach((msg) => {
+      if (msg.sender === 'merchant') {
+        msg.isRead = true;
+      }
+    });
+
+    await ticket.save();
+    io.to(supportTicketId).emit('messageRead', {
+      ticketId: supportTicketId,
+      update: ticket,
+    });
+    res.status(200).json({ message: 'Message read successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to read message' });
+  }
+};
+
+
+export const MessageDelete = async (req: RequestParams, res: Response) => {
+  try {
+    const { supportTicketId, messageId } = req.params;
+    console.log(supportTicketId, messageId, 'supportTicketId, messageId');
+    const ticket = await SupportTicket.findById(supportTicketId);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+    const messageIndex = ticket.messages.findIndex(
+      (msg) => msg._id.toString() === messageId.toString(),
+    );
+    if (messageIndex === -1) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    // Update the message text
+    ticket.messages.splice(messageIndex, 1);
+    await ticket.save();
+
+    io.to(supportTicketId).emit('messageDelete', {
+      ticketId: supportTicketId,
+      update: ticket,
+    });
+    res.status(200).json({ message: 'Message updated successfully' });
+  } catch (error) {
+    console.log(error, 'error');
+    res.status(500).json({ message: 'Failed to update message' });
+  }
+};
+
+
+
 // Add a new message to a specific ticket
 export const addMessageToTicket = async (req: RequestParams, res: Response) => {
   try {
@@ -712,7 +803,7 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
     await ticket.save();
 
     // Emit the new message to the ticket room
-    io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender });
+    io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender,ticketId:req.params.id });
 
     // await createNotification({
     //   userId: ticket.userid,
