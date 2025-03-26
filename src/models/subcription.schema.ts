@@ -21,6 +21,10 @@ const SubcriptionSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isDesable: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, versionKey: false },
 );

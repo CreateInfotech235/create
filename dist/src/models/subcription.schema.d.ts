@@ -30,6 +30,7 @@ declare const Model: mongoose.Model<{
 } & {
     isActive: boolean;
     features: any[];
+    isDesable: boolean;
     type?: string;
     amount?: number;
     discount?: number;
@@ -40,6 +41,7 @@ declare const Model: mongoose.Model<{
 } & {
     isActive: boolean;
     features: any[];
+    isDesable: boolean;
     type?: string;
     amount?: number;
     discount?: number;
@@ -50,6 +52,7 @@ declare const Model: mongoose.Model<{
 } & {
     isActive: boolean;
     features: any[];
+    isDesable: boolean;
     type?: string;
     amount?: number;
     discount?: number;
@@ -67,6 +70,7 @@ declare const Model: mongoose.Model<{
 } & {
     isActive: boolean;
     features: any[];
+    isDesable: boolean;
     type?: string;
     amount?: number;
     discount?: number;
@@ -77,6 +81,7 @@ declare const Model: mongoose.Model<{
 } & {
     isActive: boolean;
     features: any[];
+    isDesable: boolean;
     type?: string;
     amount?: number;
     discount?: number;
@@ -87,6 +92,7 @@ declare const Model: mongoose.Model<{
 } & {
     isActive: boolean;
     features: any[];
+    isDesable: boolean;
     type?: string;
     amount?: number;
     discount?: number;

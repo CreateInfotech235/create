@@ -24,6 +24,10 @@ const SubcriptionSchema = new mongoose_1.default.Schema({
         type: Boolean,
         default: true,
     },
+    isDesable: {
+        type: Boolean,
+        default: false,
+    },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('subcription', SubcriptionSchema);
 exports.default = Model;

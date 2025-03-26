@@ -71,6 +71,7 @@ export const manageSubscriptionValidation = Joi.object({
   features: Joi.array().items(Joi.string()),
   days: Joi.number(),
   subscriptionId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).allow(""),
+  isDesable: Joi.boolean().allow(""),
 });
 export const subscription = Joi.object({
   id: Joi.string().required().messages({

@@ -38,7 +38,7 @@ const manageSubscriptions = (req, res) => __awaiter(void 0, void 0, void 0, func
                 });
             }
             yield subcription_schema_1.default.updateOne({ _id: value.subscriptionId }, {
-                $set: Object.assign(Object.assign({}, value), (value.days && { seconds: value.days * 86400 })),
+                $set: Object.assign(Object.assign(Object.assign({}, value), (value.days && { seconds: value.days * 86400 })), (value.isDesable && { isDesable: value.isDesable })),
             });
         }
         else {

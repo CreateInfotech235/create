@@ -18,4 +18,5 @@ interface IManageSubscription {
   days: number;
   subscriptionId?: string | undefined;
   seconds: number;
+  isDesable: boolean;
 }

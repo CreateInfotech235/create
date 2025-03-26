@@ -57,6 +57,7 @@ export const manageSubscriptions = async (
           $set: {
             ...value,
             ...(value.days && { seconds: value.days * 86400 }),
+            ...(value.isDesable && { isDesable: value.isDesable }),
           },
         },
       );
