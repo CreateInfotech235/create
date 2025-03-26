@@ -25,6 +25,7 @@ import {
   Messageupdate,
   Messageread,
   MessageDelete,
+  getunreadMessages,
 } from '../../controller/admin/auth.controller';
 import adminAuth from '../../middleware/admin.auth';
 import {
@@ -532,6 +533,9 @@ router.patch('/support-tickets/:supportTicketId/messages/:messageId', Messageupd
 router.patch('/support-tickets/:supportTicketId/messages', Messageread);
 
 router.delete('/support-tickets/:supportTicketId/messages/:messageId', MessageDelete);
+
+router.get('/unreadMessages', getunreadMessages );
+
 
 /**
  * @swagger

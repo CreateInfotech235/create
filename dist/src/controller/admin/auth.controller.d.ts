@@ -20,6 +20,7 @@ export declare const getMessagesByTicketId: (req: RequestParams, res: Response) 
 export declare const Messageupdate: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const Messageread: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const MessageDelete: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getunreadMessages: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const addMessageToTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const deleteMessageFromTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const sendOtp: (req: RequestParams, res: Response) => Promise<void>;

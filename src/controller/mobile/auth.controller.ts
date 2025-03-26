@@ -56,7 +56,7 @@ import {
 import { verifyPassword } from '../deliveryBoy/auth.controller';
 import axios from 'axios';
 import { exportFreeSubscription } from '../admin/subcription.controller';
-
+import { unreadMessages } from '../Notificationinapp/unreadMessages';
 export const signUp = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
@@ -1857,8 +1857,6 @@ export const Messageupdate = async (req: RequestParams, res: Response) => {
   }
 };
 
-
-
 export const MessageDelete = async (req: RequestParams, res: Response) => {
   try {
     const { supportTicketId, messageId } = req.params;
@@ -1888,7 +1886,21 @@ export const MessageDelete = async (req: RequestParams, res: Response) => {
     res.status(500).json({ message: 'Failed to update message' });
   }
 };
+// full url is https://create-courier-8.onrender.com/mobile/auth/unreadMessages/66f000000000000000000000
+export const getunreadMessages = async (req: RequestParams, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const result = await unreadMessages(userId, 'admin');
 
+    if ('error' in result) {
+      return res.status(404).json({ message: result.error });
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to fetch unread messages' });
+  }
+};
 export const Messageread = async (req: RequestParams, res: Response) => {
   try {
     const { supportTicketId } = req.params;
@@ -1908,6 +1920,9 @@ export const Messageread = async (req: RequestParams, res: Response) => {
     io.to(supportTicketId).emit('messageRead', {
       ticketId: supportTicketId,
       update: ticket,
+    });
+    io.to(supportTicketId).emit('Messagedataupdate', {
+      unreadMessages: await unreadMessages(ticket.userid.toString(), 'admin'),
     });
     res.status(200).json({ message: 'Message read successfully' });
   } catch (error) {
@@ -1937,6 +1952,12 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
       text,
       sender,
       ticketId: req.params.id,
+    });
+    io.to(req.params.id).emit('Messagedataupdate', {
+      unreadMessages: await unreadMessages(
+        ticket.userid.toString(),
+        'merchant',
+      ),
     });
 
     res.json(ticket.messages);

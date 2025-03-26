@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.MessageDelete = exports.Messageread = exports.Messageupdate = exports.getMessagesByTicketId = exports.getAllTickets = exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.getunreadMessages = exports.MessageDelete = exports.Messageread = exports.Messageupdate = exports.getMessagesByTicketId = exports.getAllTickets = exports.sendEmailFor = exports.getSupportTicket = exports.getAdminProfile = exports.getUnreadNotificationCount = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.getOrderCounts = exports.logout = exports.renewToken = exports.profileUpdate = exports.sendEmailOrMobileOtp = exports.profileCredentialUpdate = exports.signIn = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -31,6 +31,7 @@ const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssign
 const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.schema"));
 const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
 const user_schema_1 = __importDefault(require("../../models/user.schema"));
+const unreadMessages_1 = require("../Notificationinapp/unreadMessages");
 const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, adminSide_validation_1.adminSignInValidation);
@@ -619,6 +620,10 @@ const Messageread = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             ticketId: supportTicketId,
             update: ticket,
         });
+        console.log(ticket.userid.toString(), 'ticket.userid.toString()');
+        index_1.io.to(supportTicketId).emit('Messagedataupdate', {
+            unreadMessages: yield (0, unreadMessages_1.unreadMessages)(ticket.userid.toString(), 'merchant'),
+        });
         res.status(200).json({ message: 'Message read successfully' });
     }
     catch (error) {
@@ -653,15 +658,28 @@ const MessageDelete = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.MessageDelete = MessageDelete;
+// full url is https://create-courier-8.onrender.com/admin/auth/unreadMessages/66f000000000000000000000
+const getunreadMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('getunreadMessages');
+        const result = yield (0, unreadMessages_1.unreadMessages)(undefined, 'merchant');
+        if ('error' in result) {
+            return res.status(404).json({ message: result.error });
+        }
+        return res.status(200).json(result);
+    }
+    catch (error) {
+        return res.status(500).json({ message: 'Failed to fetch unread messages' });
+    }
+});
+exports.getunreadMessages = getunreadMessages;
 // Add a new message to a specific ticket
 const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.params.id, 'fddfdf');
         const { text, sender } = req.body;
         if (!text || !['merchant', 'admin'].includes(sender)) {
             return res.status(400).json({ message: 'Invalid message data' });
         }
-        console.log(text, sender);
         const ticket = yield SupportTicket_1.default.findById(req.params.id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
@@ -670,13 +688,14 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
         ticket.messages.push({ text, sender, isRead: false });
         yield ticket.save();
         // Emit the new message to the ticket room
-        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender, ticketId: req.params.id });
-        // await createNotification({
-        //   userId: ticket.userid,
-        //   title: 'New Message From Admin',
-        //   message: `New message from ${sender} for support ticket`,
-        //   type: 'ADMIN',
-        // });
+        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', {
+            text,
+            sender,
+            ticketId: req.params.id,
+        });
+        index_1.io.to(req.params.id).emit('Messagedataupdate', {
+            unreadMessages: yield (0, unreadMessages_1.unreadMessages)(ticket.userid.toString(), 'admin'),
+        });
         res.json(ticket.messages);
     }
     catch (error) {

@@ -38,7 +38,7 @@ import subscribedSchema from '../../models/subcription.schema';
 import Notifications from '../../models/notificatio.schema';
 import merchantSchema from '../../models/user.schema';
 import Ticket from '../../models/Ticket.schema';
-
+import { unreadMessages } from '../Notificationinapp/unreadMessages';
 export const signIn = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
@@ -693,8 +693,6 @@ export const getMessagesByTicketId = async (
   }
 };
 
-
-
 export const Messageupdate = async (req: RequestParams, res: Response) => {
   try {
     const { supportTicketId, messageId } = req.params;
@@ -745,12 +743,19 @@ export const Messageread = async (req: RequestParams, res: Response) => {
       ticketId: supportTicketId,
       update: ticket,
     });
+    console.log(ticket.userid.toString(), 'ticket.userid.toString()');
+    io.to(supportTicketId).emit('Messagedataupdate', {
+      unreadMessages: await unreadMessages(
+        ticket.userid.toString(),
+        'merchant',
+      ),
+    });
+
     res.status(200).json({ message: 'Message read successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to read message' });
   }
 };
-
 
 export const MessageDelete = async (req: RequestParams, res: Response) => {
   try {
@@ -782,17 +787,30 @@ export const MessageDelete = async (req: RequestParams, res: Response) => {
   }
 };
 
+// full url is https://create-courier-8.onrender.com/admin/auth/unreadMessages/66f000000000000000000000
+export const getunreadMessages = async (req: RequestParams, res: Response) => {
+  try {
+    console.log('getunreadMessages');
+    const result = await unreadMessages(undefined, 'merchant');
 
+    if ('error' in result) {
+      return res.status(404).json({ message: result.error });
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to fetch unread messages' });
+  }
+};
 
 // Add a new message to a specific ticket
 export const addMessageToTicket = async (req: RequestParams, res: Response) => {
   try {
-    console.log(req.params.id, 'fddfdf');
     const { text, sender } = req.body;
     if (!text || !['merchant', 'admin'].includes(sender)) {
       return res.status(400).json({ message: 'Invalid message data' });
     }
-    console.log(text, sender);
+
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
@@ -803,14 +821,15 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
     await ticket.save();
 
     // Emit the new message to the ticket room
-    io.to(req.params.id).emit('SupportTicketssendMessage', { text, sender,ticketId:req.params.id });
+    io.to(req.params.id).emit('SupportTicketssendMessage', {
+      text,
+      sender,
+      ticketId: req.params.id,
+    });
+    io.to(req.params.id).emit('Messagedataupdate', {
+      unreadMessages: await unreadMessages(ticket.userid.toString(), 'admin'),
+    });
 
-    // await createNotification({
-    //   userId: ticket.userid,
-    //   title: 'New Message From Admin',
-    //   message: `New message from ${sender} for support ticket`,
-    //   type: 'ADMIN',
-    // });
     res.json(ticket.messages);
   } catch (error) {
     res.status(500).json({ message: 'Failed to add message' });

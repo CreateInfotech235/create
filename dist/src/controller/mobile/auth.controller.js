@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.Messageread = exports.MessageDelete = exports.Messageupdate = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteAllNotifications = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.signIn = exports.activateFreeSubcription = exports.signUp = void 0;
+exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.getDistance = exports.deleteMessageFromTicket = exports.addMessageToTicket = exports.Messageread = exports.getunreadMessages = exports.MessageDelete = exports.Messageupdate = exports.getMessagesByTicketId = exports.getAllTickets = exports.SupportTicketUpdate = exports.getSubscriptions = exports.getAllDeliveryMans = exports.getUnreadNotificationCount = exports.deleteAllNotifications = exports.deleteNotification = exports.markAllNotificationsAsRead = exports.markNotificationAsRead = exports.getAllNotifications = exports.deleteSupportTicket = exports.getSupportTicket = exports.postSupportTicket = exports.getadmindata = exports.updateDeliveryManProfileAndPassword = exports.getDeliveryManLocations = exports.getorderHistory = exports.getOrderCountsbyDate = exports.getOrderCounts = exports.getAllDeliveryManOfMerchant = exports.updateProfileOfMerchant = exports.getProfileOfMerchant = exports.getLocationOfMerchant = exports.logout = exports.renewToken = exports.sendEmailOrMobileOtp = exports.signIn = exports.activateFreeSubcription = exports.signUp = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const jsonwebtoken_1 = require("jsonwebtoken");
 const enum_1 = require("../../enum");
@@ -51,6 +51,7 @@ const cancelOderbyDeliveryManSchema_1 = __importDefault(require("../../models/ca
 const adminSide_validation_1 = require("../../utils/validation/adminSide.validation");
 const auth_controller_1 = require("../deliveryBoy/auth.controller");
 const axios_1 = __importDefault(require("axios"));
+const unreadMessages_1 = require("../Notificationinapp/unreadMessages");
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.userSignUpValidation);
@@ -1557,6 +1558,21 @@ const MessageDelete = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.MessageDelete = MessageDelete;
+// full url is https://create-courier-8.onrender.com/mobile/auth/unreadMessages/66f000000000000000000000
+const getunreadMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userId } = req.params;
+        const result = yield (0, unreadMessages_1.unreadMessages)(userId, 'admin');
+        if ('error' in result) {
+            return res.status(404).json({ message: result.error });
+        }
+        return res.status(200).json(result);
+    }
+    catch (error) {
+        return res.status(500).json({ message: 'Failed to fetch unread messages' });
+    }
+});
+exports.getunreadMessages = getunreadMessages;
 const Messageread = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { supportTicketId } = req.params;
@@ -1574,6 +1590,9 @@ const Messageread = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         index_1.io.to(supportTicketId).emit('messageRead', {
             ticketId: supportTicketId,
             update: ticket,
+        });
+        index_1.io.to(supportTicketId).emit('Messagedataupdate', {
+            unreadMessages: yield (0, unreadMessages_1.unreadMessages)(ticket.userid.toString(), 'admin'),
         });
         res.status(200).json({ message: 'Message read successfully' });
     }
@@ -1601,6 +1620,9 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
             text,
             sender,
             ticketId: req.params.id,
+        });
+        index_1.io.to(req.params.id).emit('Messagedataupdate', {
+            unreadMessages: yield (0, unreadMessages_1.unreadMessages)(ticket.userid.toString(), 'merchant'),
         });
         res.json(ticket.messages);
     }

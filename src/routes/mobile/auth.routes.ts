@@ -39,6 +39,7 @@ import {
   Messageupdate,
   Messageread,
   MessageDelete,
+  getunreadMessages,
 } from '../../controller/mobile/auth.controller';
 import { getApproveSubscription,getMapApi,stripPayment } from '../../controller/deliveryBoy/auth.controller';
 import multer from 'multer';
@@ -776,6 +777,8 @@ router.patch('/support-tickets/:supportTicketId/messages/:messageId', Messageupd
 router.patch('/support-tickets/:supportTicketId/messages', Messageread);
 
 router.delete('/support-tickets/:supportTicketId/messages/:messageId', MessageDelete);
+
+router.get('/unreadMessages/:userId', getunreadMessages);
 
 
 

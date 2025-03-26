@@ -464,6 +464,7 @@ router.post('/support-tickets/:id/messages', auth_controller_1.addMessageToTicke
 router.patch('/support-tickets/:supportTicketId/messages/:messageId', auth_controller_1.Messageupdate);
 router.patch('/support-tickets/:supportTicketId/messages', auth_controller_1.Messageread);
 router.delete('/support-tickets/:supportTicketId/messages/:messageId', auth_controller_1.MessageDelete);
+router.get('/unreadMessages', auth_controller_1.getunreadMessages);
 /**
  * @swagger
  * /admin/auth/support-tickets/{ticketId}/messages/{messageId}:

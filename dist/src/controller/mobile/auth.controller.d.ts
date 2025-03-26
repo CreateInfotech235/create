@@ -33,6 +33,7 @@ export declare const getAllTickets: (req: RequestParams, res: Response) => Promi
 export declare const getMessagesByTicketId: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const Messageupdate: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const MessageDelete: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getunreadMessages: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const Messageread: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const addMessageToTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const deleteMessageFromTicket: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
