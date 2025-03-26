@@ -130,4 +130,5 @@ router.get('/getAllOrders', order_controller_1.getAllOrders);
  *         description: Something went wrong
  */
 router.get('/location', deliveryMan_controller_1.getOrderLocations);
+router.get('/getAllOrdersFromMerchantMulti/:id', order_controller_1.getAllOrdersFromMerchantMulti);
 exports.default = router;

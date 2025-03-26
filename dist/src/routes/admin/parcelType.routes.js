@@ -105,4 +105,21 @@ router.delete('/:parcelTypeId', parcelType_controller_1.deleteParcelType);
  *         description: Something went wrong
  */
 router.get('/', parcelType_controller_1.getParcelTypes);
+/**
+ * @swagger
+ * /admin/parcelType/all:
+ *   get:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Get all parcelTypes
+ *     tags: [ Admin - parcelTypes ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:
+ *         description: Something went wrong
+ */
+router.get('/all', parcelType_controller_1.getallParcelTypes);
 exports.default = router;

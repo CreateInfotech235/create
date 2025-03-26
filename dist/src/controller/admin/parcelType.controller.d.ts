@@ -4,3 +4,4 @@ export declare const createParcelTypes: (req: RequestParams, res: Response) => P
 export declare const updateParcelTypes: (req: RequestParams, res: Response) => Promise<void>;
 export declare const deleteParcelType: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getParcelTypes: (req: RequestParams, res: Response) => Promise<void>;
+export declare const getallParcelTypes: (req: RequestParams, res: Response) => Promise<void>;

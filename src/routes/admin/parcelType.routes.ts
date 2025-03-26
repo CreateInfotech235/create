@@ -2,6 +2,7 @@ import express from 'express';
 import {
   createParcelTypes,
   deleteParcelType,
+  getallParcelTypes,
   getParcelTypes,
   updateParcelTypes,
 } from '../../controller/admin/parcelType.controller';
@@ -111,4 +112,22 @@ router.delete('/:parcelTypeId', deleteParcelType);
  */
 router.get('/', getParcelTypes);
 
+
+/**
+ * @swagger
+ * /admin/parcelType/all:
+ *   get:
+ *     security:
+ *      - bearerAuth: []
+ *     summary: Get all parcelTypes
+ *     tags: [ Admin - parcelTypes ]
+ *     responses:
+ *       200:
+ *         description: Your request is successfully executed.
+ *       400:
+ *         description: Bad Request Client Error
+ *       500:   
+ *         description: Something went wrong
+ */
+router.get('/all', getallParcelTypes);
 export default router;

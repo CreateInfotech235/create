@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllOrders = exports.getOrders = exports.assignOrder = void 0;
+exports.getAllOrdersFromMerchantMulti = exports.getAllOrders = exports.getOrders = exports.assignOrder = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -22,6 +22,7 @@ const orderAssignee_schema_1 = __importDefault(require("../../models/orderAssign
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const order_validation_1 = require("../../utils/validation/order.validation");
+const orderMulti_schema_1 = __importDefault(require("../../models/orderMulti.schema"));
 const assignOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, order_validation_1.orderAssignValidation);
@@ -373,3 +374,186 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.getAllOrders = getAllOrders;
+const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { startDate, endDate, getallcancelledorders = 'false' } = req.query;
+        console.log("req.query", req.query);
+        let dateFilter = {};
+        if (getallcancelledorders === 'true') {
+            dateFilter = {
+                $or: [
+                    { status: enum_1.ORDER_HISTORY.CANCELLED },
+                    { status: enum_1.ORDER_HISTORY.DELIVERED },
+                ],
+            };
+        }
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            start.setUTCHours(0, 0, 0, 0);
+            end.setUTCHours(23, 59, 59, 999);
+            dateFilter = {
+                dateTime: {
+                    $gte: start,
+                    $lte: end,
+                },
+            };
+        }
+        const data = yield orderMulti_schema_1.default.aggregate([
+            {
+                $sort: {
+                    createdAt: -1,
+                },
+            },
+            {
+                $match: Object.assign({ 'pickupDetails.merchantId': new mongoose_1.default.Types.ObjectId(req.params.id) }, dateFilter),
+            },
+            {
+                $lookup: {
+                    from: 'orderAssigneeMulti',
+                    localField: 'orderId',
+                    foreignField: 'order',
+                    as: 'orderAssignData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 0,
+                                deliveryBoy: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$orderAssignData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $addFields: {
+                    deliveryBoy: '$orderAssignData.deliveryBoy',
+                },
+            },
+            {
+                $project: {
+                    orderAssignData: 0,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'deliveryMan',
+                    localField: 'deliveryBoy',
+                    foreignField: '_id',
+                    as: 'deliveryManData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                firstName: 1,
+                                lastName: 1,
+                                email: 1,
+                                contactNumber: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$deliveryManData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $addFields: {
+                    hasCancelledDelivery: {
+                        $cond: {
+                            if: { $eq: [getallcancelledorders, 'true'] },
+                            then: {
+                                $anyElementTrue: {
+                                    $map: {
+                                        input: '$deliveryDetails',
+                                        as: 'detail',
+                                        in: { $eq: ['$$detail.status', enum_1.ORDER_HISTORY.CANCELLED] },
+                                    },
+                                },
+                            },
+                            else: true,
+                        },
+                    },
+                },
+            },
+            {
+                $match: {
+                    hasCancelledDelivery: true,
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    orderId: 1,
+                    isReassign: {
+                        $ifNull: ['$isReassign', false],
+                    },
+                    customerId: 1,
+                    pickupAddress: '$pickupDetails',
+                    deliveryAddress: {
+                        $cond: {
+                            if: { $eq: [getallcancelledorders, 'true'] },
+                            then: {
+                                $filter: {
+                                    input: '$deliveryDetails',
+                                    as: 'detail',
+                                    cond: { $eq: ['$$detail.status', enum_1.ORDER_HISTORY.CANCELLED] },
+                                },
+                            },
+                            else: '$deliveryDetails',
+                        },
+                    },
+                    deliveryMan: {
+                        $concat: [
+                            '$deliveryManData.firstName',
+                            ' ',
+                            '$deliveryManData.lastName',
+                        ],
+                    },
+                    deliveryManEmail: '$deliveryManData.email',
+                    deliveryManMobileNumber: '$deliveryManData.contactNumber',
+                    deliveryManId: '$deliveryManData._id',
+                    pickupDate: {
+                        $dateToString: {
+                            format: '%d-%m-%Y , %H:%M',
+                            date: '$pickupDetails.dateTime',
+                        },
+                    },
+                    merchantId: '$pickupDetails.merchantId',
+                    createdDate: {
+                        $dateToString: {
+                            format: '%d-%m-%Y , %H:%M',
+                            date: '$createdAt',
+                        },
+                    },
+                    pickupRequest: '$pickupDetails.request',
+                    postCode: '$pickupDetails.postCode',
+                    status: 1,
+                    dateTime: 1,
+                    trashed: {
+                        $ifNull: ['$trashed', false],
+                    },
+                    trashedtime: {
+                        $ifNull: ['$trashedtime', null],
+                    },
+                    showOrderNumber: 1,
+                },
+            },
+        ]);
+        return res.ok({ data });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getAllOrdersFromMerchantMulti = getAllOrdersFromMerchantMulti;

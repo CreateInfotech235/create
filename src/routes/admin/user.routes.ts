@@ -244,4 +244,6 @@ router.delete('/deleteMerchant/:id', deleteMerchant);
 
 router.post('/updateStatus/:id', updateStatus);
 
+
+
 export default router;

@@ -14,6 +14,7 @@ import {
 } from '../../utils/validation/order.validation';
 import { OrderCreateType } from '../mobile/types/order';
 import { AdminOrderListType, OrderAssignType } from './types/order';
+import orderSchemaMulti from '../../models/orderMulti.schema';
 
 export const assignOrder = async (req: RequestParams, res: Response) => {
   try {
@@ -396,3 +397,203 @@ export const getAllOrders = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
+
+
+export const getAllOrdersFromMerchantMulti = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  try {
+    const { startDate, endDate, getallcancelledorders = 'false' } = req.query;
+    console.log("req.query", req.query);
+    let dateFilter = {};
+
+    if (getallcancelledorders === 'true') {
+      dateFilter = {
+        $or: [
+          { status: ORDER_HISTORY.CANCELLED },
+          { status: ORDER_HISTORY.DELIVERED },
+        ],
+      };
+    }
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      start.setUTCHours(0, 0, 0, 0);
+      end.setUTCHours(23, 59, 59, 999);
+
+      dateFilter = {
+        dateTime: {
+          $gte: start,
+          $lte: end,
+        },
+      };
+    }
+
+    const data = await orderSchemaMulti.aggregate([
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $match: {
+          'pickupDetails.merchantId': new mongoose.Types.ObjectId(
+            req.params.id,
+          ),
+          ...dateFilter,
+        },
+      },
+      {
+        $lookup: {
+          from: 'orderAssigneeMulti',
+          localField: 'orderId',
+          foreignField: 'order',
+          as: 'orderAssignData',
+          pipeline: [
+            {
+              $project: {
+                _id: 0,
+                deliveryBoy: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$orderAssignData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          deliveryBoy: '$orderAssignData.deliveryBoy',
+        },
+      },
+      {
+        $project: {
+          orderAssignData: 0,
+        },
+      },
+      {
+        $lookup: {
+          from: 'deliveryMan',
+          localField: 'deliveryBoy',
+          foreignField: '_id',
+          as: 'deliveryManData',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+                contactNumber: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$deliveryManData',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          hasCancelledDelivery: {
+            $cond: {
+              if: { $eq: [getallcancelledorders, 'true'] },
+              then: {
+                $anyElementTrue: {
+                  $map: {
+                    input: '$deliveryDetails',
+                    as: 'detail',
+                    in: { $eq: ['$$detail.status', ORDER_HISTORY.CANCELLED] },
+                  },
+                },
+              },
+              else: true,
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          hasCancelledDelivery: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          orderId: 1,
+          isReassign: {
+            $ifNull: ['$isReassign', false],
+          },
+          customerId: 1,
+          pickupAddress: '$pickupDetails',
+          deliveryAddress: {
+            $cond: {
+              if: { $eq: [getallcancelledorders, 'true'] },
+              then: {
+                $filter: {
+                  input: '$deliveryDetails',
+                  as: 'detail',
+                  cond: { $eq: ['$$detail.status', ORDER_HISTORY.CANCELLED] },
+                },
+              },
+              else: '$deliveryDetails',
+            },
+          },
+          deliveryMan: {
+            $concat: [
+              '$deliveryManData.firstName',
+              ' ',
+              '$deliveryManData.lastName',
+            ],
+          },
+          deliveryManEmail: '$deliveryManData.email',
+          deliveryManMobileNumber: '$deliveryManData.contactNumber',
+          deliveryManId: '$deliveryManData._id',
+          pickupDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$pickupDetails.dateTime',
+            },
+          },
+          merchantId: '$pickupDetails.merchantId',
+          createdDate: {
+            $dateToString: {
+              format: '%d-%m-%Y , %H:%M',
+              date: '$createdAt',
+            },
+          },
+          pickupRequest: '$pickupDetails.request',
+          postCode: '$pickupDetails.postCode',
+          status: 1,
+          dateTime: 1,
+          trashed: {
+            $ifNull: ['$trashed', false],
+          },
+          trashedtime: {
+            $ifNull: ['$trashedtime', null],
+          },
+          showOrderNumber: 1,
+        },
+      },
+    ]);
+
+
+    return res.ok({ data });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};
+

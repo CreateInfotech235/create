@@ -154,3 +154,32 @@ export const getParcelTypes = async (req: RequestParams, res: Response) => {
     });
   }
 };
+
+
+
+export const getallParcelTypes = async (req: RequestParams, res: Response) => {
+  try {
+    const data = await parcelSchema.aggregate([
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          parcelTypeId: '$_id',
+          label: 1,
+          status: '$status',
+          createdDate: '$createdAt',
+        },
+      },
+    ]);
+
+    return res.ok({ data });
+  } catch (error) {
+    return res.failureResponse({
+      message: getLanguage('en').somethingWentWrong,
+    });
+  }
+};

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParcelTypes = exports.deleteParcelType = exports.updateParcelTypes = exports.createParcelTypes = void 0;
+exports.getallParcelTypes = exports.getParcelTypes = exports.deleteParcelType = exports.updateParcelTypes = exports.createParcelTypes = void 0;
 const languageHelper_1 = require("../../language/languageHelper");
 const parcel_schema_1 = __importDefault(require("../../models/parcel.schema"));
 const common_1 = require("../../utils/common");
@@ -123,3 +123,30 @@ const getParcelTypes = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getParcelTypes = getParcelTypes;
+const getallParcelTypes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield parcel_schema_1.default.aggregate([
+            {
+                $sort: {
+                    createdAt: -1,
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    parcelTypeId: '$_id',
+                    label: 1,
+                    status: '$status',
+                    createdDate: '$createdAt',
+                },
+            },
+        ]);
+        return res.ok({ data });
+    }
+    catch (error) {
+        return res.failureResponse({
+            message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
+        });
+    }
+});
+exports.getallParcelTypes = getallParcelTypes;

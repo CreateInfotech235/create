@@ -4,6 +4,7 @@ import {
   assignOrder,
   getOrders,
   getAllOrders,
+  getAllOrdersFromMerchantMulti,
 } from '../../controller/admin/order.controller';
 import { orderCreation } from '../../controller/mobile/order.controller';
 
@@ -135,5 +136,8 @@ router.get('/getAllOrders', getAllOrders);
  *         description: Something went wrong
  */
 router.get('/location', getOrderLocations);
+
+router.get('/getAllOrdersFromMerchantMulti/:id', getAllOrdersFromMerchantMulti);
+
 
 export default router;
