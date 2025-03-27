@@ -79,6 +79,8 @@ export const stripPayment = async (req: RequestParams, res: Response) => {
         merchantId,
       },
     });
+    console.log(planId,"planId");
+    
 
     // if subscription plan is already expired then return error
 
@@ -99,9 +101,11 @@ export const stripPayment = async (req: RequestParams, res: Response) => {
       null,
     );
     console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
+    console.log(planId, 'planId');
 
     // get day of lastsubcriptionexpirydate
     const subcriptiondata = await SubcriptionSchema.findById(planId);
+    console.log(subcriptiondata, 'subcriptiondata');
     const startDate = lastsubcriptionexpirydate
       ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
         ? new Date(lastsubcriptionexpirydate.expiry)

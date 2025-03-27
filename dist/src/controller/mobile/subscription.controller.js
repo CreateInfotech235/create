@@ -72,6 +72,7 @@ const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 merchantId,
             },
         });
+        console.log(planId, "planId");
         // if subscription plan is already expired then return error
         // Create subscription purchase record
         console.log(paymentIntent, 'paymentIntent');
@@ -89,8 +90,10 @@ const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 : latest;
         }, null);
         console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
+        console.log(planId, 'planId');
         // get day of lastsubcriptionexpirydate
         const subcriptiondata = yield subcription_schema_1.default.findById(planId);
+        console.log(subcriptiondata, 'subcriptiondata');
         const startDate = lastsubcriptionexpirydate
             ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
                 ? new Date(lastsubcriptionexpirydate.expiry)
