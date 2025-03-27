@@ -72,6 +72,7 @@ export const manageSubscriptionValidation = Joi.object({
   days: Joi.number(),
   subscriptionId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).allow(""),
   isDesable: Joi.boolean().allow(""),
+  poulartext: Joi.string(),
 });
 export const subscription = Joi.object({
   id: Joi.string().required().messages({

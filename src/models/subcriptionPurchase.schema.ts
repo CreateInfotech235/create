@@ -7,10 +7,6 @@ const SubcriptionPurchaseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'subcription',
     },
-    // customer: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'user',
-    // },
     merchant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'merchant',
@@ -25,6 +21,15 @@ const SubcriptionPurchaseSchema = new mongoose.Schema(
       type: String,
       enum: SUBCRIPTION_REQUEST,
       default: SUBCRIPTION_REQUEST.PENDING,
+    },
+    amount: {
+      type: Number,
+    },
+    discount: {
+      type: Number,
+    },
+    features: {
+      type: Array,
     },
   },
   { timestamps: true, versionKey: false },

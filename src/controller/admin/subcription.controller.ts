@@ -58,6 +58,7 @@ export const manageSubscriptions = async (
             ...value,
             ...(value.days && { seconds: value.days * 86400 }),
             ...(value.isDesable && { isDesable: value.isDesable }),
+            
           },
         },
       );
@@ -93,13 +94,15 @@ export const getSubscriptions = async (req: RequestParams, res: Response) => {
     }
 
     const { value } = validateRequest;
+    const data = await subcriptionSchema
+      .find()
+      .sort({ seconds: 1, amount: 1 })
+      .skip((value.pageCount - 1) * value.pageLimit)
+      .limit(value.pageLimit);
+    console.log(data);
 
     return res.ok({
-      data: await subcriptionSchema
-        .find()
-        .sort({ seconds: 1, amount: 1 })
-        .skip((value.pageCount - 1) * value.pageLimit)
-        .limit(value.pageLimit),
+      data: data,
     });
   } catch (error) {
     return res.failureResponse({

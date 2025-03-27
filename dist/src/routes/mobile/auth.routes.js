@@ -843,5 +843,6 @@ router.post('/forgot-password/reset-password', auth_controller_1.resetPassword);
 router.get('/location/:merchantId', auth_controller_3.getDeliveryManLocation);
 router.get('/getApproveSubscription/:id', auth_controller_2.getApproveSubscription);
 router.post('/create-payment-intent', auth_controller_2.stripPayment);
+router.post('/upgrade-plan', auth_controller_2.stripPaymentUpgradePlan);
 router.get('/getMapApi', auth_controller_2.getMapApi);
 exports.default = router;

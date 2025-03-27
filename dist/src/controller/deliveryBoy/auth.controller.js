@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMapApi = exports.stripPayment = exports.getApproveSubscription = exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.moveToTrashDeliveryMan = exports.updateDeliveryManProfile = exports.deleteDeliveryMan = exports.getDeliveryManLocation = exports.getDeliveryManProfile = exports.updateLocation = exports.getDeliveryBoysForMerchant = exports.updateDeliveryManStatus = exports.updateDeliveryManProfileAndPassword = exports.signUp = exports.verifyPassword = void 0;
+exports.getMapApi = exports.stripPaymentUpgradePlan = exports.stripPayment = exports.getApproveSubscription = exports.resetPassword = exports.verifyOtp = exports.sendOtp = exports.moveToTrashDeliveryMan = exports.updateDeliveryManProfile = exports.deleteDeliveryMan = exports.getDeliveryManLocation = exports.getDeliveryManProfile = exports.updateLocation = exports.getDeliveryBoysForMerchant = exports.updateDeliveryManStatus = exports.updateDeliveryManProfileAndPassword = exports.signUp = exports.verifyPassword = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const enum_1 = require("../../enum");
 const languageHelper_1 = require("../../language/languageHelper");
@@ -841,6 +841,73 @@ const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.stripPayment = stripPayment;
+const stripPaymentUpgradePlan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { amount, planId, duration, expiryDate, merchantId, oldPlanId } = req.body;
+    console.log('Received Payment Data:', amount, planId, duration, expiryDate, merchantId, oldPlanId);
+    try {
+        // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
+        // const formattedAmount = Math.round(amount * 100);
+        // const paymentIntent = await stripe.paymentIntents.create({
+        //   amount: formattedAmount, // Amount in smallest currency unit
+        //   currency: 'gbp', // Replace with your currency code
+        //   payment_method_types: ['card'], // Allow card payments
+        //   metadata: {
+        //     planId,
+        //     duration,
+        //     expiryDate,
+        //     merchantId,
+        //   },
+        // });
+        // // if subscription plan is already expired then return error
+        // // Create subscription purchase record
+        // console.log(paymentIntent, 'paymentIntent');
+        // const getuserallsubcription = await subcriptionPurchaseSchema.find({
+        //   merchant: merchantId,
+        // });
+        // // get last subcription expiry date
+        // const lastsubcriptionexpirydate = getuserallsubcription.reduce(
+        //   (latest, current) => {
+        //     if (!latest || !latest.expiry) return current;
+        //     if (!current || !current.expiry) return latest;
+        //     return new Date(current.expiry) > new Date(latest.expiry)
+        //       ? current
+        //       : latest;
+        //   },
+        //   null,
+        // );
+        // console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
+        // // get day of lastsubcriptionexpirydate
+        // const subcriptiondata = await SubcriptionSchema.findById(planId);
+        // const startDate = lastsubcriptionexpirydate
+        //   ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
+        //     ? new Date(lastsubcriptionexpirydate.expiry)
+        //     : new Date()
+        //   : new Date();
+        // //  add day of subcriptiondata to startDate
+        // const expiry = new Date(
+        //   startDate.getTime() + subcriptiondata.seconds * 1000,
+        // );
+        // await subcriptionPurchaseSchema.create({
+        //   subcriptionId: planId,
+        //   merchant: merchantId,
+        //   // if last subcription expiry date is greater than current date then add 1 month to the expiry date
+        //   expiry: expiry,
+        //   status: 'APPROVED',
+        //   startDate: startDate,
+        // });
+        // console.log('Payment Intent Created:', paymentIntent);
+        res.send({
+            clientSecret: 'paymentIntent.client_secret',
+        });
+    }
+    catch (error) {
+        console.error('Stripe Payment Error:', error);
+        res.status(500).send({
+            message: 'Something went wrong while processing the payment.',
+        });
+    }
+});
+exports.stripPaymentUpgradePlan = stripPaymentUpgradePlan;
 // export const getMapApi = async (req: RequestParams, res: Response) => { 
 //   try {
 //     const mapApi = await MapApi.findOne({status:true});

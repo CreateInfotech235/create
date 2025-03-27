@@ -19,4 +19,5 @@ export declare const verifyOtp: (req: RequestParams, res: Response) => Promise<v
 export declare const resetPassword: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getApproveSubscription: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;
 export declare const stripPayment: (req: RequestParams, res: Response) => Promise<void>;
+export declare const stripPaymentUpgradePlan: (req: RequestParams, res: Response) => Promise<void>;
 export declare const getMapApi: (req: RequestParams, res: Response) => Promise<Response<any, Record<string, any>>>;

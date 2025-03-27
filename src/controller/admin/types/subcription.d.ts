@@ -19,4 +19,5 @@ interface IManageSubscription {
   subscriptionId?: string | undefined;
   seconds: number;
   isDesable: boolean;
+  poulartext: string;
 }

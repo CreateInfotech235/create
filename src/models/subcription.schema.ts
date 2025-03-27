@@ -25,6 +25,10 @@ const SubcriptionSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    poulartext: {
+      type: String,
+      default: '',
+    },
   },
   { timestamps: true, versionKey: false },
 );

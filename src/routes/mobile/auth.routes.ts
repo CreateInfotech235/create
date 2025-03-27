@@ -41,7 +41,7 @@ import {
   MessageDelete,
   getunreadMessages,
 } from '../../controller/mobile/auth.controller';
-import { getApproveSubscription,getMapApi,stripPayment } from '../../controller/deliveryBoy/auth.controller';
+import { getApproveSubscription,getMapApi,stripPayment, stripPaymentUpgradePlan } from '../../controller/deliveryBoy/auth.controller';
 import multer from 'multer';
 import {
   deleteDeliveryMan,
@@ -947,6 +947,7 @@ router.get('/getApproveSubscription/:id', getApproveSubscription);
 
 
 router.post('/create-payment-intent', stripPayment);
+router.post('/upgrade-plan', stripPaymentUpgradePlan);
 
 router.get('/getMapApi', getMapApi);
 

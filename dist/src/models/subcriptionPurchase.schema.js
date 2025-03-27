@@ -10,10 +10,6 @@ const SubcriptionPurchaseSchema = new mongoose_1.default.Schema({
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: 'subcription',
     },
-    // customer: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'user',
-    // },
     merchant: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: 'merchant',
@@ -28,6 +24,15 @@ const SubcriptionPurchaseSchema = new mongoose_1.default.Schema({
         type: String,
         enum: enum_1.SUBCRIPTION_REQUEST,
         default: enum_1.SUBCRIPTION_REQUEST.PENDING,
+    },
+    amount: {
+        type: Number,
+    },
+    discount: {
+        type: Number,
+    },
+    features: {
+        type: Array,
     },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('subcriptionPurchase', SubcriptionPurchaseSchema, 'subcriptionPurchase');

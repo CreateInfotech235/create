@@ -63,6 +63,7 @@ exports.manageSubscriptionValidation = joi_1.default.object({
     days: joi_1.default.number(),
     subscriptionId: joi_1.default.string().regex(/^[0-9a-fA-F]{24}$/).allow(""),
     isDesable: joi_1.default.boolean().allow(""),
+    poulartext: joi_1.default.string(),
 });
 exports.subscription = joi_1.default.object({
     id: joi_1.default.string().required().messages({

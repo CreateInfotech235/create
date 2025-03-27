@@ -66,12 +66,14 @@ const getSubscriptions = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.badRequest({ message: validateRequest.message });
         }
         const { value } = validateRequest;
+        const data = yield subcription_schema_1.default
+            .find()
+            .sort({ seconds: 1, amount: 1 })
+            .skip((value.pageCount - 1) * value.pageLimit)
+            .limit(value.pageLimit);
+        console.log(data);
         return res.ok({
-            data: yield subcription_schema_1.default
-                .find()
-                .sort({ seconds: 1, amount: 1 })
-                .skip((value.pageCount - 1) * value.pageLimit)
-                .limit(value.pageLimit),
+            data: data,
         });
     }
     catch (error) {
