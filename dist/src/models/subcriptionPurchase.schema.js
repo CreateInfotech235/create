@@ -31,8 +31,23 @@ const SubcriptionPurchaseSchema = new mongoose_1.default.Schema({
     discount: {
         type: Number,
     },
+    byingAmount: {
+        type: Number,
+    },
     features: {
         type: Array,
+    },
+    isplanupgrade: {
+        type: Boolean,
+        default: false,
+    },
+    oldPlanId: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'subcription',
+    },
+    isthisplanupgrade: {
+        type: Boolean,
+        default: false,
     },
 }, { timestamps: true, versionKey: false });
 const Model = mongoose_1.default.model('subcriptionPurchase', SubcriptionPurchaseSchema, 'subcriptionPurchase');

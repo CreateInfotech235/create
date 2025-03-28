@@ -30,36 +30,48 @@ declare const Model: mongoose.Model<{
 } & {
     status: string;
     features: any[];
+    isplanupgrade: boolean;
+    isthisplanupgrade: boolean;
     merchant?: mongoose.Types.ObjectId;
     expiry?: NativeDate;
     amount?: number;
     startDate?: NativeDate;
     discount?: number;
     subcriptionId?: mongoose.Types.ObjectId;
+    byingAmount?: number;
+    oldPlanId?: mongoose.Types.ObjectId;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
     status: string;
     features: any[];
+    isplanupgrade: boolean;
+    isthisplanupgrade: boolean;
     merchant?: mongoose.Types.ObjectId;
     expiry?: NativeDate;
     amount?: number;
     startDate?: NativeDate;
     discount?: number;
     subcriptionId?: mongoose.Types.ObjectId;
+    byingAmount?: number;
+    oldPlanId?: mongoose.Types.ObjectId;
 }> & {
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
     status: string;
     features: any[];
+    isplanupgrade: boolean;
+    isthisplanupgrade: boolean;
     merchant?: mongoose.Types.ObjectId;
     expiry?: NativeDate;
     amount?: number;
     startDate?: NativeDate;
     discount?: number;
     subcriptionId?: mongoose.Types.ObjectId;
+    byingAmount?: number;
+    oldPlanId?: mongoose.Types.ObjectId;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -73,36 +85,48 @@ declare const Model: mongoose.Model<{
 } & {
     status: string;
     features: any[];
+    isplanupgrade: boolean;
+    isthisplanupgrade: boolean;
     merchant?: mongoose.Types.ObjectId;
     expiry?: NativeDate;
     amount?: number;
     startDate?: NativeDate;
     discount?: number;
     subcriptionId?: mongoose.Types.ObjectId;
+    byingAmount?: number;
+    oldPlanId?: mongoose.Types.ObjectId;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
     status: string;
     features: any[];
+    isplanupgrade: boolean;
+    isthisplanupgrade: boolean;
     merchant?: mongoose.Types.ObjectId;
     expiry?: NativeDate;
     amount?: number;
     startDate?: NativeDate;
     discount?: number;
     subcriptionId?: mongoose.Types.ObjectId;
+    byingAmount?: number;
+    oldPlanId?: mongoose.Types.ObjectId;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
     updatedAt: NativeDate;
 } & {
     status: string;
     features: any[];
+    isplanupgrade: boolean;
+    isthisplanupgrade: boolean;
     merchant?: mongoose.Types.ObjectId;
     expiry?: NativeDate;
     amount?: number;
     startDate?: NativeDate;
     discount?: number;
     subcriptionId?: mongoose.Types.ObjectId;
+    byingAmount?: number;
+    oldPlanId?: mongoose.Types.ObjectId;
 }> & {
     _id: mongoose.Types.ObjectId;
 } & {

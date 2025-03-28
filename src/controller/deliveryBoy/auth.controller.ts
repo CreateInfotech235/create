@@ -38,7 +38,6 @@ const stripe = new Stripe(
   'sk_test_51QWXp5FWojz9eoui3b20GWIoF6Yxged00OdF74C7SSSqnpYie13SsJWAm6ev4AvSaA8lLl3JjZJWvRxqeIB9wihP00AaiXdZKs',
 );
 
-
 import { log } from 'console';
 
 export const verifyPassword = async ({
@@ -258,8 +257,7 @@ export const updateDeliveryManProfileAndPassword = async (
 
     if (updateData?.address) {
       try {
-
-        const mapKeys = await MapApi.findOne({status:true});
+        const mapKeys = await MapApi.findOne({ status: true });
         const apiKey = mapKeys.mapKey;
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
@@ -623,10 +621,10 @@ export const getDeliveryManProfile = async (
           earning: {
             $ifNull: [
               {
-                $round: ['$earning', 2]
+                $round: ['$earning', 2],
               },
-              0
-            ]
+              0,
+            ],
           },
         },
       },
@@ -960,95 +958,9 @@ export const getApproveSubscription = async (
   }
 };
 
-
-
-
 export const stripPayment = async (req: RequestParams, res: Response) => {
-  const { amount, planId, duration, expiryDate, merchantId } = req.body;
-
-  console.log(
-    'Received Payment Data:',
-    amount,
-    planId,
-    duration,
-    expiryDate,
-    merchantId,
-  );
-
-  try {
-    // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
-    const formattedAmount = Math.round(amount * 100);
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: formattedAmount, // Amount in smallest currency unit
-      currency: 'gbp', // Replace with your currency code
-      payment_method_types: ['card'], // Allow card payments
-      metadata: {
-        planId,
-        duration,
-        expiryDate,
-        merchantId,
-      },
-    });
-
-    // if subscription plan is already expired then return error
-
-    // Create subscription purchase record
-    console.log(paymentIntent, 'paymentIntent');
-    const getuserallsubcription = await subcriptionPurchaseSchema.find({
-      merchant: merchantId,
-    });
-    // get last subcription expiry date
-    const lastsubcriptionexpirydate = getuserallsubcription.reduce(
-      (latest, current) => {
-        if (!latest || !latest.expiry) return current;
-        if (!current || !current.expiry) return latest;
-        return new Date(current.expiry) > new Date(latest.expiry)
-          ? current
-          : latest;
-      },
-      null,
-    );
-    console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
-
-    // get day of lastsubcriptionexpirydate
-    const subcriptiondata = await SubcriptionSchema.findById(planId);
-    const startDate = lastsubcriptionexpirydate
-      ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
-        ? new Date(lastsubcriptionexpirydate.expiry)
-        : new Date()
-      : new Date();
-    //  add day of subcriptiondata to startDate
-    const expiry = new Date(
-      startDate.getTime() + subcriptiondata.seconds * 1000,
-    );
-    await subcriptionPurchaseSchema.create({
-      subcriptionId: planId,
-      merchant: merchantId,
-      // if last subcription expiry date is greater than current date then add 1 month to the expiry date
-      expiry: expiry,
-      status: 'APPROVED',
-      startDate: startDate,
-    });
-
-    console.log('Payment Intent Created:', paymentIntent);
-
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
-  } catch (error) {
-    console.error('Stripe Payment Error:', error);
-
-    res.status(500).send({
-      message: 'Something went wrong while processing the payment.',
-    });
-  }
-};
-
-
-
-export const stripPaymentUpgradePlan = async (req: RequestParams, res: Response) => {
-  const { amount, planId, duration, expiryDate, merchantId, oldPlanId } = req.body;
+  const { amount, planId, duration, expiryDate, merchantId, oldPlanId } =
+    req.body;
 
   console.log(
     'Received Payment Data:',
@@ -1061,8 +973,160 @@ export const stripPaymentUpgradePlan = async (req: RequestParams, res: Response)
   );
 
   try {
-   
+    if (oldPlanId == null || oldPlanId == undefined) {
+      // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
+      const formattedAmount = Math.round(amount * 100);
 
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: formattedAmount, // Amount in smallest currency unit
+        currency: 'gbp', // Replace with your currency code
+        payment_method_types: ['card'], // Allow card payments
+        metadata: {
+          planId,
+          duration,
+          expiryDate,
+          merchantId,
+        },
+      });
+
+      // if subscription plan is already expired then return error
+
+      // Create subscription purchase record
+      console.log(paymentIntent, 'paymentIntent');
+      const getuserallsubcription = await subcriptionPurchaseSchema.find({
+        merchant: merchantId,
+      });
+
+      // const activePlan = getuserallsubcription.find(
+      //   (subcription) =>
+      //     subcription.status === 'APPROVED' &&
+      //     new Date() > new Date(subcription.startDate) &&
+      //     new Date() < new Date(subcription.expiry)
+      // );
+      // console.log(activePlan, 'activePlan');
+      // get last subcription expiry date
+      const lastsubcriptionexpirydate = getuserallsubcription.reduce(
+        (latest, current) => {
+          if (!latest || !latest.expiry) return current;
+          if (!current || !current.expiry) return latest;
+          return new Date(current.expiry) > new Date(latest.expiry)
+            ? current
+            : latest;
+        },
+        null,
+      );
+      console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
+
+      // get day of lastsubcriptionexpirydate
+      const subcriptiondata = await SubcriptionSchema.findById(planId);
+      const startDate = lastsubcriptionexpirydate
+        ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
+          ? new Date(lastsubcriptionexpirydate.expiry)
+          : new Date()
+        : new Date();
+      //  add day of subcriptiondata to startDate
+      const expiry = new Date(
+        startDate.getTime() + subcriptiondata.seconds * 1000,
+      );
+      await subcriptionPurchaseSchema.create({
+        subcriptionId: planId,
+        merchant: merchantId,
+        amount: subcriptiondata.amount,
+        discount: subcriptiondata.discount,
+        byingAmount: amount,
+        features: subcriptiondata.features,
+        // if last subcription expiry date is greater than current date then add 1 month to the expiry date
+        expiry: expiry,
+        status: 'APPROVED',
+        startDate: startDate,
+      });
+
+      console.log('Payment Intent Created:', paymentIntent);
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    } else {
+      // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
+      const formattedAmount = Math.round(amount * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: formattedAmount, // Amount in smallest currency unit
+        currency: 'gbp', // Replace with your currency code
+        payment_method_types: ['card'], // Allow card payments
+        metadata: {
+          planId,
+          duration,//duration is in DAYS
+          expiryDate,//expiryDate is in DATE
+          merchantId,
+        },
+      });
+
+      console.log(paymentIntent, 'paymentIntent');
+      // get day of lastsubcriptionexpirydate
+      const subcriptiondata = await SubcriptionSchema.findById(planId);
+      const startDate =new Date();
+      //  add day of subcriptiondata to startDate
+      const expiry = new Date(
+        startDate.getTime() + subcriptiondata.seconds * 1000,
+      );
+
+      await subcriptionPurchaseSchema.updateOne(
+        { _id: oldPlanId },
+        {
+          $set: {
+            expiry:startDate,
+            isplanupgrade: true,
+            oldPlanId: oldPlanId,
+          },
+        },
+      );
+
+      await subcriptionPurchaseSchema.create({
+        subcriptionId: planId,
+        merchant: merchantId,
+        amount: subcriptiondata.amount,
+        discount: subcriptiondata.discount,
+        byingAmount: amount,
+        features: subcriptiondata.features,
+        // if last subcription expiry date is greater than current date then add 1 month to the expiry date
+        expiry: expiry,
+        status: 'APPROVED',
+        startDate: startDate,
+        isthisplanupgrade: true,
+      });
+
+      console.log('Payment Intent Created:', paymentIntent);
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    }
+  } catch (error) {
+    console.error('Stripe Payment Error:', error);
+
+    res.status(500).send({
+      message: 'Something went wrong while processing the payment.',
+    });
+  }
+};
+
+export const stripPaymentUpgradePlan = async (
+  req: RequestParams,
+  res: Response,
+) => {
+  const { amount, planId, duration, expiryDate, merchantId, oldPlanId } =
+    req.body;
+
+  console.log(
+    'Received Payment Data:',
+    amount,
+    planId,
+    duration,
+    expiryDate,
+    merchantId,
+    oldPlanId,
+  );
+
+  try {
     // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
     // const formattedAmount = Math.round(amount * 100);
 
@@ -1132,7 +1196,7 @@ export const stripPaymentUpgradePlan = async (req: RequestParams, res: Response)
   }
 };
 
-// export const getMapApi = async (req: RequestParams, res: Response) => { 
+// export const getMapApi = async (req: RequestParams, res: Response) => {
 //   try {
 //     const mapApi = await MapApi.findOne({status:true});
 //      res.status(200).json({mapApi});
@@ -1141,17 +1205,12 @@ export const stripPaymentUpgradePlan = async (req: RequestParams, res: Response)
 //   }
 // }
 
-
-
-export const getMapApi = async (
-  req: RequestParams,
-  res: Response,
-) => {
+export const getMapApi = async (req: RequestParams, res: Response) => {
   try {
-    const mapApi = await MapApi.findOne({status:true});
+    const mapApi = await MapApi.findOne({ status: true });
     return res.status(200).json({
       status: true,
-      data:mapApi,
+      data: mapApi,
     });
   } catch (error: any) {
     console.error('Error in getMapApi:', error.message);

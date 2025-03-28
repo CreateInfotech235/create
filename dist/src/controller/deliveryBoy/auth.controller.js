@@ -513,10 +513,10 @@ const getDeliveryManProfile = (req, res) => __awaiter(void 0, void 0, void 0, fu
                     earning: {
                         $ifNull: [
                             {
-                                $round: ['$earning', 2]
+                                $round: ['$earning', 2],
                             },
-                            0
-                        ]
+                            0,
+                        ],
                     },
                 },
             },
@@ -778,60 +778,118 @@ const getApproveSubscription = (req, res) => __awaiter(void 0, void 0, void 0, f
 });
 exports.getApproveSubscription = getApproveSubscription;
 const stripPayment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { amount, planId, duration, expiryDate, merchantId } = req.body;
-    console.log('Received Payment Data:', amount, planId, duration, expiryDate, merchantId);
+    const { amount, planId, duration, expiryDate, merchantId, oldPlanId } = req.body;
+    console.log('Received Payment Data:', amount, planId, duration, expiryDate, merchantId, oldPlanId);
     try {
-        // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
-        const formattedAmount = Math.round(amount * 100);
-        const paymentIntent = yield stripe.paymentIntents.create({
-            amount: formattedAmount, // Amount in smallest currency unit
-            currency: 'gbp', // Replace with your currency code
-            payment_method_types: ['card'], // Allow card payments
-            metadata: {
-                planId,
-                duration,
-                expiryDate,
-                merchantId,
-            },
-        });
-        // if subscription plan is already expired then return error
-        // Create subscription purchase record
-        console.log(paymentIntent, 'paymentIntent');
-        const getuserallsubcription = yield subcriptionPurchase_schema_1.default.find({
-            merchant: merchantId,
-        });
-        // get last subcription expiry date
-        const lastsubcriptionexpirydate = getuserallsubcription.reduce((latest, current) => {
-            if (!latest || !latest.expiry)
-                return current;
-            if (!current || !current.expiry)
-                return latest;
-            return new Date(current.expiry) > new Date(latest.expiry)
-                ? current
-                : latest;
-        }, null);
-        console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
-        // get day of lastsubcriptionexpirydate
-        const subcriptiondata = yield subcription_schema_1.default.findById(planId);
-        const startDate = lastsubcriptionexpirydate
-            ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
-                ? new Date(lastsubcriptionexpirydate.expiry)
-                : new Date()
-            : new Date();
-        //  add day of subcriptiondata to startDate
-        const expiry = new Date(startDate.getTime() + subcriptiondata.seconds * 1000);
-        yield subcriptionPurchase_schema_1.default.create({
-            subcriptionId: planId,
-            merchant: merchantId,
-            // if last subcription expiry date is greater than current date then add 1 month to the expiry date
-            expiry: expiry,
-            status: 'APPROVED',
-            startDate: startDate,
-        });
-        console.log('Payment Intent Created:', paymentIntent);
-        res.send({
-            clientSecret: paymentIntent.client_secret,
-        });
+        if (oldPlanId == null || oldPlanId == undefined) {
+            // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
+            const formattedAmount = Math.round(amount * 100);
+            const paymentIntent = yield stripe.paymentIntents.create({
+                amount: formattedAmount, // Amount in smallest currency unit
+                currency: 'gbp', // Replace with your currency code
+                payment_method_types: ['card'], // Allow card payments
+                metadata: {
+                    planId,
+                    duration,
+                    expiryDate,
+                    merchantId,
+                },
+            });
+            // if subscription plan is already expired then return error
+            // Create subscription purchase record
+            console.log(paymentIntent, 'paymentIntent');
+            const getuserallsubcription = yield subcriptionPurchase_schema_1.default.find({
+                merchant: merchantId,
+            });
+            // const activePlan = getuserallsubcription.find(
+            //   (subcription) =>
+            //     subcription.status === 'APPROVED' &&
+            //     new Date() > new Date(subcription.startDate) &&
+            //     new Date() < new Date(subcription.expiry)
+            // );
+            // console.log(activePlan, 'activePlan');
+            // get last subcription expiry date
+            const lastsubcriptionexpirydate = getuserallsubcription.reduce((latest, current) => {
+                if (!latest || !latest.expiry)
+                    return current;
+                if (!current || !current.expiry)
+                    return latest;
+                return new Date(current.expiry) > new Date(latest.expiry)
+                    ? current
+                    : latest;
+            }, null);
+            console.log(lastsubcriptionexpirydate, 'lastsubcriptionexpirydate');
+            // get day of lastsubcriptionexpirydate
+            const subcriptiondata = yield subcription_schema_1.default.findById(planId);
+            const startDate = lastsubcriptionexpirydate
+                ? new Date(lastsubcriptionexpirydate.expiry) > new Date()
+                    ? new Date(lastsubcriptionexpirydate.expiry)
+                    : new Date()
+                : new Date();
+            //  add day of subcriptiondata to startDate
+            const expiry = new Date(startDate.getTime() + subcriptiondata.seconds * 1000);
+            yield subcriptionPurchase_schema_1.default.create({
+                subcriptionId: planId,
+                merchant: merchantId,
+                amount: subcriptiondata.amount,
+                discount: subcriptiondata.discount,
+                byingAmount: amount,
+                features: subcriptiondata.features,
+                // if last subcription expiry date is greater than current date then add 1 month to the expiry date
+                expiry: expiry,
+                status: 'APPROVED',
+                startDate: startDate,
+            });
+            console.log('Payment Intent Created:', paymentIntent);
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        }
+        else {
+            // Ensure amount is in the smallest currency unit (e.g., cents for USD, pennies for GBP)
+            const formattedAmount = Math.round(amount * 100);
+            const paymentIntent = yield stripe.paymentIntents.create({
+                amount: formattedAmount, // Amount in smallest currency unit
+                currency: 'gbp', // Replace with your currency code
+                payment_method_types: ['card'], // Allow card payments
+                metadata: {
+                    planId,
+                    duration, //duration is in DAYS
+                    expiryDate, //expiryDate is in DATE
+                    merchantId,
+                },
+            });
+            console.log(paymentIntent, 'paymentIntent');
+            // get day of lastsubcriptionexpirydate
+            const subcriptiondata = yield subcription_schema_1.default.findById(planId);
+            const startDate = new Date();
+            //  add day of subcriptiondata to startDate
+            const expiry = new Date(startDate.getTime() + subcriptiondata.seconds * 1000);
+            yield subcriptionPurchase_schema_1.default.updateOne({ _id: oldPlanId }, {
+                $set: {
+                    expiry: startDate,
+                    isplanupgrade: true,
+                    oldPlanId: oldPlanId,
+                },
+            });
+            yield subcriptionPurchase_schema_1.default.create({
+                subcriptionId: planId,
+                merchant: merchantId,
+                amount: subcriptiondata.amount,
+                discount: subcriptiondata.discount,
+                byingAmount: amount,
+                features: subcriptiondata.features,
+                // if last subcription expiry date is greater than current date then add 1 month to the expiry date
+                expiry: expiry,
+                status: 'APPROVED',
+                startDate: startDate,
+                isthisplanupgrade: true,
+            });
+            console.log('Payment Intent Created:', paymentIntent);
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        }
     }
     catch (error) {
         console.error('Stripe Payment Error:', error);
@@ -908,7 +966,7 @@ const stripPaymentUpgradePlan = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.stripPaymentUpgradePlan = stripPaymentUpgradePlan;
-// export const getMapApi = async (req: RequestParams, res: Response) => { 
+// export const getMapApi = async (req: RequestParams, res: Response) => {
 //   try {
 //     const mapApi = await MapApi.findOne({status:true});
 //      res.status(200).json({mapApi});
