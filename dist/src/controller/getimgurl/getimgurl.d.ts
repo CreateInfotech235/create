@@ -1,1 +1,1 @@
-export declare const getimgurl: (value: string) => string;
+export declare const getimgurl: (value: string, type?: string) => string;

@@ -32,6 +32,7 @@ const deliveryMan_schema_1 = __importDefault(require("../../models/deliveryMan.s
 const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
 const user_schema_1 = __importDefault(require("../../models/user.schema"));
 const unreadMessages_1 = require("../Notificationinapp/unreadMessages");
+const getimgurl_1 = require("../getimgurl/getimgurl");
 const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, adminSide_validation_1.adminSignInValidation);
@@ -675,22 +676,83 @@ const getunreadMessages = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.getunreadMessages = getunreadMessages;
 // Add a new message to a specific ticket
 const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const { text, sender } = req.body;
-        if (!text || !['merchant', 'admin'].includes(sender)) {
-            return res.status(400).json({ message: 'Invalid message data' });
+        const { text, sender, file } = req.body;
+        if (!sender) {
+            return res.status(400).json({ message: 'Sender is required' });
+        }
+        if (!['merchant', 'admin'].includes(sender)) {
+            return res.status(400).json({ message: 'Invalid sender type' });
+        }
+        if (!text && !(file === null || file === void 0 ? void 0 : file.data)) {
+            return res
+                .status(400)
+                .json({ message: 'Either text or file data is required' });
         }
         const ticket = yield SupportTicket_1.default.findById(req.params.id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
         // Add the new message
-        ticket.messages.push({ text, sender, isRead: false });
+        const messageData = { text, sender };
+        const supportedTypes = {
+            png: ['image/png'],
+            webp: ['image/webp'],
+            jpg: ['image/jpeg'],
+            jpeg: ['image/jpeg'],
+            gif: ['image/gif'],
+            bmp: ['image/bmp'],
+            tiff: ['image/tiff'],
+            svg: ['image/svg+xml'],
+            heif: ['image/heif'],
+            ico: ['image/x-icon'],
+            avif: ['image/avif'],
+            pdf: ['application/pdf'],
+            doc: ['application/msword'],
+            docx: [
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ],
+            zip: [
+                'application/zip',
+                'application/x-zip-compressed',
+                'x-zip-compressed',
+            ],
+            rar: ['application/x-rar-compressed'],
+            txt: ['text/plain'],
+            csv: ['text/csv'],
+            json: ['application/json'],
+            xml: ['application/xml'],
+        };
+        let fileExtension = 'png';
+        if (file === null || file === void 0 ? void 0 : file.data) {
+            // Extract MIME type from base64 string
+            const mimeMatch = file.data.match(/^data:([^;]+);/);
+            if (mimeMatch) {
+                const mimeType = mimeMatch[1];
+                // Find matching extension from supported types
+                const extension = (_a = Object.entries(supportedTypes).find(([_, mimes]) => mimes.includes(mimeType))) === null || _a === void 0 ? void 0 : _a[0];
+                if (extension) {
+                    fileExtension = extension;
+                }
+            }
+            messageData.file = {
+                data: yield (0, getimgurl_1.getimgurl)(file.data, fileExtension),
+                name: file === null || file === void 0 ? void 0 : file.name,
+                type: file === null || file === void 0 ? void 0 : file.type,
+                extension: fileExtension,
+            };
+            messageData.fileType = fileExtension;
+        }
+        console.log(messageData, 'messageData');
+        ticket.messages.push(messageData);
         yield ticket.save();
         // Emit the new message to the ticket room
         index_1.io.to(req.params.id).emit('SupportTicketssendMessage', {
             text,
             sender,
+            file: messageData.file,
+            fileType: messageData.fileType,
             ticketId: req.params.id,
         });
         index_1.io.to(req.params.id).emit('Messagedataupdate', {
@@ -699,6 +761,7 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.json(ticket.messages);
     }
     catch (error) {
+        console.log(error, 'error');
         res.status(500).json({ message: 'Failed to add message' });
     }
 });

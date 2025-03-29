@@ -39,6 +39,8 @@ import Notifications from '../../models/notificatio.schema';
 import merchantSchema from '../../models/user.schema';
 import Ticket from '../../models/Ticket.schema';
 import { unreadMessages } from '../Notificationinapp/unreadMessages';
+import { getimgurl } from '../getimgurl/getimgurl';
+
 export const signIn = async (req: RequestParams, res: Response) => {
   try {
     const validateRequest = validateParamsWithJoi<{
@@ -806,24 +808,88 @@ export const getunreadMessages = async (req: RequestParams, res: Response) => {
 // Add a new message to a specific ticket
 export const addMessageToTicket = async (req: RequestParams, res: Response) => {
   try {
-    const { text, sender } = req.body;
-    if (!text || !['merchant', 'admin'].includes(sender)) {
-      return res.status(400).json({ message: 'Invalid message data' });
+    const { text, sender, file } = req.body;
+    if (!sender) {
+      return res.status(400).json({ message: 'Sender is required' });
+    }
+    if (!['merchant', 'admin'].includes(sender)) {
+      return res.status(400).json({ message: 'Invalid sender type' });
+    }
+    if (!text && !file?.data) {
+      return res
+        .status(400)
+        .json({ message: 'Either text or file data is required' });
     }
 
     const ticket = await SupportTicket.findById(req.params.id);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
-
     // Add the new message
-    ticket.messages.push({ text, sender, isRead: false });
+    const messageData: any = { text, sender };
+    const supportedTypes = {
+      png: ['image/png'],
+      webp: ['image/webp'],
+      jpg: ['image/jpeg'],
+      jpeg: ['image/jpeg'],
+      gif: ['image/gif'],
+      bmp: ['image/bmp'],
+      tiff: ['image/tiff'],
+      svg: ['image/svg+xml'],
+      heif: ['image/heif'],
+      ico: ['image/x-icon'],
+      avif: ['image/avif'],
+      pdf: ['application/pdf'],
+      doc: ['application/msword'],
+      docx: [
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ],
+      zip: [
+        'application/zip',
+        'application/x-zip-compressed',
+        'x-zip-compressed',
+      ],
+      rar: ['application/x-rar-compressed'],
+      txt: ['text/plain'],
+      csv: ['text/csv'],
+      json: ['application/json'],
+      xml: ['application/xml'],
+    };
+
+    let fileExtension = 'png';
+    if (file?.data) {
+      // Extract MIME type from base64 string
+      const mimeMatch = file.data.match(/^data:([^;]+);/);
+      if (mimeMatch) {
+        const mimeType = mimeMatch[1];
+        // Find matching extension from supported types
+        const extension = Object.entries(supportedTypes).find(([_, mimes]) =>
+          mimes.includes(mimeType),
+        )?.[0];
+        if (extension) {
+          fileExtension = extension;
+        }
+      }
+
+      messageData.file = {
+        data: await getimgurl(file.data, fileExtension),
+        name: file?.name,
+        type: file?.type,
+        extension: fileExtension,
+      };
+      messageData.fileType = fileExtension;
+    }
+    console.log(messageData, 'messageData');
+
+    ticket.messages.push(messageData);
     await ticket.save();
 
     // Emit the new message to the ticket room
     io.to(req.params.id).emit('SupportTicketssendMessage', {
       text,
       sender,
+      file: messageData.file,
+      fileType: messageData.fileType,
       ticketId: req.params.id,
     });
     io.to(req.params.id).emit('Messagedataupdate', {
@@ -832,6 +898,7 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
 
     res.json(ticket.messages);
   } catch (error) {
+    console.log(error, 'error');
     res.status(500).json({ message: 'Failed to add message' });
   }
 };

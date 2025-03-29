@@ -38,19 +38,40 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }>;
 }, {}, {}, {}, mongoose.Document<unknown, {}, {
     createdAt: NativeDate;
@@ -66,19 +87,40 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }>;
 }> & {
     createdAt: NativeDate;
@@ -94,19 +136,40 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }>;
 } & {
     _id: mongoose.Types.ObjectId;
@@ -129,19 +192,40 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }>;
 }, mongoose.Document<unknown, {}, mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -157,19 +241,40 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }>;
 }>> & mongoose.FlatRecord<{
     createdAt: NativeDate;
@@ -185,19 +290,40 @@ declare const Model: mongoose.Model<{
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }, mongoose.Types.Subdocument<mongoose.Types.ObjectId, any, {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }> & {
         text: string;
         sender: "merchant" | "admin";
         isRead: boolean;
         timestamp: NativeDate;
+        fileType: string;
         _id?: mongoose.Types.ObjectId;
+        file?: {
+            name: string;
+            type: string;
+            data: string;
+            extension: string;
+        };
     }>;
 }> & {
     _id: mongoose.Types.ObjectId;

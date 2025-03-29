@@ -52,6 +52,7 @@ const adminSide_validation_1 = require("../../utils/validation/adminSide.validat
 const auth_controller_1 = require("../deliveryBoy/auth.controller");
 const axios_1 = __importDefault(require("axios"));
 const unreadMessages_1 = require("../Notificationinapp/unreadMessages");
+const getimgurl_1 = require("../getimgurl/getimgurl");
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validateRequest = (0, validateRequest_1.default)(req.body, auth_validation_1.userSignUpValidation);
@@ -1137,7 +1138,27 @@ const getSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, functio
     try {
         console.log('Request body:', req.body);
         const { id } = req.params;
-        const data = yield SupportTicket_1.default.find({ userid: id }).populate('adminId', 'name email');
+        const isSendMessage = req.query.isSendMessage;
+        const data = yield SupportTicket_1.default.aggregate([
+            { $match: { userid: new mongoose_1.default.Types.ObjectId(id) } },
+            {
+                $lookup: {
+                    from: 'admins',
+                    localField: 'adminId',
+                    foreignField: '_id',
+                    as: 'adminDetails',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$adminDetails',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: Object.assign(Object.assign({ _id: 1, subject: 1, problem: 1, problemSolved: 1 }, (!isSendMessage ? { messages: 1 } : {})), { createdAt: 1, updatedAt: 1, 'adminDetails.name': 1, 'adminDetails.email': 1 }),
+            },
+        ]);
         console.log('data', data);
         return res.status(200).json({
             message: 'Support ticket get successfully',
@@ -1603,22 +1624,84 @@ const Messageread = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.Messageread = Messageread;
 // Add a new message to a specific ticket
 const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const { text, sender } = req.body;
-        if (!text || !['merchant', 'admin'].includes(sender)) {
-            return res.status(400).json({ message: 'Invalid message data' });
+        const { text, sender, file } = req.body;
+        if (!sender) {
+            return res.status(400).json({ message: 'Sender is required' });
+        }
+        if (!['merchant', 'admin'].includes(sender)) {
+            return res.status(400).json({ message: 'Invalid sender type' });
+        }
+        if (!text && !(file === null || file === void 0 ? void 0 : file.data)) {
+            return res
+                .status(400)
+                .json({ message: 'Either text or file data is required' });
         }
         const ticket = yield SupportTicket_1.default.findById(req.params.id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
         // Add the new message
-        ticket.messages.push({ text, sender });
+        const messageData = { text, sender };
+        const supportedTypes = {
+            png: ['image/png'],
+            webp: ['image/webp'],
+            jpg: ['image/jpeg'],
+            jpeg: ['image/jpeg'],
+            gif: ['image/gif'],
+            bmp: ['image/bmp'],
+            tiff: ['image/tiff'],
+            svg: ['image/svg+xml'],
+            heif: ['image/heif'],
+            ico: ['image/x-icon'],
+            avif: ['image/avif'],
+            pdf: ['application/pdf'],
+            doc: ['application/msword'],
+            docx: [
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ],
+            zip: [
+                'application/zip',
+                'application/x-zip-compressed',
+                'x-zip-compressed',
+            ],
+            rar: ['application/x-rar-compressed'],
+            txt: ['text/plain'],
+            csv: ['text/csv'],
+            json: ['application/json'],
+            xml: ['application/xml'],
+        };
+        let fileExtension = 'png';
+        if (file === null || file === void 0 ? void 0 : file.data) {
+            // Extract MIME type from base64 string
+            const mimeMatch = file.data.match(/^data:([^;]+);/);
+            if (mimeMatch) {
+                const mimeType = mimeMatch[1];
+                // Find matching extension from supported types
+                const extension = (_a = Object.entries(supportedTypes).find(([_, mimes]) => mimes.includes(mimeType))) === null || _a === void 0 ? void 0 : _a[0];
+                if (extension) {
+                    fileExtension = extension;
+                }
+            }
+            messageData.file = {
+                data: yield (0, getimgurl_1.getimgurl)(file.data, fileExtension),
+                name: file === null || file === void 0 ? void 0 : file.name,
+                type: file === null || file === void 0 ? void 0 : file.type,
+                extension: fileExtension,
+            };
+            messageData.fileType = fileExtension;
+        }
+        console.log(messageData, 'messageData');
+        // const newMessage = await messagesSchema.create({ ...messageData, SupportTicketId: ticket._id });
+        ticket.messages.push(messageData);
         yield ticket.save();
         // Emit the new message to the ticket room
         index_1.io.to(req.params.id).emit('SupportTicketssendMessage', {
             text,
             sender,
+            file: messageData.file,
+            fileType: messageData.fileType,
             ticketId: req.params.id,
         });
         index_1.io.to(req.params.id).emit('Messagedataupdate', {
@@ -1627,6 +1710,7 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.json(ticket.messages);
     }
     catch (error) {
+        console.log(error, 'error');
         res.status(500).json({ message: 'Failed to add message' });
     }
 });
