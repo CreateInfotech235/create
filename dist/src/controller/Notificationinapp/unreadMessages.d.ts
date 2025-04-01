@@ -4,8 +4,8 @@ export declare const unreadMessages: (userId: string | undefined, sender: string
     unreadMessages?: undefined;
     totalUnreadMessages?: undefined;
 } | {
-    unreadMessages: any;
-    totalUnreadMessages: any;
+    unreadMessages: Record<string, number>;
+    totalUnreadMessages: number;
     for: string;
     error?: undefined;
 } | {

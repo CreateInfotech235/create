@@ -1087,30 +1087,190 @@ const getAllOrdersFromMerchant = (req, res) => __awaiter(void 0, void 0, void 0,
 });
 exports.getAllOrdersFromMerchant = getAllOrdersFromMerchant;
 const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
     try {
-        const { startDate, endDate, getallcancelledorders = 'false' } = req.query;
+        const { startDate, endDate, getallcancelledorders = 'false', limit = 10, page = 1, searchQuery = '', filterStatus = '', } = req.query;
+        const parsedLimit = typeof limit === 'string' ? Number(limit) : limit;
+        console.log('page', page);
+        console.log('limit', parsedLimit);
         let dateFilter = {};
+        let searchFilter = {};
         if (getallcancelledorders === 'true') {
-            dateFilter = {
-                $or: [
+            dateFilter = Object.assign(Object.assign({}, dateFilter), { $or: [
                     { status: enum_1.ORDER_HISTORY.CANCELLED },
                     { status: enum_1.ORDER_HISTORY.DELIVERED },
+                ] });
+        }
+        if (startDate || endDate) {
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                start.setUTCHours(0, 0, 0, 0);
+                end.setUTCHours(23, 59, 59, 999);
+                dateFilter = Object.assign(Object.assign({}, dateFilter), { createdAt: {
+                        $gte: start,
+                        $lte: end,
+                    } });
+            }
+            else if (startDate) {
+                const start = new Date(startDate);
+                start.setUTCHours(0, 0, 0, 0);
+                dateFilter = Object.assign(Object.assign({}, dateFilter), { createdAt: {
+                        $gte: start,
+                    } });
+            }
+            else if (endDate) {
+                const end = new Date(endDate);
+                end.setUTCHours(23, 59, 59, 999);
+                dateFilter = Object.assign(Object.assign({}, dateFilter), { createdAt: {
+                        $lte: end,
+                    } });
+            }
+        }
+        if (filterStatus) {
+            if (filterStatus.toLowerCase() !== 'all') {
+                dateFilter = Object.assign(Object.assign({}, dateFilter), { status: filterStatus });
+            }
+        }
+        if (searchQuery) {
+            // Convert searchQuery to number if it's a valid number, otherwise use string search
+            const searchNumber = Number(searchQuery);
+            const isNumberSearch = !isNaN(searchNumber);
+            // Split search query into individual words
+            const searchTerms = searchQuery
+                .replace(/[()]/g, '')
+                .split(' ')
+                .filter((term) => term.trim() !== '');
+            // Initialize search conditions array
+            const searchConditions = [];
+            // Add number search condition if searchQuery is a valid number
+            if (isNumberSearch) {
+                searchConditions.push({
+                    $or: [{ showOrderNumber: searchNumber }, { orderId: searchNumber }],
+                });
+            }
+            // Add string search conditions for delivery man names
+            searchConditions.push({
+                $or: [
+                    ...searchTerms.map((term) => ({
+                        'deliveryManData.lastName': { $regex: term, $options: 'i' },
+                    })),
+                    ...searchTerms.map((term) => ({
+                        'deliveryManData.firstName': { $regex: term, $options: 'i' },
+                    })),
                 ],
-            };
-        }
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            start.setUTCHours(0, 0, 0, 0);
-            end.setUTCHours(23, 59, 59, 999);
-            dateFilter = {
-                dateTime: {
-                    $gte: start,
-                    $lte: end,
+            });
+            // Add string search conditions for pickup address and status
+            searchConditions.push({
+                'pickupDetails.address': {
+                    $regex: searchTerms
+                        .map((term) => `(?=.*\\b${term}\\b)`)
+                        .join(''), // Match all terms in any order
+                    $options: 'i',
                 },
+            }, ...searchTerms.map((term) => ({
+                status: { $regex: term, $options: 'i' },
+            })));
+            // Add nested search conditions for delivery details
+            searchConditions.push({
+                deliveryDetails: {
+                    $elemMatch: {
+                        $or: [
+                            ...searchTerms.map((term) => ({
+                                name: { $regex: term, $options: 'i' },
+                            })),
+                            {
+                                address: {
+                                    $regex: searchTerms
+                                        .map((term) => `(?=.*\\b${term}\\b)`)
+                                        .join(''), // Match all terms in any order
+                                    $options: 'i',
+                                },
+                            },
+                            ...searchTerms.map((term) => ({
+                                postCode: {
+                                    $regex: term.replace(/[()]/g, ''), // Remove parentheses from search term
+                                    $options: 'i',
+                                },
+                            })),
+                        ],
+                    },
+                },
+            });
+            // Create final search filter with non-empty conditions
+            searchFilter = {
+                $or: searchConditions.filter((condition) => Object.keys(condition).length > 0),
             };
         }
-        const data = yield orderMulti_schema_1.default.aggregate([
+        const totalCountResult = yield orderMulti_schema_1.default.aggregate([
+            {
+                $match: Object.assign(Object.assign(Object.assign({ 'pickupDetails.merchantId': new mongoose_1.default.Types.ObjectId(req.params.id) }, dateFilter), searchFilter), { $and: [
+                        {
+                            $or: [
+                                {
+                                    'deliveryDetails.status': enum_1.ORDER_HISTORY.CANCELLED,
+                                    'deliveryDetails.trashed': false,
+                                },
+                                {
+                                    'deliveryDetails.trashed': false,
+                                },
+                            ],
+                        },
+                    ] }),
+            },
+            {
+                $lookup: {
+                    from: 'orderAssigneeMulti',
+                    localField: 'orderId',
+                    foreignField: 'order',
+                    as: 'orderAssignData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 0,
+                                deliveryBoy: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$orderAssignData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $lookup: {
+                    from: 'deliveryMan',
+                    localField: 'orderAssignData.deliveryBoy',
+                    foreignField: '_id',
+                    as: 'deliveryManData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                firstName: 1,
+                                lastName: 1,
+                                email: 1,
+                                contactNumber: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $unwind: {
+                    path: '$deliveryManData',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $count: 'totalCount',
+            },
+        ]);
+        const totalCount = ((_c = totalCountResult[0]) === null || _c === void 0 ? void 0 : _c.totalCount) || 0;
+        const getdata = yield orderMulti_schema_1.default.aggregate([
             {
                 $sort: {
                     createdAt: -1,
@@ -1193,12 +1353,31 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                             else: true,
                         },
                     },
+                    hasNonTrashedDelivery: {
+                        $anyElementTrue: {
+                            $map: {
+                                input: '$deliveryDetails',
+                                as: 'detail',
+                                in: { $eq: ['$$detail.trashed', false] },
+                            },
+                        },
+                    },
                 },
             },
             {
                 $match: {
                     hasCancelledDelivery: true,
+                    hasNonTrashedDelivery: true,
                 },
+            },
+            {
+                $match: searchFilter ? Object.assign({}, searchFilter) : {},
+            },
+            {
+                $skip: (page - 1) * parsedLimit,
+            },
+            {
+                $limit: parsedLimit,
             },
             {
                 $project: {
@@ -1259,9 +1438,16 @@ const getAllOrdersFromMerchantMulti = (req, res) => __awaiter(void 0, void 0, vo
                 },
             },
         ]);
+        const data = {
+            data: getdata,
+            total: totalCount || 0,
+            currentPage: page,
+            totalPages: Math.ceil(totalCount / limit),
+        };
         return res.ok({ data });
     }
     catch (error) {
+        console.log('🚀 ~ getAllOrdersFromMerchantMulti ~ error:', error);
         return res.failureResponse({
             message: (0, languageHelper_1.getLanguage)('en').somethingWentWrong,
         });

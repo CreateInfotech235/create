@@ -23,7 +23,7 @@
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
 /// <reference types="mongoose/types/inferrawdoctype" />
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 declare const _default: mongoose.Model<{
     createdAt: NativeDate;
     updatedAt: NativeDate;

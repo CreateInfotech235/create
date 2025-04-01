@@ -1,8 +1,13 @@
-import mongoose from "mongoose"
+import mongoose from 'mongoose';
 
-const messagesSchema = new mongoose.Schema({
+const messagesSchema = new mongoose.Schema(
+  {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-    SupportTicketId: { type: mongoose.Schema.Types.ObjectId, ref: 'SupportTicket', required: true },
+    SupportTicketId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'SupportTicket',
+      required: true,
+    },
     text: { type: String, default: '' },
     sender: { type: String, enum: ['merchant', 'admin'], required: true }, // 'merchant' or 'admin'
     isRead: { type: Boolean, default: false },

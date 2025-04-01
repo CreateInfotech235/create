@@ -41,6 +41,7 @@ const SupportTicket_1 = __importDefault(require("../../models/SupportTicket"));
 const admin_schema_1 = __importDefault(require("../../models/admin.schema"));
 const notificatio_schema_1 = __importDefault(require("../../models/notificatio.schema"));
 const token_schema_1 = __importDefault(require("../../models/token.schema"));
+const messages_schema_1 = __importDefault(require("../../models/messages.schema"));
 const common_1 = require("../../utils/common");
 const validateRequest_1 = __importDefault(require("../../utils/validateRequest"));
 const auth_validation_1 = require("../../utils/validation/auth.validation");
@@ -1156,7 +1157,7 @@ const getSupportTicket = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 },
             },
             {
-                $project: Object.assign(Object.assign({ _id: 1, subject: 1, problem: 1, problemSolved: 1 }, (!isSendMessage ? { messages: 1 } : {})), { createdAt: 1, updatedAt: 1, 'adminDetails.name': 1, 'adminDetails.email': 1 }),
+                $project: Object.assign(Object.assign({ _id: 1, subject: 1, problem: 1, problemSolved: 1 }, (!isSendMessage ? { messages: 1 } : {})), { createdAt: 1, updatedAt: 1, adminId: { name: '$adminDetails.name', email: '$adminDetails.email' } }),
             },
         ]);
         console.log('data', data);
@@ -1513,11 +1514,13 @@ exports.getAllTickets = getAllTickets;
 // Fetch messages for a specific ticket
 const getMessagesByTicketId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const ticket = yield SupportTicket_1.default.findById(req.params.id);
+        const ticket = yield messages_schema_1.default.find({
+            SupportTicketId: req.params.id,
+        });
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
-        res.json(ticket.messages);
+        res.json(ticket);
     }
     catch (error) {
         res.status(500).json({ message: 'Failed to fetch messages' });
@@ -1528,21 +1531,16 @@ const Messageupdate = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const { supportTicketId, messageId } = req.params;
         const { nowmessage } = req.body;
-        console.log(supportTicketId, messageId, 'supportTicketId, messageId');
-        const ticket = yield SupportTicket_1.default.findById(supportTicketId);
-        if (!ticket) {
-            return res.status(404).json({ message: 'Ticket not found' });
-        }
-        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId.toString());
-        if (messageIndex === -1) {
-            return res.status(404).json({ message: 'Message not found' });
-        }
-        // Update the message text
-        ticket.messages[messageIndex].text = nowmessage;
-        yield ticket.save();
+        const ticket = yield messages_schema_1.default.findOneAndUpdate({
+            _id: new mongoose_1.default.Types.ObjectId(messageId),
+            SupportTicketId: new mongoose_1.default.Types.ObjectId(supportTicketId),
+        }, { text: nowmessage }, { new: true });
+        const newmessages = yield messages_schema_1.default.find({
+            SupportTicketId: new mongoose_1.default.Types.ObjectId(supportTicketId),
+        });
         index_1.io.to(supportTicketId).emit('messageRead', {
             ticketId: supportTicketId,
-            update: ticket,
+            update: newmessages,
         });
         res.status(200).json({ message: 'Message updated successfully' });
     }
@@ -1556,26 +1554,22 @@ const MessageDelete = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const { supportTicketId, messageId } = req.params;
         console.log(supportTicketId, messageId, 'supportTicketId, messageId');
-        const ticket = yield SupportTicket_1.default.findById(supportTicketId);
-        if (!ticket) {
-            return res.status(404).json({ message: 'Ticket not found' });
-        }
-        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId.toString());
-        if (messageIndex === -1) {
-            return res.status(404).json({ message: 'Message not found' });
-        }
-        // Update the message text
-        ticket.messages.splice(messageIndex, 1);
-        yield ticket.save();
+        const ticket = yield messages_schema_1.default.findOneAndDelete({
+            _id: new mongoose_1.default.Types.ObjectId(messageId),
+            SupportTicketId: new mongoose_1.default.Types.ObjectId(supportTicketId),
+        });
+        const newmessages = yield messages_schema_1.default.find({
+            SupportTicketId: new mongoose_1.default.Types.ObjectId(supportTicketId),
+        });
         index_1.io.to(supportTicketId).emit('messageDelete', {
             ticketId: supportTicketId,
-            update: ticket,
+            update: newmessages,
         });
-        res.status(200).json({ message: 'Message updated successfully' });
+        res.status(200).json({ message: 'Message deleted successfully' });
     }
     catch (error) {
         console.log(error, 'error');
-        res.status(500).json({ message: 'Failed to update message' });
+        res.status(500).json({ message: 'Failed to delete message' });
     }
 });
 exports.MessageDelete = MessageDelete;
@@ -1601,16 +1595,19 @@ const Messageread = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
-        // Only set isRead for admin messages
-        ticket.messages.forEach((msg) => {
-            if (msg.sender === 'admin') {
-                msg.isRead = true;
-            }
+        yield messages_schema_1.default.updateMany({
+            SupportTicketId: new mongoose_1.default.Types.ObjectId(supportTicketId),
+            sender: 'admin',
+            isRead: false,
+        }, {
+            isRead: true,
         });
-        yield ticket.save();
+        const newmessages = yield messages_schema_1.default.find({
+            SupportTicketId: new mongoose_1.default.Types.ObjectId(supportTicketId),
+        });
         index_1.io.to(supportTicketId).emit('messageRead', {
             ticketId: supportTicketId,
-            update: ticket,
+            update: newmessages,
         });
         index_1.io.to(supportTicketId).emit('Messagedataupdate', {
             unreadMessages: yield (0, unreadMessages_1.unreadMessages)(ticket.userid.toString(), 'admin'),
@@ -1627,6 +1624,8 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
     var _a;
     try {
         const { text, sender, file } = req.body;
+        const ticketId = req.params.id;
+        // Validate required fields
         if (!sender) {
             return res.status(400).json({ message: 'Sender is required' });
         }
@@ -1638,79 +1637,86 @@ const addMessageToTicket = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 .status(400)
                 .json({ message: 'Either text or file data is required' });
         }
-        const ticket = yield SupportTicket_1.default.findById(req.params.id);
-        if (!ticket) {
+        // Verify ticket exists
+        const ticket = yield SupportTicket_1.default.aggregate([
+            {
+                $match: {
+                    _id: new mongoose_1.default.Types.ObjectId(ticketId),
+                },
+            },
+            {
+                $project: {
+                    userid: 1,
+                },
+            },
+        ]);
+        if (!ticket || ticket.length === 0) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
-        // Add the new message
-        const messageData = { text, sender };
-        const supportedTypes = {
-            png: ['image/png'],
-            webp: ['image/webp'],
-            jpg: ['image/jpeg'],
-            jpeg: ['image/jpeg'],
-            gif: ['image/gif'],
-            bmp: ['image/bmp'],
-            tiff: ['image/tiff'],
-            svg: ['image/svg+xml'],
-            heif: ['image/heif'],
-            ico: ['image/x-icon'],
-            avif: ['image/avif'],
-            pdf: ['application/pdf'],
-            doc: ['application/msword'],
-            docx: [
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            ],
-            zip: [
-                'application/zip',
-                'application/x-zip-compressed',
-                'x-zip-compressed',
-            ],
-            rar: ['application/x-rar-compressed'],
-            txt: ['text/plain'],
-            csv: ['text/csv'],
-            json: ['application/json'],
-            xml: ['application/xml'],
+        // Prepare message data
+        const messageData = {
+            text,
+            sender,
+            SupportTicketId: ticketId, // Ensure SupportTicketId is included
+            timestamp: new Date(),
         };
-        let fileExtension = 'png';
+        // Handle file attachment if present
         if (file === null || file === void 0 ? void 0 : file.data) {
-            // Extract MIME type from base64 string
+            const supportedTypes = {
+                png: ['image/png'],
+                webp: ['image/webp'],
+                jpg: ['image/jpeg'],
+                jpeg: ['image/jpeg'],
+                gif: ['image/gif'],
+                bmp: ['image/bmp'],
+                tiff: ['image/tiff'],
+                svg: ['image/svg+xml'],
+                heif: ['image/heif'],
+                ico: ['image/x-icon'],
+                avif: ['image/avif'],
+                pdf: ['application/pdf'],
+                doc: ['application/msword'],
+                docx: [
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                ],
+                zip: [
+                    'application/zip',
+                    'application/x-zip-compressed',
+                    'x-zip-compressed',
+                ],
+                rar: ['application/x-rar-compressed'],
+                txt: ['text/plain'],
+                csv: ['text/csv'],
+                json: ['application/json'],
+                xml: ['application/xml'],
+            };
             const mimeMatch = file.data.match(/^data:([^;]+);/);
             if (mimeMatch) {
                 const mimeType = mimeMatch[1];
-                // Find matching extension from supported types
-                const extension = (_a = Object.entries(supportedTypes).find(([_, mimes]) => mimes.includes(mimeType))) === null || _a === void 0 ? void 0 : _a[0];
-                if (extension) {
-                    fileExtension = extension;
-                }
+                const extension = ((_a = Object.entries(supportedTypes).find(([_, mimes]) => mimes.includes(mimeType))) === null || _a === void 0 ? void 0 : _a[0]) || 'png';
+                messageData.file = {
+                    data: yield (0, getimgurl_1.getimgurl)(file.data, extension),
+                    name: file === null || file === void 0 ? void 0 : file.name,
+                    type: file === null || file === void 0 ? void 0 : file.type,
+                    extension: extension,
+                };
+                messageData.fileType = extension;
             }
-            messageData.file = {
-                data: yield (0, getimgurl_1.getimgurl)(file.data, fileExtension),
-                name: file === null || file === void 0 ? void 0 : file.name,
-                type: file === null || file === void 0 ? void 0 : file.type,
-                extension: fileExtension,
-            };
-            messageData.fileType = fileExtension;
         }
         console.log(messageData, 'messageData');
-        // const newMessage = await messagesSchema.create({ ...messageData, SupportTicketId: ticket._id });
-        ticket.messages.push(messageData);
-        yield ticket.save();
-        // Emit the new message to the ticket room
-        index_1.io.to(req.params.id).emit('SupportTicketssendMessage', {
-            text,
-            sender,
-            file: messageData.file,
-            fileType: messageData.fileType,
-            ticketId: req.params.id,
+        // Create and save the message
+        const message = yield messages_schema_1.default.create(messageData);
+        // Emit socket events
+        index_1.io.to(ticketId).emit('SupportTicketssendMessage', Object.assign(Object.assign({}, message.toObject()), { ticketId: ticketId }));
+        index_1.io.to(ticketId).emit('Messagedataupdate', {
+            unreadMessages: yield (0, unreadMessages_1.unreadMessages)(ticket[0].userid.toString(), 'merchant'),
         });
-        index_1.io.to(req.params.id).emit('Messagedataupdate', {
-            unreadMessages: yield (0, unreadMessages_1.unreadMessages)(ticket.userid.toString(), 'merchant'),
-        });
-        res.json(ticket.messages);
+        // Return all messages for the ticket
+        const messages = yield messages_schema_1.default.find({ SupportTicketId: ticketId });
+        res.json(messages);
     }
     catch (error) {
-        console.log(error, 'error');
+        console.error('Error adding message:', error);
         res.status(500).json({ message: 'Failed to add message' });
     }
 });
@@ -1721,25 +1727,16 @@ const deleteMessageFromTicket = (req, res) => __awaiter(void 0, void 0, void 0, 
         console.log('Gfgeguefg');
         const { ticketId, messageId } = req.params;
         // Find the ticket by ID
-        const ticket = yield SupportTicket_1.default.findById(ticketId);
-        if (!ticket) {
-            return res.status(404).json({ message: 'Ticket not found' });
-        }
-        // Find the index of the message to delete
-        const messageIndex = ticket.messages.findIndex((msg) => msg._id.toString() === messageId);
-        if (messageIndex === -1) {
-            return res.status(404).json({ message: 'Message not found' });
-        }
-        // Remove the message from the messages array
-        ticket.messages.splice(messageIndex, 1);
-        // Save the updated ticket
-        yield ticket.save();
+        const ticket = yield messages_schema_1.default.findOneAndDelete({
+            _id: messageId,
+            SupportTicketId: ticketId,
+        });
         // Emit the message deletion event via socket
-        index_1.io.to(ticketId).emit('messageDeleted', { messageId });
+        index_1.io.to(ticketId).emit('messageDelete', { messageId });
         res.status(200).json({ message: 'Message deleted successfully' });
     }
     catch (error) {
-        res.status(500).json({ message: 'Failed to delete message' });
+        res.status(500).json({ message: 'Failed tos delete message' });
     }
 });
 exports.deleteMessageFromTicket = deleteMessageFromTicket;

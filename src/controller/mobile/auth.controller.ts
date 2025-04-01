@@ -1450,8 +1450,7 @@ export const getSupportTicket = async (req: RequestParams, res: Response) => {
           ...(!isSendMessage ? { messages: 1 } : {}),
           createdAt: 1,
           updatedAt: 1,
-          'adminDetails.name': 1,
-          'adminDetails.email': 1,
+          adminId: { name: '$adminDetails.name', email: '$adminDetails.email' },
         },
       },
     ]);
@@ -1846,11 +1845,13 @@ export const getMessagesByTicketId = async (
   res: Response,
 ) => {
   try {
-    const ticket = await SupportTicket.findById(req.params.id);
+    const ticket = await messagesSchema.find({
+      SupportTicketId: req.params.id,
+    });
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
-    res.json(ticket.messages);
+    res.json(ticket);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch messages' });
   }
@@ -1860,25 +1861,22 @@ export const Messageupdate = async (req: RequestParams, res: Response) => {
   try {
     const { supportTicketId, messageId } = req.params;
     const { nowmessage } = req.body;
-    console.log(supportTicketId, messageId, 'supportTicketId, messageId');
-    const ticket = await SupportTicket.findById(supportTicketId);
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
-    const messageIndex = ticket.messages.findIndex(
-      (msg) => msg._id.toString() === messageId.toString(),
+    const ticket = await messagesSchema.findOneAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(messageId),
+        SupportTicketId: new mongoose.Types.ObjectId(supportTicketId),
+      },
+      { text: nowmessage },
+      { new: true },
     );
-    if (messageIndex === -1) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
 
-    // Update the message text
-    ticket.messages[messageIndex].text = nowmessage;
-    await ticket.save();
+    const newmessages = await messagesSchema.find({
+      SupportTicketId: new mongoose.Types.ObjectId(supportTicketId),
+    });
 
     io.to(supportTicketId).emit('messageRead', {
       ticketId: supportTicketId,
-      update: ticket,
+      update: newmessages,
     });
     res.status(200).json({ message: 'Message updated successfully' });
   } catch (error) {
@@ -1891,31 +1889,26 @@ export const MessageDelete = async (req: RequestParams, res: Response) => {
   try {
     const { supportTicketId, messageId } = req.params;
     console.log(supportTicketId, messageId, 'supportTicketId, messageId');
-    const ticket = await SupportTicket.findById(supportTicketId);
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
-    const messageIndex = ticket.messages.findIndex(
-      (msg) => msg._id.toString() === messageId.toString(),
-    );
-    if (messageIndex === -1) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
+    const ticket = await messagesSchema.findOneAndDelete({
+      _id: new mongoose.Types.ObjectId(messageId),
+      SupportTicketId: new mongoose.Types.ObjectId(supportTicketId),
+    });
 
-    // Update the message text
-    ticket.messages.splice(messageIndex, 1);
-    await ticket.save();
+    const newmessages = await messagesSchema.find({
+      SupportTicketId: new mongoose.Types.ObjectId(supportTicketId),
+    });
 
     io.to(supportTicketId).emit('messageDelete', {
       ticketId: supportTicketId,
-      update: ticket,
+      update: newmessages,
     });
-    res.status(200).json({ message: 'Message updated successfully' });
+    res.status(200).json({ message: 'Message deleted successfully' });
   } catch (error) {
     console.log(error, 'error');
-    res.status(500).json({ message: 'Failed to update message' });
+    res.status(500).json({ message: 'Failed to delete message' });
   }
 };
+
 // full url is https://create-courier-8.onrender.com/mobile/auth/unreadMessages/66f000000000000000000000
 export const getunreadMessages = async (req: RequestParams, res: Response) => {
   try {
@@ -1931,6 +1924,7 @@ export const getunreadMessages = async (req: RequestParams, res: Response) => {
     return res.status(500).json({ message: 'Failed to fetch unread messages' });
   }
 };
+
 export const Messageread = async (req: RequestParams, res: Response) => {
   try {
     const { supportTicketId } = req.params;
@@ -1939,21 +1933,29 @@ export const Messageread = async (req: RequestParams, res: Response) => {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
-    // Only set isRead for admin messages
-    ticket.messages.forEach((msg) => {
-      if (msg.sender === 'admin') {
-        msg.isRead = true;
-      }
+    await messagesSchema.updateMany(
+      {
+        SupportTicketId: new mongoose.Types.ObjectId(supportTicketId),
+        sender: 'admin',
+        isRead: false,
+      },
+      {
+        isRead: true,
+      },
+    );
+
+    const newmessages = await messagesSchema.find({
+      SupportTicketId: new mongoose.Types.ObjectId(supportTicketId),
     });
 
-    await ticket.save();
     io.to(supportTicketId).emit('messageRead', {
       ticketId: supportTicketId,
-      update: ticket,
+      update: newmessages,
     });
     io.to(supportTicketId).emit('Messagedataupdate', {
       unreadMessages: await unreadMessages(ticket.userid.toString(), 'admin'),
     });
+
     res.status(200).json({ message: 'Message read successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to read message' });
@@ -1963,6 +1965,9 @@ export const Messageread = async (req: RequestParams, res: Response) => {
 export const addMessageToTicket = async (req: RequestParams, res: Response) => {
   try {
     const { text, sender, file } = req.body;
+    const ticketId = req.params.id;
+
+    // Validate required fields
     if (!sender) {
       return res.status(400).json({ message: 'Sender is required' });
     }
@@ -1975,95 +1980,109 @@ export const addMessageToTicket = async (req: RequestParams, res: Response) => {
         .json({ message: 'Either text or file data is required' });
     }
 
-    const ticket = await SupportTicket.findById(req.params.id);
-    if (!ticket) {
+    // Verify ticket exists
+    const ticket = await SupportTicket.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(ticketId),
+        },
+      },
+      {
+        $project: {
+          userid: 1,
+        },
+      },
+    ]);
+    if (!ticket || ticket.length === 0) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
-    // Add the new message
-    const messageData: any = { text, sender };
-    const supportedTypes = {
-      png: ['image/png'],
-      webp: ['image/webp'],
-      jpg: ['image/jpeg'],
-      jpeg: ['image/jpeg'],
-      gif: ['image/gif'],
-      bmp: ['image/bmp'],
-      tiff: ['image/tiff'],
-      svg: ['image/svg+xml'],
-      heif: ['image/heif'],
-      ico: ['image/x-icon'],
-      avif: ['image/avif'],
-      pdf: ['application/pdf'],
-      doc: ['application/msword'],
-      docx: [
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      ],
-      zip: [
-        'application/zip',
-        'application/x-zip-compressed',
-        'x-zip-compressed',
-      ],
-      rar: ['application/x-rar-compressed'],
-      txt: ['text/plain'],
-      csv: ['text/csv'],
-      json: ['application/json'],
-      xml: ['application/xml'],
+    // Prepare message data
+    const messageData: any = {
+      text,
+      sender,
+      SupportTicketId: ticketId, // Ensure SupportTicketId is included
+      timestamp: new Date(),
     };
 
-    let fileExtension = 'png';
+    // Handle file attachment if present
     if (file?.data) {
-      // Extract MIME type from base64 string
+      const supportedTypes = {
+        png: ['image/png'],
+        webp: ['image/webp'],
+        jpg: ['image/jpeg'],
+        jpeg: ['image/jpeg'],
+        gif: ['image/gif'],
+        bmp: ['image/bmp'],
+        tiff: ['image/tiff'],
+        svg: ['image/svg+xml'],
+        heif: ['image/heif'],
+        ico: ['image/x-icon'],
+        avif: ['image/avif'],
+        pdf: ['application/pdf'],
+        doc: ['application/msword'],
+        docx: [
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ],
+        zip: [
+          'application/zip',
+          'application/x-zip-compressed',
+          'x-zip-compressed',
+        ],
+        rar: ['application/x-rar-compressed'],
+        txt: ['text/plain'],
+        csv: ['text/csv'],
+        json: ['application/json'],
+        xml: ['application/xml'],
+      };
+
       const mimeMatch = file.data.match(/^data:([^;]+);/);
       if (mimeMatch) {
         const mimeType = mimeMatch[1];
-        // Find matching extension from supported types
-        const extension = Object.entries(supportedTypes).find(([_, mimes]) =>
-          mimes.includes(mimeType),
-        )?.[0];
-        if (extension) {
-          fileExtension = extension;
-        }
-      }
+        const extension =
+          Object.entries(supportedTypes).find(([_, mimes]) =>
+            mimes.includes(mimeType),
+          )?.[0] || 'png';
 
-      messageData.file = {
-        data: await getimgurl(file.data, fileExtension),
-        name: file?.name,
-        type: file?.type,
-        extension: fileExtension,
-      };
-      messageData.fileType = fileExtension;
+        messageData.file = {
+          data: await getimgurl(file.data, extension),
+          name: file?.name,
+          type: file?.type,
+          extension: extension,
+        };
+        messageData.fileType = extension;
+      }
     }
+
     console.log(messageData, 'messageData');
 
-    // const newMessage = await messagesSchema.create({ ...messageData, SupportTicketId: ticket._id });
+    // Create and save the message
+    const message = await messagesSchema.create(messageData);
 
-    ticket.messages.push(messageData);
-    await ticket.save();
-
-    // Emit the new message to the ticket room
-    io.to(req.params.id).emit('SupportTicketssendMessage', {
-      text,
-      sender,
-      file: messageData.file,
-      fileType: messageData.fileType,
-      ticketId: req.params.id,
+    // Emit socket events
+    io.to(ticketId).emit('SupportTicketssendMessage', {
+      ...message.toObject(),
+      ticketId: ticketId,
     });
-    io.to(req.params.id).emit('Messagedataupdate', {
+
+    io.to(ticketId).emit('Messagedataupdate', {
       unreadMessages: await unreadMessages(
-        ticket.userid.toString(),
+        ticket[0].userid.toString(),
         'merchant',
       ),
     });
 
-    res.json(ticket.messages);
+    // Return all messages for the ticket
+    const messages = await messagesSchema.find({ SupportTicketId: ticketId });
+    res.json(messages);
   } catch (error) {
-    console.log(error, 'error');
+    console.error('Error adding message:', error);
     res.status(500).json({ message: 'Failed to add message' });
   }
 };
 
 // Delete a message from a specific ticket
+
 export const deleteMessageFromTicket = async (
   req: RequestParams,
   res: Response,
@@ -2074,34 +2093,19 @@ export const deleteMessageFromTicket = async (
     const { ticketId, messageId } = req.params;
 
     // Find the ticket by ID
-    const ticket = await SupportTicket.findById(ticketId);
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
-    }
-
-    // Find the index of the message to delete
-    const messageIndex = ticket.messages.findIndex(
-      (msg) => msg._id.toString() === messageId,
-    );
-    if (messageIndex === -1) {
-      return res.status(404).json({ message: 'Message not found' });
-    }
-
-    // Remove the message from the messages array
-    ticket.messages.splice(messageIndex, 1);
-
-    // Save the updated ticket
-    await ticket.save();
+    const ticket = await messagesSchema.findOneAndDelete({
+      _id: messageId,
+      SupportTicketId: ticketId,
+    });
 
     // Emit the message deletion event via socket
-    io.to(ticketId).emit('messageDeleted', { messageId });
+    io.to(ticketId).emit('messageDelete', { messageId });
 
     res.status(200).json({ message: 'Message deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to delete message' });
+    res.status(500).json({ message: 'Failed tos delete message' });
   }
 };
-
 export const getDistance = async (req: RequestParams, res: Response) => {
   const { origin, destination, apiKey } = req.query;
   console.log(origin, 'Origin', destination, 'Destination', apiKey, 'Api Key');
